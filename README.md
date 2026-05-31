@@ -591,7 +591,6 @@ Built with [Anthropic Claude](https://anthropic.com), [Next.js](https://nextjs.o
 
 *Have a question or idea? Open an issue or reach out at your@email.com*
 
-
 # SkillSync
 echo "# SkillSync" >> README.md
 git init
