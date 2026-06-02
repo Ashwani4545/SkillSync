@@ -1,0 +1,92 @@
+version: "3.9"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../infra/docker/Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/resumeai
+      - REDIS_URL=redis://redis:6379
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AWS_REGION=${AWS_REGION}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./backend:/app
+      - ./ai-engine:/app/ai_engine
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.backend
+    command: celery -A workers.celery_app worker --loglevel=info --concurrency=2
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/resumeai
+      - REDIS_URL=redis://redis:6379
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AWS_REGION=${AWS_REGION}
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+      - ./ai-engine:/app/ai_engine
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: resumeai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
