@@ -589,4 +589,4 @@ Built with [Anthropic Claude](https://anthropic.com), [Next.js](https://nextjs.o
 
 ---
 
-*Have a question or idea? Open an issue or reach out at your@email.com*
+*Have a question or idea? Open an issue or reach out at ashwanipandey4545@gmail.com*
