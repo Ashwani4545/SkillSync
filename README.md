@@ -590,12 +590,3 @@ Built with [Anthropic Claude](https://anthropic.com), [Next.js](https://nextjs.o
 ---
 
 *Have a question or idea? Open an issue or reach out at your@email.com*
-
-# SkillSync
-echo "# SkillSync" >> README.md
-git init
-git add README.md
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/Ashwani4545/SkillSync.git
-git push -u origin main
