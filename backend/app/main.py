@@ -16,7 +16,7 @@ from slowapi.errors import RateLimitExceeded
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("🚀 ResumeAI backend — Phase 4 complete")
+    print("ResumeAI backend - Phase 4 complete")
     yield
 
 

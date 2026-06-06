@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     STRIPE_PRO_PRICE_ID: str = ""
     STRIPE_CAREER_PRICE_ID: str = ""
     STRIPE_TEAM_PRICE_ID: str = ""
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: str = ""
 
     # Pinecone (optional)
     PINECONE_API_KEY: str = ""
@@ -43,6 +44,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"
 
 
 @lru_cache()

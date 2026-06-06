@@ -42,9 +42,27 @@ async def _get_clerk_public_key(kid: str) -> str | None:
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
     db: Session = Depends(get_db),
 ) -> User:
+    if settings.ENVIRONMENT == "development":
+        dev_clerk_id = "dev_user_clerk_id"
+        dev_email = "dev@example.com"
+        user = db.query(User).filter(User.clerk_id == dev_clerk_id).first()
+        if not user:
+            user = User(clerk_id=dev_clerk_id, email=dev_email, plan=PlanEnum.team)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        return user
+
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     token = credentials.credentials
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

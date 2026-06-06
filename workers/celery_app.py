@@ -18,4 +18,5 @@ celery_app.conf.update(
     task_acks_late=True,
     worker_prefetch_multiplier=1,
     result_expires=86400,  # 24h
+    task_always_eager=settings.ENVIRONMENT == "development",
 )
