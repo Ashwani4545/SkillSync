@@ -3,8 +3,8 @@ from app.core.config import settings
 
 celery_app = Celery(
     "resumeai",
-    broker=settings.REDIS_URL,
-    backend=settings.REDIS_URL,
+    broker=settings.REDIS_URL if settings.ENVIRONMENT != "development" else None,
+    backend=settings.REDIS_URL if settings.ENVIRONMENT != "development" else None,
     include=["workers.analyze_task"],
 )
 
