@@ -43,8 +43,8 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 22, color: "var(--teal-700)" }}>ResumeAI</span>
           <div style={{ display: "flex", gap: 12 }}>
-            <Link href="/sign-in" style={{ padding: "8px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--gray-200)", color: "var(--gray-700)", textDecoration: "none", fontSize: 14 }}>Sign in</Link>
-            <Link href="/sign-up" style={{ padding: "8px 18px", borderRadius: "var(--radius-md)", background: "var(--teal-700)", color: "#fff", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>Get started free</Link>
+            <Link href="/dashboard" style={{ padding: "8px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--gray-200)", color: "var(--gray-700)", textDecoration: "none", fontSize: 14 }}>Sign in</Link>
+            <Link href="/dashboard" style={{ padding: "8px 18px", borderRadius: "var(--radius-md)", background: "var(--teal-700)", color: "#fff", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>Get started free</Link>
           </div>
         </div>
       </nav>
@@ -62,10 +62,10 @@ export default function LandingPage() {
           ATS bot. HR recruiter. Hiring manager. ResumeAI shows you exactly where each one would stop reading — and how to fix it.
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <Link href="/sign-up" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: "var(--radius-md)", background: "var(--teal-700)", color: "#fff", textDecoration: "none", fontSize: 15, fontWeight: 600 }}>
+          <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: "var(--radius-md)", background: "var(--teal-700)", color: "#fff", textDecoration: "none", fontSize: 15, fontWeight: 600 }}>
             Analyze my resume free <ArrowRight size={16} />
           </Link>
-          <Link href="/demo" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: "var(--radius-md)", border: "1px solid var(--gray-200)", color: "var(--gray-700)", textDecoration: "none", fontSize: 15 }}>
+          <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: "var(--radius-md)", border: "1px solid var(--gray-200)", color: "var(--gray-700)", textDecoration: "none", fontSize: 15 }}>
             See a live demo
           </Link>
         </div>
@@ -109,7 +109,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/sign-up" style={{ display: "block", textAlign: "center", padding: "11px", borderRadius: "var(--radius-md)", background: plan.highlight ? "var(--teal-700)" : "var(--gray-100)", color: plan.highlight ? "#fff" : "var(--gray-700)", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
+                <Link href="/dashboard" style={{ display: "block", textAlign: "center", padding: "11px", borderRadius: "var(--radius-md)", background: plan.highlight ? "var(--teal-700)" : "var(--gray-100)", color: plan.highlight ? "#fff" : "var(--gray-700)", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
                   {plan.name === "Free" ? "Get started free" : `Start ${plan.name}`}
                 </Link>
               </div>
