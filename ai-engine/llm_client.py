@@ -29,15 +29,12 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
         match = re.search(pattern, text, re.IGNORECASE)
         return match.group(1).strip() if match else default
 
+    # 1. ATS compatibility (ats_analyzer.py)
     if "ats" in system_lower or "compatibility" in system_lower:
-        # Extract skills
         skills_str = extract_regex(r"RESUME SKILLS:\s*(.*)", user)
         skills = [s.strip().lower() for s in skills_str.split(",") if s.strip()] if skills_str else []
-        
-        # Extract JD
         jd = extract_regex(r"JOB DESCRIPTION:\s*([\s\S]*)", user)
         
-        # Common tech keywords list to scan
         tech_keywords = [
             "python", "javascript", "react", "fastapi", "postgresql", "docker", "kubernetes", 
             "typescript", "aws", "git", "ci/cd", "html", "css", "nodejs", "express", "django", 
@@ -52,7 +49,6 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             exp_context = extract_regex(r"RESUME EXPERIENCE:\s*([\s\S]*?)(?=RESUME SECTIONS|JOB DESCRIPTION|$)", user).lower()
             
             for kw in tech_keywords:
-                # Match with word boundaries
                 if re.search(rf"\b{re.escape(kw)}\b", jd_lower):
                     has_it = False
                     if kw in skills:
@@ -65,7 +61,6 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
                     else:
                         missing.append(kw)
         else:
-            # If no JD, default to found = candidate skills, missing = a few standard things
             found = [s for s in skills if s in tech_keywords]
             if not found:
                 found = skills[:4]
@@ -79,7 +74,6 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
         else:
             score = min(100, max(50, 70 + len(skills) * 2))
         
-        # Format issues
         format_issues = []
         if len(skills) < 5:
             format_issues.append("Very brief skills list — expand on your core competencies.")
@@ -103,8 +97,8 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             "keyword_density": round(len(found) / max(1, len(found) + len(missing)), 2)
         })
 
+    # 2. Section Grader (section_grader.py)
     elif "grade" in system_lower or "section" in system_lower:
-        # Extract sections
         summary = extract_regex(r"SUMMARY:\s*(.*?)(?=EXPERIENCE:|$)", user)
         experience = extract_regex(r"EXPERIENCE:\s*(.*?)(?=EDUCATION:|$)", user)
         education = extract_regex(r"EDUCATION:\s*(.*?)(?=SKILLS:|$)", user)
@@ -154,8 +148,8 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             }
         })
 
+    # 3. Bullet Rewriter (bullet_rewriter.py)
     elif "rewrite" in system_lower or "bullet" in system_lower:
-        # Extract bullets to rewrite
         bullets_block = extract_regex(r"BULLETS TO REWRITE:\s*([\s\S]*)", user)
         rewrites = []
         
@@ -200,6 +194,7 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             
         return json.dumps({"rewrites": rewrites})
 
+    # 4. Tone & Confidence Analyzer (tone_analyzer.py)
     elif "tone" in system_lower or "confidence" in system_lower:
         summary = extract_regex(r"SUMMARY:\s*([\s\S]*?)(?=EXPERIENCE|$)", user)
         experience = extract_regex(r"EXPERIENCE BULLETS[\s\S]*?(?=Pre-flagged|$)", user)
@@ -259,6 +254,7 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             ]
         })
 
+    # 5. Persona Review Simulator (persona_analyzer.py)
     elif "persona" in system_lower or "recruit" in system_lower:
         name = extract_regex(r"CANDIDATE:\s*(.*)", user) or "Candidate"
         skills_str = extract_regex(r"SKILLS:\s*(.*)", user)
@@ -294,6 +290,7 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             }
         })
 
+    # 6. Skill Authenticity Checker (skill_checker.py)
     elif "authenticity" in system_lower or "skill" in system_lower:
         skills_str = extract_regex(r"CLAIMED SKILLS:\s*(.*)", user)
         skills = [s.strip() for s in skills_str.split(",") if s.strip()] if skills_str else []
@@ -339,6 +336,7 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             "recommendation": "Try to incorporate all key technical skills directly into your experience bullet points to substantiate your claims to recruiters."
         })
 
+    # 7. Interview Question Predictor (interview_predictor.py)
     elif "interview" in system_lower or "question" in system_lower:
         skills_str = extract_regex(r"SKILLS:\s*(.*)", user)
         skills = [s.strip() for s in skills_str.split(",") if s.strip()] if skills_str else ["Software Development"]
@@ -363,6 +361,410 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             "questions": questions,
             "overall_concern_level": "low" if len(skills) > 8 else "medium",
             "top_concern": "Ensuring all technical tools listed in the skills section have direct backing in the candidate's work history."
+        })
+
+    # 8. Resume A/B Tester Comparator (ab_tester.py)
+    elif "ab_system" in system_lower or "comparing two resume versions" in system_lower:
+        score_a = int(extract_regex(r"Resume B:[\s\S]*?Pre-computed scores — ATS:\s*(\d+)", user, "80"))
+        score_b = int(extract_regex(r"Resume B:[\s\S]*?Pre-computed scores — ATS:\s*(\d+)", user, "85"))
+        if score_a == 80 and score_b == 85:
+            # check alternate extraction if first fail
+            score_a = int(extract_regex(r"RESUME A:[\s\S]*?ATS:\s*(\d+)", user, "80"))
+            score_b = int(extract_regex(r"RESUME B:[\s\S]*?ATS:\s*(\d+)", user, "85"))
+
+        winner = "B" if score_b > score_a else ("A" if score_a > score_b else "tie")
+        
+        return json.dumps({
+            "winner": winner,
+            "confidence": "high",
+            "overall_scores": { "A": score_a, "B": score_b },
+            "dimension_scores": {
+                "ats_match":    { "A": score_a, "B": score_b, "winner": winner },
+                "content":      { "A": min(100, score_a + 5), "B": min(100, score_b + 5), "winner": winner },
+                "tone":         { "A": min(100, score_a - 2), "B": min(100, score_b + 2), "winner": winner },
+                "relevance":    { "A": score_a, "B": score_b, "winner": winner },
+                "readability":  { "A": 85, "B": 90, "winner": "B" }
+            },
+            "winner_strengths": ["Quantified results in experience section", "Stronger action-oriented verb usage"],
+            "loser_issues": ["Contains several passive descriptions ('responsible for')", "Incomplete technical details in header"],
+            "recommendation": f"Use Version {winner} as it presents much stronger outcomes and matches standard ATS filters better.",
+            "best_of_both": ["Combine the cleaner contact header format of Version A with the experience details of Version B."]
+        })
+
+    # 9. Industry Benchmarking Comparator (benchmark_engine.py)
+    elif "benchmarks resumes against" in system_lower or "benchmark_system" in system_lower:
+        role = extract_regex(r"TARGET ROLE:\s*(.*)", user) or "Software Engineer"
+        industry = extract_regex(r"INDUSTRY:\s*(.*)", user) or "Technology"
+        quant_rate = int(extract_regex(r"Quantified bullets:\s*\d+/\d+\s*\((\d+)%\)", user, "40"))
+        
+        overall = min(99, max(45, 55 + quant_rate // 3))
+        
+        return json.dumps({
+            "overall_percentile": overall,
+            "dimensions": {
+                "bullet_quality":    { "user_score": 75, "benchmark_score": 85, "gap": -10, "tips": ["Incorporate stronger action verbs into experience statements."] },
+                "keyword_density":   { "user_score": 80, "benchmark_score": 88, "gap": -8, "tips": ["Align tech keywords closer to the target role requirements."] },
+                "quantification":    { "user_score": quant_rate, "benchmark_score": 75, "gap": quant_rate - 75, "tips": ["Include specific figures/outcomes in at least 60% of experience descriptions."] },
+                "experience_depth":  { "user_score": 82, "benchmark_score": 80, "gap": 2, "tips": ["Experience matches the industry baseline, focus on showing leadership."] },
+                "skills_relevance":  { "user_score": 85, "benchmark_score": 90, "gap": -5, "tips": ["Group and catalog tech skills systematically."] },
+                "structure":         { "user_score": 90, "benchmark_score": 85, "gap": 5, "tips": ["Structure is clean and parses effectively."] }
+            },
+            "top_gap": "Lack of quantified results and impact metrics in core role descriptions.",
+            "strengths_vs_benchmark": ["Structure and clear visual layout of resume sections", "Broad baseline tech skills matching target industry"],
+            "role_specific_advice": [f"For '{role}' in '{industry}', prioritize demonstrating ownership of microservices, cloud deployments, and system performance scaling."]
+        })
+
+    # 10. Career Path Trajectory Predictor (career_predictor.py)
+    elif "senior career strategist" in system_lower or "trajectory" in system_lower:
+        timeline = extract_regex(r"CAREER TIMELINE:\s*([\s\S]*?)(?=SAMPLE ACHIEVEMENTS|$)", user)
+        skills_str = extract_regex(r"SKILLS.* listed\):\s*(.*)", user)
+        skills = [s.strip().lower() for s in skills_str.split(",") if s.strip()] if skills_str else []
+        
+        # Simple seniority inference
+        seniority = "mid"
+        title = "Software Engineer"
+        if timeline:
+            first_role = re.split(r"[\n-]", timeline)[0].lower()
+            if "senior" in first_role:
+                seniority = "senior"
+                title = "Senior Software Engineer"
+            elif "lead" in first_role or "manager" in first_role:
+                seniority = "lead"
+                title = "Lead Engineer"
+            elif "junior" in first_role or "intern" in first_role:
+                seniority = "junior"
+                title = "Junior Software Engineer"
+        
+        years = len(re.findall(r"-\s", timeline)) + 1
+        
+        # Dynamic Next Roles
+        if seniority == "junior":
+            roles = [
+                {
+                    "title": "Mid-level Software Engineer",
+                    "timeline": "6-12 months",
+                    "probability": 90,
+                    "salary_range": "$95k-$115k",
+                    "why_realistic": "Already possess core engineering skills; requires demonstrating independent task completion.",
+                    "required_skills": ["System design basics", "API architecture design"],
+                    "existing_strengths": skills[:4],
+                    "action_plan": ["Lead design of small microservice components", "Complete advanced courses in system architecture", "Contribute actively to code reviews"]
+                },
+                {
+                    "title": "Full-stack Software Developer",
+                    "timeline": "12-18 months",
+                    "probability": 80,
+                    "salary_range": "$100k-$120k",
+                    "why_realistic": "Strong baseline backend skills; only needs front-end frameworks extension.",
+                    "required_skills": ["React/Next.js frameworks", "State management"],
+                    "existing_strengths": skills[:3],
+                    "action_plan": ["Develop 2 front-end demo portals", "Collaborate on user interface enhancements", "Optimize website performance metrics"]
+                }
+            ]
+            stretch = {
+                "title": "Senior Software Architect",
+                "timeline": "3-5 years",
+                "gap_summary": "Extensive experience managing enterprise scale architectures and leading developer teams.",
+                "key_milestones": ["Own end-to-end delivery of a major product module", "Spearhead architectural migration of core systems"]
+            }
+        elif seniority == "mid":
+            roles = [
+                {
+                    "title": "Senior Software Engineer",
+                    "timeline": "12-18 months",
+                    "probability": 85,
+                    "salary_range": "$135k-$160k",
+                    "why_realistic": "Solid technical foundation. Ready to step up by taking ownership of broader architectures.",
+                    "required_skills": ["Cloud architecture (AWS/GCP)", "CI/CD pipeline optimization"],
+                    "existing_strengths": skills[:5],
+                    "action_plan": ["Lead technical architecture design on next project", "Mentor 2 junior developers", "Implement automated profiling and monitoring tools"]
+                },
+                {
+                    "title": "Tech Lead / Scrum Master",
+                    "timeline": "18-24 months",
+                    "probability": 70,
+                    "salary_range": "$145k-$175k",
+                    "why_realistic": "Strong communication and organizational capacity visible in experience description.",
+                    "required_skills": ["Agile project management", "Stakeholder communication"],
+                    "existing_strengths": skills[:4],
+                    "action_plan": ["Organize sprint planning and demo meetings", "Interface directly with product managers", "Complete Scrum Certification"]
+                }
+            ]
+            stretch = {
+                "title": "Principal Engineer / Software Director",
+                "timeline": "3-5 years",
+                "gap_summary": "Demonstrated business alignment, setting engineering strategy, and cross-team leadership.",
+                "key_milestones": ["Deliver a product scaling to 1M+ active users", "Define engineering standards for the organization"]
+            }
+        else: # senior or lead
+            roles = [
+                {
+                    "title": "Lead Software Architect",
+                    "timeline": "12-18 months",
+                    "probability": 80,
+                    "salary_range": "$175k-$210k",
+                    "why_realistic": "Strong experience directing teams. Needs to transition from code delivery to technical strategy.",
+                    "required_skills": ["Distributed systems scaling", "Enterprise cloud governance"],
+                    "existing_strengths": skills[:6],
+                    "action_plan": ["Design migration path to multi-region cloud layout", "Represent engineering team in architecture review boards", "Reduce legacy code debt across microservices"]
+                },
+                {
+                    "title": "Engineering Manager",
+                    "timeline": "18-24 months",
+                    "probability": 75,
+                    "salary_range": "$180k-$220k",
+                    "why_realistic": "Natural progression from team leadership. Focuses on people management and delivery operations.",
+                    "required_skills": ["Budgeting and resource allocation", "Performance management"],
+                    "existing_strengths": skills[:4],
+                    "action_plan": ["Lead recruitment and hiring drives for the team", "Set up quarterly performance review metrics", "Coordinate delivery alignment with business teams"]
+                }
+            ]
+            stretch = {
+                "title": "Chief Technology Officer (CTO)",
+                "timeline": "3-5 years",
+                "gap_summary": "Organizational leadership, company-wide technology strategy, and board reporting experience.",
+                "key_milestones": ["Align technology budget to business revenue goals", "Direct an engineering department of 50+ staff"]
+            }
+            
+        return json.dumps({
+            "current_level": {
+                "title": f"Senior {title}" if seniority == "senior" else (f"Lead {title}" if seniority == "lead" else f"{title}"),
+                "years_experience": years,
+                "seniority": seniority,
+                "confidence": "high"
+            },
+            "next_roles": roles,
+            "stretch_role": stretch,
+            "career_risks": [
+                "Remaining strictly focused on individual code delivery rather than system design",
+                "Technology lock-in by not adapting to modern cloud-native deployment patterns"
+            ],
+            "unique_advantage": "Combines deep technical coding skills with a structured understanding of software delivery cycles."
+        })
+
+    # 11. Salary Estimator (salary_estimator.py)
+    elif "compensation specialist" in system_lower or "salary" in system_lower:
+        role = extract_regex(r"TARGET ROLE:\s*(.*)", user) or "Software Engineer"
+        location = extract_regex(r"TARGET LOCATION:\s*(.*)", user) or "Remote (US)"
+        years = float(extract_regex(r"Approximate years experience:\s*(\d+)", user, "4"))
+        
+        # Base salary tier calculation
+        role_lower = role.lower()
+        base_low, base_mid, base_high = 90000, 115000, 145000
+        
+        if "junior" in role_lower or "intern" in role_lower:
+            base_low, base_mid, base_high = 65000, 80000, 95000
+        elif "senior" in role_lower:
+            base_low, base_mid, base_high = 135000, 155000, 185000
+        elif "lead" in role_lower or "manager" in role_lower or "architect" in role_lower:
+            base_low, base_mid, base_high = 165000, 195000, 235000
+        elif "director" in role_lower or "vp" in role_lower or "cto" in role_lower:
+            base_low, base_mid, base_high = 210000, 260000, 320000
+            
+        # Adjust for years of experience
+        experience_bonus = int(years * 3000)
+        base_low += experience_bonus
+        base_mid += experience_bonus
+        base_high += experience_bonus
+        
+        # Location Multipliers
+        multipliers = {
+            "San Francisco": 1.4,
+            "New York": 1.35,
+            "Austin": 1.15,
+            "Remote (US)": 1.0,
+            "London": 0.85,
+            "Bangalore": 0.45,
+            "Tokyo": 0.8,
+            "Paris": 0.75,
+            "Sydney": 0.9
+        }
+        
+        mult = multipliers.get(location, 1.0)
+        final_low = int(base_low * mult)
+        final_mid = int(base_mid * mult)
+        final_high = int(base_high * mult)
+        
+        return json.dumps({
+            "base_salary": {
+                "low": final_low,
+                "mid": final_mid,
+                "high": final_high,
+                "currency": "USD"
+            },
+            "total_compensation": {
+                "low": int(final_low * 1.08),
+                "mid": int(final_mid * 1.12),
+                "high": int(final_high * 1.25)
+            },
+            "percentile_position": 75 if years > 4 else 55,
+            "location_multipliers": multipliers,
+            "factors_boosting_salary": [
+                "Highly sought framework skills listed in tech stack",
+                "Consistent career stability with no unexplained gaps"
+            ],
+            "factors_limiting_salary": [
+                "Lack of certified cloud architecture credentials",
+                "Limited experience directing enterprise scale cloud projects"
+            ],
+            "negotiation_tips": [
+                "Highlight system performance improvements to secure the higher end of the salary band.",
+                "Leverage competing local market offers since your skill combination matches local demand."
+            ],
+            "market_trend": "rising",
+            "market_trend_reason": f"Strong local and remote hiring demand continues for '{role}' roles possessing cloud and API engineering expertise."
+        })
+
+    # 12. Cultural/Language CV Adapter (cultural_adapter.py)
+    elif "international resume/cv consultant" in system_lower or "norms" in system_lower:
+        country = extract_regex(r"TARGET COUNTRY:\s*(.*)", user) or "United States"
+        name = extract_regex(r"Name:\s*(.*)", user) or "Candidate"
+        summary = extract_regex(r"Summary:\s*(.*)", user) or "Candidate summary."
+        skills_str = extract_regex(r"Skills:\s*(.*)", user)
+        skills = [s.strip() for s in skills_str.split(",") if s.strip()] if skills_str else []
+        
+        # Generate adapted details based on country
+        must_add = []
+        changes = []
+        additional = {}
+        tips = []
+        
+        if country == "Germany":
+            must_add = ["Professional headshot photo", "Exact date and place of birth", "Marital status (optional but common)"]
+            changes = ["Restructured layout to chronological Lebenslauf format", "Grouped skills and added personal details block"]
+            additional = {
+                "Personal Details": f"Name: {name}\nDate of Birth: [Please Add]\nPlace of Birth: [Please Add]\nNationality: [Please Add]",
+                "Interests": "Reading, Technology, Travel"
+            }
+            tips = ["In Germany, a structured, chronological 'Lebenslauf' is expected. Signature and date at the bottom are optional but highly appreciated."]
+            rec_len = "2 pages standard for Lebenslauf"
+        elif country == "Japan":
+            must_add = ["Passport-style photo on top right", "Age and date of birth", "Motivation for applying (Shiboudouki)"]
+            changes = ["Mapped resume details onto standard standardized Rirekisho format", "Reordered education oldest-first"]
+            additional = {
+                "Motivation for Applying (志望動機)": "[Candidate must write 2-3 sentences explaining their interest in this specific company]",
+                "Self-Promotion (自己PR)": summary
+            }
+            tips = ["Japanese resumes (Rirekisho) follow a strict standardized structure. Humble, dedicated phrasing is preferred over self-promotion."]
+            rec_len = "Standard 2-page Rirekisho form"
+        elif country == "United Kingdom":
+            must_add = ["None"]
+            changes = ["Renamed 'Summary' to 'Personal Statement'", "Adjusted experience descriptions to avoid overly aggressive self-promotion"]
+            additional = {
+                "References": "References available on request."
+            }
+            tips = ["UK CVs expect a brief 'Personal Statement' of 3-4 sentences at the top. Avoid buzzwords and focus on solid achievements."]
+            rec_len = "2 pages maximum"
+        elif country == "India":
+            must_add = ["Date of birth", "Permanent address details"]
+            changes = ["Added a dedicated technical projects section", "Placed Career Objective at the header"]
+            additional = {
+                "Career Objective": f"Seeking a challenging role in engineering to utilize my skills in {skills[0] if skills else 'software development'}."
+            }
+            tips = ["Indian resumes commonly list technical projects separately and include objective statements at the top."]
+            rec_len = "2-3 pages"
+        else: # US/Canada default
+            must_add = ["None"]
+            changes = ["Optimized summary for target role metrics", "Organized skills section by technical layers"]
+            tips = ["US/Canada resumes prioritize results-oriented experience and must never include personal details (photo, age, marital status)."]
+            rec_len = "1-2 pages"
+
+        return json.dumps({
+            "adapted_resume": {
+                "contact": { "name": name, "email": "candidate@example.com" },
+                "summary": summary,
+                "experience": [],
+                "education": [],
+                "skills": skills,
+                "certifications": [],
+                "projects": [],
+                "additional_sections": additional
+            },
+            "changes_made": changes,
+            "must_add_manually": must_add,
+            "length_recommendation": rec_len,
+            "format_tips": tips
+        })
+
+    # 13. Gap Counselor & Reframing Advisor (gap_disguiser.py)
+    elif "career counselor" in system_lower or "employment gaps" in system_lower:
+        timeline = extract_regex(r"CAREER TIMELINE:\s*([\s\S]*)", user)
+        gaps = []
+        strategies = []
+        
+        # Always output at least one simulated moderate gap for testing if no obvious gap exists
+        gaps.append({
+            "start": "January 2024",
+            "end": "June 2024",
+            "duration_months": 5,
+            "severity": "moderate",
+            "context_before": "Software Engineer at Tech Corp",
+            "context_after": "Senior Developer at Innovation Labs"
+        })
+        
+        strategies.append({
+            "gap_index": 0,
+            "strategies": [
+                {
+                    "label": "Independent Consulting Reframe",
+                    "narrative": "Independent Software Consultant | Jan 2024 – Jun 2024\n- Partnered with local startups to build and optimize backend API architectures using FastAPI.\n- Successfully resolved database scale challenges and set up robust integration tests.",
+                    "risk_level": "low",
+                    "use_when": "Use this if you engaged in freelance, open-source work, or private consulting during the period."
+                },
+                {
+                    "label": "ProfessionalUpskilling & Training",
+                    "narrative": "Advanced Professional Upskilling | Jan 2024 – Jun 2024\n- Dedicated period to complete certification courses in system design, cloud architecture, and automation tools.\n- Developed and published 3 open-source utility packages on GitHub.",
+                    "risk_level": "low",
+                    "use_when": "Use this if you completed formal certificates, online specializations, or spent time building personal portfolio apps."
+                }
+            ]
+        })
+        
+        return json.dumps({
+            "gaps_detected": gaps,
+            "gap_strategies": strategies,
+            "cover_letter_tip": "Address the gap briefly in your cover letter by framing it as a dedicated period for career alignment, certification, or startup consulting.",
+            "interview_answer": "During that period, I intentionally stepped away from full-time roles to focus on upskilling in distributed systems and executing startup consulting projects. This enabled me to gain deeper expertise in FastAPI and cloud deployments, which I am ready to apply here."
+        })
+
+    # 14. Resume JD Adaptation Tailorer (jd_adapter.py)
+    elif "tailoring resumes to specific job descriptions" in system_lower or "jd_adapter" in system_lower:
+        summary = extract_regex(r"SUMMARY:\s*([\s\S]*?)(?=EXPERIENCE|$)", user)
+        skills_str = extract_regex(r"SKILLS:\s*(.*)", user)
+        skills = [s.strip() for s in skills_str.split(",") if s.strip()] if skills_str else []
+        jd = extract_regex(r"=== JOB DESCRIPTION ===\s*([\s\S]*)", user)
+        
+        # Scan for missing tech keywords in the JD
+        tech_keywords = ["docker", "kubernetes", "aws", "typescript", "fastapi", "postgresql", "react"]
+        added_keywords = []
+        if jd:
+            jd_lower = jd.lower()
+            for kw in tech_keywords:
+                if kw in jd_lower and kw not in [s.lower() for s in skills]:
+                    added_keywords.append(kw.upper())
+                    
+        # Update summary
+        role_target = extract_regex(r"(\w+\s+\w*engineer|\w+\s+\w*developer)", jd, "Software Engineer")
+        rewritten_summary = f"Results-driven software engineer specialized in building scalable architectures. Highly experienced in leveraging technical skills to deliver robust web systems matching the priorities of a {role_target} role."
+        
+        # Update skills list to prioritize added and matched keywords
+        tailored_skills = added_keywords + skills
+        
+        return json.dumps({
+            "contact": { "name": "Candidate", "email": "candidate@example.com" },
+            "summary": rewritten_summary,
+            "experience": [],
+            "education": [],
+            "skills": tailored_skills,
+            "certifications": [],
+            "projects": [],
+            "changes_made": [
+                f"Weaved target keywords ({', '.join(added_keywords)}) into the skills stack to match the Job Description.",
+                "Rewrote the professional summary to align with the core expectations of the role."
+            ],
+            "keywords_added": added_keywords,
+            "match_score_before": 65,
+            "match_score_after": 92
         })
 
     else:
