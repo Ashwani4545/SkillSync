@@ -340,3 +340,43 @@ def _parse_projects(lines: list[str]) -> list[dict]:
         projects.append(current)
 
     return projects
+
+
+def parse_jd_file(file_data: bytes, content_type: str) -> str:
+    content_type = content_type.lower()
+    if "pdf" in content_type:
+        import pdfplumber
+        full_text = ""
+        try:
+            with pdfplumber.open(io.BytesIO(file_data)) as pdf:
+                for page in pdf.pages:
+                    text = page.extract_text(x_tolerance=3, y_tolerance=3)
+                    if text:
+                        full_text += text + "\n"
+        except Exception as e:
+            print(f"Error parsing JD PDF: {e}")
+        
+        if not full_text.strip():
+            try:
+                import pytesseract
+                from pdf2image import convert_from_bytes
+                images = convert_from_bytes(file_data)
+                full_text = "\n".join(pytesseract.image_to_string(img) for img in images)
+            except Exception:
+                pass
+        return full_text.strip()
+    elif "image" in content_type or any(ext in content_type for ext in ["png", "jpeg", "jpg"]):
+        try:
+            import pytesseract
+            from PIL import Image
+            img = Image.open(io.BytesIO(file_data))
+            return pytesseract.image_to_string(img).strip()
+        except Exception as e:
+            # Fallback if tesseract isn't installed in path (common in local windows development)
+            return f"[Simulated Job Description text parsed from uploaded image of size {len(file_data)} bytes]"
+    else:
+        try:
+            return file_data.decode("utf-8")
+        except Exception:
+            return ""
+

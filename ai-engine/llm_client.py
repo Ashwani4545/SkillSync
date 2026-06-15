@@ -767,6 +767,324 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             "match_score_after": 92
         })
 
+        # Update skills list to prioritize added and matched keywords
+        tailored_skills = added_keywords + skills
+        
+        return json.dumps({
+            "contact": { "name": "Candidate", "email": "candidate@example.com" },
+            "summary": rewritten_summary,
+            "experience": [],
+            "education": [],
+            "skills": tailored_skills,
+            "certifications": [],
+            "projects": [],
+            "changes_made": [
+                f"Weaved target keywords ({', '.join(added_keywords)}) into the skills stack to match the Job Description.",
+                "Rewrote the professional summary to align with the core expectations of the role."
+            ],
+            "keywords_added": added_keywords,
+            "match_score_before": 65,
+            "match_score_after": 92
+        })
+
+    # 15. Comprehensive CV Audit (audit_analyzer.py)
+    elif "audit" in system_lower or "comprehensive" in system_lower or "13-point" in system_lower:
+        role = extract_regex(r"TARGET JOB ROLE:\s*(.*)", user) or "Software Engineer"
+        demanded_skills_str = extract_regex(r"DEMANDED SKILLS:\s*(.*)", user)
+        demanded_skills = [s.strip().lower() for s in demanded_skills_str.split(",") if s.strip()] if demanded_skills_str else []
+        
+        skills_str = extract_regex(r"RESUME SKILLS:\s*(.*)", user)
+        skills = [s.strip().lower() for s in skills_str.split(",") if s.strip()] if skills_str else []
+        
+        filename = extract_regex(r"RESUME FILENAME:\s*(.*)", user) or "Resume.pdf"
+        exp_content = extract_regex(r"RESUME EXPERIENCE:\s*([\s\S]*?)(?=RESUME PROJECTS|RESUME EDUCATION|$)", user).lower()
+        
+        # 1. Parsing Check
+        parsing_details = "Successfully parsed candidate header, skills, experience, and education sections."
+        
+        # 2. Spelling & Grammar check
+        spelling_errors = []
+        if "devloper" in user_lower:
+            spelling_errors.append("Found spelling mistake: 'devloper'. Should be 'developer'.")
+        if "manger" in user_lower:
+            spelling_errors.append("Found spelling mistake: 'manger'. Should be 'manager'.")
+        if "resposible" in user_lower:
+            spelling_errors.append("Found spelling mistake: 'resposible'. Should be 'responsible'.")
+            
+        if not spelling_errors:
+            # Add a generic minor styling or grammar suggestion to show correctness
+            spelling_errors.append("Consider replacing passive phrasing 'Responsible for building' with active action verb 'Architected'.")
+            
+        spelling_status = "warning" if len(spelling_errors) > 0 else "pass"
+        
+        # 3. Quantify Impact check
+        # Count occurrences of numbers/percentages in experience bullets
+        metrics_count = len(re.findall(r"\b\d+%\b|\$\b\d+|\b\d+\s*(?:percent|million|billion|users|customers|hours|days|weeks|months|years|speedup)\b", exp_content))
+        total_bullets = len(re.findall(r"•|▪", exp_content)) or 5
+        quantified_pct = min(100, int((metrics_count / max(1, total_bullets)) * 100))
+        
+        quant_issues = []
+        quant_tips = []
+        if quantified_pct < 50:
+            quant_status = "warning"
+            quant_issues.append(f"Only {quantified_pct}% of your experience descriptions contain quantifiable achievements. Recruiters prioritize metrics over tasks.")
+            quant_tips.append("Rephrase your bullet points to specify exact numbers (e.g., 'boosting efficiency by 25%' or 'managing a budget of $50k').")
+        else:
+            quant_status = "pass"
+            quant_tips.append("Your resume shows strong impact metrics. Keep using specific percentages and figures.")
+            
+        # 4. Word Repetitions check
+        repetitions_found = []
+        bullet_start_reps = []
+        
+        common_words = ["developed", "managed", "worked", "helped", "assisted", "responsible"]
+        for w in common_words:
+            w_count = len(re.findall(rf"\b{re.escape(w)}\b", exp_content))
+            if w_count > 2:
+                repetitions_found.append({
+                    "word": w,
+                    "count": w_count,
+                    "severity": "medium" if w_count > 4 else "low"
+                })
+                
+        # Check start of bullet repetitions
+        start_reps_count = len(re.findall(r"•\s*responsible\s+for", exp_content))
+        if start_reps_count > 1:
+            bullet_start_reps.append({
+                "phrase": "Responsible for",
+                "count": start_reps_count
+            })
+            
+        rep_status = "warning" if (len(repetitions_found) > 1 or bullet_start_reps) else "pass"
+        
+        # 5. Bullets point and Consistency check
+        # Check if all bullets end with periods or not
+        ended_with_period = len(re.findall(r"•.*?\.\s*(?=\n|•|▪|$)", exp_content))
+        total_exp_bullets = len(re.findall(r"•|▪", exp_content)) or 5
+        bullets_consistent = (ended_with_period == 0 or ended_with_period == total_exp_bullets)
+        
+        bullets_issues = []
+        if not bullets_consistent:
+            bullets_issues.append("Punctuation mismatch: Some bullets end with periods and some do not. Standardize all to end with a period or exclude them completely.")
+        
+        # Check for bullet length
+        very_long_bullets = len(re.findall(r"•\s*[^•\n]{150,}", exp_content))
+        if very_long_bullets > 0:
+            bullets_issues.append(f"Found {very_long_bullets} excessively long bullet point(s) (over 150 characters). Split them or make them concise.")
+            
+        bullet_status = "warning" if bullets_issues else "pass"
+        
+        # 6. Essential Sections check
+        essential_list = ["education", "experience", "skills", "summary"]
+        missing_sections = []
+        for sect in essential_list:
+            if sect not in user_lower:
+                missing_sections.append(sect.capitalize())
+                
+        essential_status = "fail" if missing_sections else "pass"
+        sections_issues = []
+        if missing_sections:
+            sections_issues.append(f"Missing essential section(s): {', '.join(missing_sections)}. Add these to conform to standard CV practices.")
+            
+        # 7. Contact Information check
+        email_present = "email" in user_lower or "@" in user_lower
+        phone_present = "phone" in user_lower or re.search(r"\d{3}-\d{3}", user_lower) is not None
+        location_present = "location" in user_lower or "address" in user_lower or "san francisco" in user_lower or "new york" in user_lower or "austin" in user_lower or "bangalore" in user_lower or "london" in user_lower or "remote" in user_lower
+        linkedin_present = "linkedin.com" in user_lower
+        github_present = "github.com" in user_lower
+        
+        contact_issues = []
+        if not email_present: contact_issues.append("Missing email address.")
+        if not phone_present: contact_issues.append("Missing phone number.")
+        if not linkedin_present: contact_issues.append("LinkedIn profile link not found in header.")
+        if not github_present: contact_issues.append("GitHub profile link not found in header.")
+        
+        contact_status = "warning" if len(contact_issues) > 0 else "pass"
+        
+        # 8. Section Orders check
+        order_list = ["contact", "summary", "experience", "education", "skills"]
+        ordering_issues = []
+        # Simulate check
+        if "education" in user_lower and "experience" in user_lower:
+            edu_idx = user_lower.find("education")
+            exp_idx = user_lower.find("experience")
+            if edu_idx < exp_idx and "student" not in user_lower and "graduate" not in user_lower:
+                ordering_issues.append("Education section is listed before Work Experience. For professional CVs, place Work Experience above Education.")
+                
+        ordering_status = "warning" if ordering_issues else "pass"
+        
+        # 9. Design check
+        word_count = len(user.split())
+        page_est = max(1, word_count // 450)
+        design_issues = []
+        if word_count > 800:
+            design_issues.append("Word count exceeds 800 words, which may lead to a cluttered 2-page or bloated 1-page layout.")
+        elif word_count < 150:
+            design_issues.append("CV is too sparse (under 150 words). Add more details to your projects and roles.")
+            
+        design_status = "warning" if design_issues else "pass"
+        
+        # 10. Email address, header links, and file name
+        email_valid = email_present and "@" in user_lower and "." in user_lower
+        filename_valid = "resume" in filename.lower() and not any(bad in filename.lower() for bad in ["draft", "copy", "v1", "v2", "final", "edit"])
+        
+        ehf_issues = []
+        if not email_valid:
+            ehf_issues.append("Email format seems incomplete or invalid.")
+        if not filename_valid:
+            ehf_issues.append(f"The file name '{filename}' contains unprofessional keywords (e.g. 'draft', 'v1', 'v2'). Rename it to 'Firstname_Lastname_Resume.pdf'.")
+            
+        ehf_status = "warning" if ehf_issues else "pass"
+        
+        # 11. Dates and Links formatting in headings
+        date_format_consistent = True
+        headings_have_links = ("github.com" in user_lower or "http" in user_lower)
+        
+        dlh_issues = []
+        if not headings_have_links:
+            dlh_issues.append("Your project or certification headings lack clickable source links. Add GitHub, Behance or live deployment links.")
+            
+        dlh_status = "warning" if dlh_issues else "pass"
+        
+        # 12. Credibility Check (skills vs experience)
+        cred_issues = []
+        matched_skills = []
+        for sk in skills[:5]:
+            if sk in exp_content:
+                matched_skills.append({
+                    "skill": sk.capitalize(),
+                    "evidenced_in": "Experience bullet points"
+                })
+            else:
+                cred_issues.append(f"Skill '{sk.capitalize()}' is listed in your skills block but not supported by any work experience detail.")
+                
+        cred_status = "warning" if cred_issues else "pass"
+        
+        # 13. Risk analysis, Gaps, Benchmarking, Career progression
+        gaps = []
+        # Check timeline gaps
+        if "january 2024" in user_lower or "2024" in user_lower:
+            gaps.append({
+                "start": "January 2024",
+                "end": "June 2024",
+                "duration_months": 5,
+                "severity": "moderate"
+            })
+            
+        # Career progression check
+        progression = "clear_trajectory"
+        if "junior" in user_lower and "senior" in user_lower:
+            progression = "clear_trajectory"
+        elif "junior" in user_lower and "intern" in user_lower:
+            progression = "clear_trajectory"
+        else:
+            progression = "unclear"
+            
+        # Leadership signals
+        leaderships = []
+        for lead_term in ["spearheaded", "led", "managed", "architected", "directed", "launched"]:
+            if lead_term in user_lower:
+                leaderships.append(lead_term.capitalize())
+                
+        # Ageism dates check (dates prior to 2010)
+        ageism_risk = "low"
+        old_dates = re.findall(r"\b(19\d{2}|200[0-9])\b", user_lower)
+        if old_dates:
+            ageism_risk = "medium"
+            
+        risk_issues = []
+        if ageism_risk == "medium":
+            risk_issues.append("Contains history going back older than 15 years. Consider removing or summarizing outdated experience to prevent age bias.")
+        if gaps:
+            risk_issues.append("Employment gap detected (Jan 2024 - Jun 2024). Use the Gap Advisor tab to reframe this period.")
+            
+        score = max(55, min(98, 85 - len(spelling_errors) * 4 - len(contact_issues) * 5 - len(missing_sections) * 8))
+        
+        return json.dumps({
+            "score": score,
+            "parsing": {
+                "status": "pass",
+                "details": parsing_details
+            },
+            "spelling_grammar": {
+                "status": spelling_status,
+                "error_count": len(spelling_errors) if spelling_status == "warning" else 0,
+                "errors": spelling_errors
+            },
+            "quantify_impact": {
+                "status": quant_status,
+                "quantified_percentage": quantified_pct,
+                "issues": quant_issues,
+                "tips": quant_tips
+            },
+            "repetitions": {
+                "status": rep_status,
+                "repeated_words": repetitions_found,
+                "bullet_start_repetitions": bullet_start_reps
+            },
+            "bullets_consistency": {
+                "status": bullet_status,
+                "punctuation_consistent": bullets_consistent,
+                "length_consistent": very_long_bullets == 0,
+                "issues": bullets_issues
+            },
+            "essential_sections": {
+                "status": essential_status,
+                "present": [s for s in essential_list if s in user_lower],
+                "missing": [s.capitalize() for s in essential_list if s not in user_lower],
+                "issues": sections_issues
+            },
+            "contact_info": {
+                "status": contact_status,
+                "email_present": email_present,
+                "phone_present": phone_present,
+                "location_present": location_present,
+                "linkedin_present": linkedin_present,
+                "github_present": github_present,
+                "issues": contact_issues
+            },
+            "section_ordering": {
+                "status": ordering_status,
+                "order": ["contact", "summary", "experience", "education", "skills"] if not ordering_issues else ["contact", "education", "experience", "skills"],
+                "issues": ordering_issues
+            },
+            "design_check": {
+                "status": design_status,
+                "word_count": word_count,
+                "page_length_estimate": page_est,
+                "issues": design_issues
+            },
+            "email_header_filename": {
+                "status": ehf_status,
+                "email_valid": email_valid,
+                "header_links_clickable": linkedin_present or github_present,
+                "filename_valid": filename_valid,
+                "issues": ehf_issues
+            },
+            "dates_links_headings": {
+                "status": dlh_status,
+                "date_format_consistent": date_format_consistent,
+                "headings_have_links": headings_have_links,
+                "issues": dlh_issues
+            },
+            "credibility_verification": {
+                "status": cred_status,
+                "issues": cred_issues,
+                "matched_skills": matched_skills
+            },
+            "risk_benchmarking_gaps": {
+                "interview_risk": "low" if score >= 80 else ("medium" if score >= 65 else "high"),
+                "peer_benchmarking_percentile": score - 5,
+                "linkedin_match_status": "matched" if linkedin_present else "missing",
+                "ageism_date_bias_risk": ageism_risk,
+                "employment_gaps": gaps,
+                "career_progression": progression,
+                "skill_evidence_score": quantified_pct,
+                "leadership_signals": leaderships,
+                "issues": risk_issues
+            }
+        })
+
     else:
         return '{"score": 80, "status": "success", "message": "Development mock response"}'
 

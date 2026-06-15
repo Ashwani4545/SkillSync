@@ -10,6 +10,7 @@ import { BulletRewriter } from "@/components/resume/BulletRewriter";
 import { ToneReport } from "@/components/analysis/ToneReport";
 import { InterviewQuestions } from "@/components/analysis/InterviewQuestions";
 import { SkillAudit } from "@/components/analysis/SkillAudit";
+import { DetailedAudit } from "@/components/analysis/DetailedAudit";
 
 const POLL_INTERVAL = 2500; // ms
 
@@ -82,6 +83,7 @@ export default function ResultPage() {
 
   const TABS = [
     { id: "overview",   label: "Overview" },
+    { id: "audit",      label: "13-Point Audit" },
     { id: "personas",   label: "Persona view",       locked: !hasProFeatures },
     { id: "tone",       label: "Tone report",         locked: !hasProFeatures },
     { id: "bullets",    label: "Bullet rewriter" },
@@ -159,6 +161,7 @@ export default function ResultPage() {
       {/* ── Tab content ── */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
         {activeTab === "overview"  && <OverviewTab r={r} />}
+        {activeTab === "audit"     && <DetailedAudit data={r.audit} />}
         {activeTab === "personas"  && hasProFeatures && <PersonaView data={r.personas} />}
         {activeTab === "tone"      && hasProFeatures && <ToneReport data={r.tone} />}
         {activeTab === "bullets"   && <BulletRewriter data={r.bullets} />}

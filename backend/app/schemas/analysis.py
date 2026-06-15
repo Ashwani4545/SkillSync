@@ -7,6 +7,8 @@ import uuid
 class AnalysisStartRequest(BaseModel):
     resume_id: uuid.UUID
     jd_text: Optional[str] = None
+    target_role: Optional[str] = None
+    demanded_skills: Optional[str] = None
 
 
 class AnalysisOut(BaseModel):

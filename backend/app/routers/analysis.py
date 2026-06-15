@@ -63,6 +63,8 @@ def start_analysis(
         resume_json=resume.parsed_json,
         jd_text=body.jd_text,
         user_plan=current_user.plan.value,
+        target_role=body.target_role,
+        demanded_skills=body.demanded_skills,
     )
 
     return analysis

@@ -1,12 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Wand2, ArrowRight, Loader2, CheckCircle, Copy, ChevronDown } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
 const POLL_MS = 2500;
 
-export default function JDAdapterPage() {
+function JDAdapterContent() {
   const searchParams = useSearchParams();
   const [resumes, setResumes]     = useState<any[]>([]);
   const [resumeId, setResumeId]   = useState(searchParams.get("resume_id") ?? "");
@@ -329,5 +329,17 @@ function Header() {
         <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "var(--blue-50)", color: "var(--blue-700)" }}>PRO</span>
       </div>
     </div>
+  );
+}
+
+export default function JDAdapterPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--gray-50)", color: "var(--gray-400)" }}>
+        Loading adapter...
+      </div>
+    }>
+      <JDAdapterContent />
+    </Suspense>
   );
 }

@@ -77,7 +77,7 @@ export default function RecruiterPage() {
 
   const exportCSV = () => {
     const rows = [["Name","File","Score","Analysis ID","Uploaded"]];
-    candidates.forEach(c => rows.push([c.name||"","", c.score??""," c.analysis_id||"",c.uploaded_at]));
+    candidates.forEach(c => rows.push([c.name||"","", c.score??"", c.analysis_id||"", c.uploaded_at]));
     const csv = rows.map(r => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url  = URL.createObjectURL(blob);

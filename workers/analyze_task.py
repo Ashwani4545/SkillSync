@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 @celery_app.task(bind=True, max_retries=2, default_retry_delay=10)
-def run_analysis(self, analysis_id: str, resume_json: dict, jd_text: str | None, user_plan: str):
+def run_analysis(self, analysis_id: str, resume_json: dict, jd_text: str | None, user_plan: str, target_role: str | None = None, demanded_skills: str | None = None):
     from app.db.session import SessionLocal
     from app.db.models import Analysis, AnalysisStatusEnum
     from ai_engine.pipeline import run_full_pipeline
@@ -37,7 +37,14 @@ def run_analysis(self, analysis_id: str, resume_json: dict, jd_text: str | None,
             resume_json=resume_json,
             jd_text=jd_text,
             user_plan=user_plan,
+            target_role=target_role,
+            demanded_skills=demanded_skills,
         )
+
+        results["metadata"] = {
+            "target_role": target_role,
+            "demanded_skills": demanded_skills,
+        }
 
         analysis.results_json = results
         analysis.status = AnalysisStatusEnum.done

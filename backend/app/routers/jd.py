@@ -4,7 +4,7 @@ POST /api/v1/jd/adapt   Tailor resume to a job description (async)
 GET  /api/v1/jd/{id}    Fetch a saved JD match result
 GET  /api/v1/jd/resume/{resume_id}  List all JD adaptations for a resume
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
@@ -14,9 +14,44 @@ from app.db.session import get_db
 from app.db.models import Resume, JDMatch, User
 from app.middleware.auth import get_current_user, require_pro
 from app.schemas.jd import JDAdaptRequest, JDMatchOut, JDMatchListOut
+from app.services import parser_service
 from workers.jd_task import run_jd_adaptation
 
 router = APIRouter()
+
+
+@router.post("/extract-text", status_code=status.HTTP_200_OK)
+async def extract_jd_text(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Extract text from an uploaded Job Description (PDF, PNG, JPG, JPEG, TXT).
+    """
+    allowed_types = [
+        "application/pdf",
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "text/plain",
+    ]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{file.content_type}'. Upload a PDF, Image, or TXT file.",
+        )
+
+    file_data = await file.read()
+    try:
+        extracted = parser_service.parse_jd_file(file_data, file.content_type)
+    except Exception as e:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Could not parse job description: {str(e)}",
+        )
+
+    return {"text": extracted}
+
 
 
 @router.post("/adapt", response_model=JDMatchOut, status_code=status.HTTP_202_ACCEPTED)
