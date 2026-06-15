@@ -72,7 +72,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
   const [active, setActive] = useState("parsing");
   if (!data) return <EmptyState />;
 
-  const sectionData = active === "risk_benchmarking_gaps" ? data.risk_benchmarking_gaps : (data[active as keyof AuditData] as AuditSection);
+  const sectionData = (active === "risk_benchmarking_gaps" ? data.risk_benchmarking_gaps : (data[active as keyof AuditData] as AuditSection)) || ({} as any);
   const checkpoint = CHECKPOINTS.find((c) => c.id === active)!;
 
   // Determine section status for risk dimension specially
@@ -178,7 +178,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
                 </p>
                 {sectionData.errors?.length > 0 ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
-                    {sectionData.errors.map((err: string, i: number) => (
+                    {sectionData.errors?.map((err: string, i: number) => (
                       <div key={i} style={{ display: "flex", gap: 8, background: "var(--coral-50)", color: "var(--coral-800)", padding: 12, borderRadius: 8, fontSize: 13, border: "1px solid var(--coral-100)" }}>
                         <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 1 }} />
                         <span>{err}</span>
@@ -213,7 +213,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
                 {sectionData.issues?.length > 0 && (
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gray-400)", marginBottom: 8 }}>ISSUES DETECTED</div>
-                    {sectionData.issues.map((issue: string, i: number) => (
+                    {sectionData.issues?.map((issue: string, i: number) => (
                       <div key={i} style={{ display: "flex", gap: 6, fontSize: 13, color: "var(--coral-700)", marginBottom: 6 }}>
                         • {issue}
                       </div>
@@ -223,7 +223,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
                 {sectionData.tips?.length > 0 && (
                   <div style={{ background: "var(--teal-50)", padding: 16, borderRadius: 12 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "var(--teal-800)", marginBottom: 6 }}>HOW TO IMPROVE</div>
-                    {sectionData.tips.map((tip: string, i: number) => (
+                    {sectionData.tips?.map((tip: string, i: number) => (
                       <div key={i} style={{ fontSize: 13, color: "var(--teal-800)", lineHeight: 1.4 }}>{tip}</div>
                     ))}
                   </div>
@@ -243,7 +243,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
                     <h4 style={{ fontSize: 13, margin: "0 0 10px", color: "var(--gray-500)", textTransform: "uppercase" }}>Overused Jargon</h4>
                     {sectionData.repeated_words?.length > 0 ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        {sectionData.repeated_words.map((rw: any, i: number) => (
+                        {sectionData.repeated_words?.map((rw: any, i: number) => (
                           <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, paddingBottom: 4, borderBottom: "1px solid var(--gray-100)" }}>
                             <span style={{ fontWeight: 600, color: "var(--gray-700)" }}>"{rw.word}"</span>
                             <span style={{ color: rw.severity === "high" ? "var(--coral-600)" : "var(--gray-500)" }}>Used {rw.count}x</span>
@@ -260,7 +260,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
                     <h4 style={{ fontSize: 13, margin: "0 0 10px", color: "var(--gray-500)", textTransform: "uppercase" }}>Repetitive Bullet Starters</h4>
                     {sectionData.bullet_start_repetitions?.length > 0 ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        {sectionData.bullet_start_repetitions.map((bs: any, i: number) => (
+                        {sectionData.bullet_start_repetitions?.map((bs: any, i: number) => (
                           <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, paddingBottom: 4, borderBottom: "1px solid var(--gray-100)" }}>
                             <span style={{ fontWeight: 600, color: "var(--gray-700)" }}>"{bs.phrase}..."</span>
                             <span style={{ color: "var(--gray-500)" }}>Used {bs.count}x</span>
@@ -300,7 +300,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
                 {sectionData.issues?.length > 0 && (
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gray-400)", marginBottom: 8 }}>ISSUES</div>
-                    {sectionData.issues.map((iss: string, i: number) => (
+                    {sectionData.issues?.map((iss: string, i: number) => (
                       <div key={i} style={{ display: "flex", gap: 8, background: "var(--gray-50)", padding: 10, borderRadius: 8, fontSize: 13, color: "var(--gray-700)", marginBottom: 6 }}>
                         <AlertTriangle size={14} color="var(--amber-500)" style={{ flexShrink: 0, marginTop: 2 }} />
                         <span>{iss}</span>
@@ -329,7 +329,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
                     <h4 style={{ fontSize: 13, margin: "0 0 10px", color: "var(--coral-700)", fontWeight: 700 }}>Missing Sections</h4>
                     {sectionData.missing?.length > 0 ? (
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                        {sectionData.missing.map((s: string, i: number) => (
+                        {sectionData.missing?.map((s: string, i: number) => (
                           <span key={i} style={{ fontSize: 12, background: "var(--coral-50)", color: "var(--coral-700)", padding: "3px 8px", borderRadius: 4 }}>{s.toUpperCase()}</span>
                         ))}
                       </div>
@@ -365,7 +365,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
                 {sectionData.issues?.length > 0 && (
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gray-400)", marginBottom: 6 }}>CONTACT ISSUES</div>
-                    {sectionData.issues.map((iss: string, i: number) => (
+                    {sectionData.issues?.map((iss: string, i: number) => (
                       <div key={i} style={{ fontSize: 13, color: "var(--coral-700)", marginBottom: 4 }}>• {iss}</div>
                     ))}
                   </div>
@@ -470,7 +470,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
                   <div style={{ marginBottom: 16, marginTop: 16 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "var(--teal-700)", marginBottom: 8 }}>EVIDENCED SKILLS MATCHES</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      {sectionData.matched_skills.map((ms: any, i: number) => (
+                      {sectionData.matched_skills?.map((ms: any, i: number) => (
                         <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "8px 12px", background: "var(--teal-50)20", border: "1px solid var(--teal-100)", borderRadius: 6 }}>
                           <span style={{ fontWeight: 600, color: "var(--teal-800)" }}>{ms.skill}</span>
                           <span style={{ color: "var(--gray-500)" }}>evidenced in: {ms.evidenced_in}</span>
@@ -482,7 +482,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
                 {sectionData.issues?.length > 0 && (
                   <div style={{ marginTop: 16 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "var(--coral-700)", marginBottom: 8 }}>CREDIBILITY WARNINGS</div>
-                    {sectionData.issues.map((iss: string, i: number) => (
+                    {sectionData.issues?.map((iss: string, i: number) => (
                       <div key={i} style={{ display: "flex", gap: 8, background: "var(--coral-50)", color: "var(--coral-800)", padding: 10, borderRadius: 8, fontSize: 13, marginBottom: 6 }}>
                         <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 2 }} />
                         <span>{iss}</span>
@@ -518,7 +518,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
                 {sectionData.employment_gaps?.length > 0 && (
                   <div style={{ border: "1px solid var(--gray-200)", borderRadius: 12, padding: 16, marginBottom: 16 }}>
                     <h4 style={{ fontSize: 13, margin: "0 0 10px", color: "var(--coral-700)", textTransform: "uppercase" }}>Timeline Gaps Detected</h4>
-                    {sectionData.employment_gaps.map((gap: any, i: number) => (
+                    {sectionData.employment_gaps?.map((gap: any, i: number) => (
                       <div key={i} style={{ fontSize: 13, color: "var(--gray-700)" }}>
                         ⚠ Gap of <strong>{gap.duration_months} months</strong> ({gap.start} - {gap.end}).
                       </div>
@@ -530,7 +530,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
                 {sectionData.issues?.length > 0 && (
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gray-400)", marginBottom: 8 }}>RISK DETAILS</div>
-                    {sectionData.issues.map((iss: string, i: number) => (
+                    {sectionData.issues?.map((iss: string, i: number) => (
                       <div key={i} style={{ display: "flex", gap: 8, background: "var(--gray-50)", padding: 10, borderRadius: 8, fontSize: 13, color: "var(--gray-700)", marginBottom: 6 }}>
                         <AlertTriangle size={14} color="var(--amber-500)" style={{ flexShrink: 0, marginTop: 2 }} />
                         <span>{iss}</span>
