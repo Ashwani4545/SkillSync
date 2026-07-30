@@ -8,7 +8,12 @@ from ai_engine.llm_client import call_claude
 from ai_engine.prompts.ats_prompt import ATS_SYSTEM_PROMPT, build_ats_user_prompt
 
 
-def analyze_ats(resume_json: dict, jd_text: str | None = None) -> dict:
+def analyze_ats(
+    resume_json: dict,
+    jd_text: str | None = None,
+    target_role: str | None = None,
+    demanded_skills: str | None = None,
+) -> dict:
     """
     Returns:
     {
@@ -20,12 +25,17 @@ def analyze_ats(resume_json: dict, jd_text: str | None = None) -> dict:
       "improvements": ["Add 3–5 missing keywords naturally into experience bullets"]
     }
     """
-    user_prompt = build_ats_user_prompt(resume_json, jd_text)
+    user_prompt = build_ats_user_prompt(
+        resume_json=resume_json,
+        jd_text=jd_text,
+        target_role=target_role,
+        demanded_skills=demanded_skills,
+    )
 
     response_text = call_claude(
         system=ATS_SYSTEM_PROMPT,
         user=user_prompt,
-        max_tokens=1000,
+        max_tokens=1200,
     )
 
     try:

@@ -13,7 +13,7 @@ from ai_engine.generators.interview_predictor import predict_interview_questions
 
 def run_full_pipeline(resume_json: dict, jd_text=None, user_plan="free", target_role=None, demanded_skills=None) -> dict:
     results: dict = {}
-    results["ats"]      = analyze_ats(resume_json, jd_text)
+    results["ats"]      = analyze_ats(resume_json, jd_text, target_role, demanded_skills)
     results["sections"] = grade_sections(resume_json)
     results["bullets"]  = rewrite_bullets(resume_json)
     results["audit"]    = analyze_audit(resume_json, jd_text, target_role, demanded_skills)

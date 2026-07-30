@@ -31,70 +31,138 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
 
     # 1. ATS compatibility (ats_analyzer.py)
     if "ats" in system_lower or "compatibility" in system_lower:
+        contact_block = extract_regex(r"CANDIDATE CONTACT DETAILS:\s*([\s\S]*?)(?=RESUME SUMMARY|RESUME SKILLS|$)", user)
+        summary = extract_regex(r"RESUME SUMMARY:\s*([\s\S]*?)(?=RESUME SKILLS|RESUME CERTIFICATIONS|$)", user)
         skills_str = extract_regex(r"RESUME SKILLS:\s*(.*)", user)
         skills = [s.strip().lower() for s in skills_str.split(",") if s.strip()] if skills_str else []
-        jd = extract_regex(r"JOB DESCRIPTION:\s*([\s\S]*)", user)
-        
-        tech_keywords = [
-            "python", "javascript", "react", "fastapi", "postgresql", "docker", "kubernetes", 
-            "typescript", "aws", "git", "ci/cd", "html", "css", "nodejs", "express", "django", 
-            "flask", "java", "c++", "ruby", "go", "rust", "scala", "mongodb", "mysql", "redis", 
-            "terraform", "ansible", "graphql", "rest api", "sql", "scrum", "agile", "next.js"
+        exp_context = extract_regex(r"RESUME EXPERIENCE:\s*([\s\S]*?)(?=RESUME PROJECTS|RESUME EDUCATION|$)", user)
+        proj_context = extract_regex(r"RESUME PROJECTS:\s*([\s\S]*?)(?=RESUME EDUCATION|RESUME SECTIONS|$)", user)
+        edu_context = extract_regex(r"RESUME EDUCATION:\s*([\s\S]*?)(?=RESUME SECTIONS|$)", user)
+        cert_str = extract_regex(r"RESUME CERTIFICATIONS:\s*(.*)", user)
+        jd = extract_regex(r"JOB DESCRIPTION:\s*([\s\S]*?)(?=Compare the resume|$)", user)
+        target_role = extract_regex(r"TARGET JOB ROLE:\s*(.*)", user)
+
+        full_resume_text = f"{contact_block}\n{summary}\n{skills_str}\n{exp_context}\n{proj_context}\n{edu_context}\n{cert_str}".lower()
+
+        # Format issue checking based on actual contact fields and sections
+        format_issues = []
+        linkedin_val = extract_regex(r"-\s*LinkedIn:\s*(.*)", contact_block)
+        github_val = extract_regex(r"-\s*GitHub:\s*(.*)", contact_block)
+        email_val = extract_regex(r"-\s*Email:\s*(.*)", contact_block)
+        phone_val = extract_regex(r"-\s*Phone:\s*(.*)", contact_block)
+        loc_val = extract_regex(r"-\s*Location:\s*(.*)", contact_block)
+
+        if not linkedin_val and "linkedin.com" not in full_resume_text:
+            format_issues.append("Missing LinkedIn profile link in header.")
+        if not github_val and "github.com" not in full_resume_text and "portfolio" not in full_resume_text:
+            format_issues.append("Missing GitHub or portfolio link in header.")
+        if not email_val and "@" not in full_resume_text:
+            format_issues.append("Missing email contact address in header.")
+        if not phone_val and not re.search(r"\d{7,}", full_resume_text):
+            format_issues.append("Missing contact phone number in header.")
+        if not loc_val:
+            format_issues.append("Missing city/location in header.")
+        if len(skills) < 4:
+            format_issues.append("Very brief skills section — expand on core technical competencies.")
+        if len(summary.strip()) < 20:
+            format_issues.append("Missing or weak professional summary section.")
+
+        # Keywords dictionary for normalization & special terms handling
+        KNOWN_TECH_TERMS = [
+            "python", "javascript", "typescript", "react", "react.js", "fastapi", "postgresql", 
+            "docker", "kubernetes", "aws", "git", "ci/cd", "html", "css", "nodejs", "node.js", 
+            "express", "django", "flask", "java", "c++", "c#", ".net", "ruby", "go", "golang", 
+            "rust", "scala", "mongodb", "mysql", "redis", "terraform", "ansible", "graphql", 
+            "rest api", "sql", "scrum", "agile", "next.js", "vue", "vue.js", "angular", 
+            "tailwind", "microservices", "unit testing", "system design", "machine learning", 
+            "pytorch", "tensorflow", "ci/cd pipelines"
         ]
-        
+
+        def check_kw_in_text(kw: str, text: str) -> bool:
+            kw_clean = kw.strip().lower()
+            if not kw_clean:
+                return False
+            if kw_clean in ["c++", "c#", ".net", "ci/cd", "node.js", "react.js", "vue.js", "rest api"]:
+                return kw_clean in text
+            pattern = rf"(?:\b|\_){re.escape(kw_clean)}(?:\b|\_)"
+            return bool(re.search(pattern, text))
+
         found = []
         missing = []
+
         if jd:
             jd_lower = jd.lower()
-            exp_context = extract_regex(r"RESUME EXPERIENCE:\s*([\s\S]*?)(?=RESUME SECTIONS|JOB DESCRIPTION|$)", user).lower()
+            # Extract target keywords from JD
+            jd_keywords = set()
+            for kw in KNOWN_TECH_TERMS:
+                if check_kw_in_text(kw, jd_lower):
+                    jd_keywords.add(kw)
             
-            for kw in tech_keywords:
-                if re.search(rf"\b{re.escape(kw)}\b", jd_lower):
-                    has_it = False
-                    if kw in skills:
-                        has_it = True
-                    elif re.search(rf"\b{re.escape(kw)}\b", exp_context):
-                        has_it = True
-                    
-                    if has_it:
-                        found.append(kw)
-                    else:
-                        missing.append(kw)
-        else:
-            found = [s for s in skills if s in tech_keywords]
-            if not found:
-                found = skills[:4]
-            missing = [k for k in ["docker", "kubernetes", "aws", "ci/cd"] if k not in skills]
+            # Also extract significant technical words from JD (4+ letters)
+            jd_words = re.findall(r"\b[a-z]{4,}\b", jd_lower)
+            stopwords = {
+                "with", "from", "have", "their", "required", "years", "experience", "ability", 
+                "work", "team", "strong", "candidate", "looking", "role", "building", "deliver", 
+                "must", "knowledge", "working", "preferred", "design", "develop", "support",
+                "solutions", "using", "environment", "business", "technical", "skills"
+            }
+            word_counts = {}
+            for w in jd_words:
+                if w not in stopwords:
+                    word_counts[w] = word_counts.get(w, 0) + 1
+            
+            # Top repeated domain terms in JD
+            top_jd_words = [w for w, c in sorted(word_counts.items(), key=lambda x: x[1], reverse=True)[:10]]
+            for w in top_jd_words:
+                jd_keywords.add(w)
 
-        score = 80
-        if jd:
-            total_jd_kws = len(found) + len(missing)
-            if total_jd_kws > 0:
-                score = int(50 + 50 * (len(found) / total_jd_kws))
+            for kw in sorted(jd_keywords):
+                if check_kw_in_text(kw, full_resume_text):
+                    found.append(kw)
+                else:
+                    missing.append(kw)
         else:
-            score = min(100, max(50, 70 + len(skills) * 2))
-        
-        format_issues = []
-        if len(skills) < 5:
-            format_issues.append("Very brief skills list — expand on your core competencies.")
-        if "github" not in user_lower:
-            format_issues.append("Missing GitHub profile link in header.")
-        if "linkedin" not in user_lower:
-            format_issues.append("Missing LinkedIn profile link in header.")
+            # Without JD: match skills present vs target role expectations
+            found = [s for s in skills if check_kw_in_text(s, full_resume_text)]
+            if not found:
+                found = [s for s in skills[:5]]
             
+            # Recommend common complementary skills based on candidate stack
+            potential_missing = []
+            if any(k in full_resume_text for k in ["python", "fastapi", "django", "flask"]):
+                potential_missing.extend(["unit testing", "postgresql", "git", "docker"])
+            elif any(k in full_resume_text for k in ["javascript", "react", "typescript", "node"]):
+                potential_missing.extend(["typescript", "next.js", "git", "rest api"])
+            else:
+                potential_missing.extend(["git", "ci/cd", "agile"])
+
+            missing = [k for k in potential_missing if not check_kw_in_text(k, full_resume_text)]
+
+        total_kws = len(found) + len(missing)
+        if jd and total_kws > 0:
+            raw_score = int(55 + 45 * (len(found) / total_kws)) - (len(format_issues) * 4)
+        else:
+            raw_score = min(98, max(50, 75 + len(skills) * 2 - len(format_issues) * 5))
+
+        score = max(35, min(100, raw_score))
+
         improvements = []
-        for m in missing[:3]:
-            improvements.append(f"Add '{m.capitalize()}' skills and experience to your profile if you have worked with them.")
-        improvements.append("Quantify your achievements in recent roles with specific metrics (%, $, time saved).")
-        
+        if missing:
+            improvements.append(f"Add key missing keywords to your bullets or skills list: {', '.join([m.upper() for m in missing[:4]])}.")
+        if format_issues:
+            improvements.append(f"Resolve formatting check: {format_issues[0]}")
+        improvements.append("Quantify achievements in your work experience using metrics (%, $, time saved, team size).")
+
+        keyword_density = round(len(found) / max(1, total_kws), 2) if total_kws > 0 else 0.85
+
         return json.dumps({
             "score": score,
             "pass": score >= 70,
-            "missing_keywords": [m.upper() for m in missing] if missing else ["None"],
-            "found_keywords": [f.upper() for f in found] if found else ["None"],
+            "missing_keywords": [m.upper() for m in missing[:12]] if missing else ["None"],
+            "found_keywords": [f.upper() for f in found[:15]] if found else ["None"],
             "format_issues": format_issues if format_issues else ["None detected"],
             "improvements": improvements,
-            "keyword_density": round(len(found) / max(1, len(found) + len(missing)), 2)
+            "keyword_density": keyword_density
         })
 
     # 2. Section Grader (section_grader.py)
