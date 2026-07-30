@@ -6,12 +6,15 @@ import uuid
 from datetime import datetime
 from sqlalchemy import (
     Column, String, Text, Float, DateTime, ForeignKey,
-    Enum as SAEnum, Integer, Boolean
+    Enum as SAEnum, Integer, Boolean, JSON
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from app.db.session import Base
 import enum
+
+
+def generate_uuid():
+    return str(uuid.uuid4())
 
 
 # ── Enums ────────────────────────────────────────────────────────────────────
@@ -42,7 +45,7 @@ class SubscriptionStatusEnum(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    id         = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id         = Column(String(36), primary_key=True, default=generate_uuid)
     email      = Column(String(255), unique=True, nullable=False, index=True)
     clerk_id   = Column(String(255), unique=True, nullable=False, index=True)
     full_name  = Column(String(255), nullable=True)
@@ -58,13 +61,13 @@ class User(Base):
 class Resume(Base):
     __tablename__ = "resumes"
 
-    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id     = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id          = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id     = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     filename    = Column(String(500), nullable=False)
     s3_key      = Column(String(1000), nullable=True)   # null during local dev
     file_type   = Column(String(10), nullable=False)    # "pdf" or "docx"
     raw_text    = Column(Text, nullable=True)
-    parsed_json = Column(JSONB, nullable=True)          # structured sections
+    parsed_json = Column(JSON, nullable=True)           # structured sections
     file_size   = Column(Integer, nullable=True)        # bytes
     created_at  = Column(DateTime, default=datetime.utcnow, nullable=False)
 
@@ -76,11 +79,11 @@ class Resume(Base):
 class Analysis(Base):
     __tablename__ = "analyses"
 
-    id           = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    resume_id    = Column(UUID(as_uuid=True), ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False)
+    id           = Column(String(36), primary_key=True, default=generate_uuid)
+    resume_id    = Column(String(36), ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False)
     jd_text      = Column(Text, nullable=True)          # optional JD for matching
     status       = Column(SAEnum(AnalysisStatusEnum), default=AnalysisStatusEnum.pending, nullable=False)
-    results_json = Column(JSONB, nullable=True)         # full analysis output
+    results_json = Column(JSON, nullable=True)          # full analysis output
     error_msg    = Column(Text, nullable=True)
     created_at   = Column(DateTime, default=datetime.utcnow, nullable=False)
     completed_at = Column(DateTime, nullable=True)
@@ -93,9 +96,9 @@ class Analysis(Base):
 class InterviewQuestion(Base):
     __tablename__ = "interview_questions"
 
-    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    analysis_id = Column(UUID(as_uuid=True), ForeignKey("analyses.id", ondelete="CASCADE"), nullable=False)
-    questions   = Column(JSONB, nullable=False)   # list of {bullet, questions[]}
+    id          = Column(String(36), primary_key=True, default=generate_uuid)
+    analysis_id = Column(String(36), ForeignKey("analyses.id", ondelete="CASCADE"), nullable=False)
+    questions   = Column(JSON, nullable=False)   # list of {bullet, questions[]}
     created_at  = Column(DateTime, default=datetime.utcnow)
 
     analysis = relationship("Analysis", back_populates="interview_questions")
@@ -104,10 +107,10 @@ class InterviewQuestion(Base):
 class JDMatch(Base):
     __tablename__ = "jd_matches"
 
-    id                   = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    resume_id            = Column(UUID(as_uuid=True), ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False)
+    id                   = Column(String(36), primary_key=True, default=generate_uuid)
+    resume_id            = Column(String(36), ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False)
     jd_text              = Column(Text, nullable=False)
-    adapted_resume_json  = Column(JSONB, nullable=True)
+    adapted_resume_json  = Column(JSON, nullable=True)
     match_score          = Column(Float, nullable=True)
     created_at           = Column(DateTime, default=datetime.utcnow)
 
@@ -117,8 +120,8 @@ class JDMatch(Base):
 class Subscription(Base):
     __tablename__ = "subscriptions"
 
-    id                 = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id            = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"),
+    id                 = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id            = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"),
                                 nullable=False, unique=True)
     stripe_customer_id = Column(String(255), nullable=True, index=True)
     stripe_sub_id      = Column(String(255), nullable=True, index=True)

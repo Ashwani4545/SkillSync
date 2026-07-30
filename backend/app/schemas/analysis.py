@@ -1,19 +1,19 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, Any
+from typing import Optional, Any, Union
 import uuid
 
 
 class AnalysisStartRequest(BaseModel):
-    resume_id: uuid.UUID
+    resume_id: Union[uuid.UUID, str]
     jd_text: Optional[str] = None
     target_role: Optional[str] = None
     demanded_skills: Optional[str] = None
 
 
 class AnalysisOut(BaseModel):
-    id: uuid.UUID
-    resume_id: uuid.UUID
+    id: Union[uuid.UUID, str]
+    resume_id: Union[uuid.UUID, str]
     status: str
     results_json: Optional[dict[str, Any]] = None
     error_msg: Optional[str] = None

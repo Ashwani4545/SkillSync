@@ -25,5 +25,8 @@ venv/
 env/
 .env/
 
+# Local database
+*.db
+
 # Local junction
 ai_engine

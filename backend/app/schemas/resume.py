@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, Any
+from typing import Optional, Any, Union
 import uuid
 
 
 class ResumeOut(BaseModel):
-    id: uuid.UUID
+    id: Union[uuid.UUID, str]
     filename: str
     file_type: str
     file_size: Optional[int]

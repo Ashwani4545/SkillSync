@@ -17,6 +17,11 @@ from slowapi.errors import RateLimitExceeded
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("ResumeAI backend - Phase 4 complete")
+    try:
+        from app.db.session import init_db
+        init_db()
+    except Exception as e:
+        print(f"[DB Init Warning] {e}")
     yield
 
 

@@ -13,7 +13,7 @@ from botocore.exceptions import ClientError
 
 from app.core.config import settings
 
-LOCAL_UPLOAD_DIR = Path("/tmp/resumeai_uploads")
+LOCAL_UPLOAD_DIR = Path(os.environ.get("TEMP", "scratch")) / "resumeai_uploads"
 LOCAL_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 _s3_client = None

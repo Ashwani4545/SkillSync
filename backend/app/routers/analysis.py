@@ -34,9 +34,11 @@ def start_analysis(
     _check_usage_limit(current_user, db)
 
     # Verify resume ownership
+    resume_id_str = str(body.resume_id)
+    user_id_str = str(current_user.id)
     resume = db.query(Resume).filter(
-        Resume.id == body.resume_id,
-        Resume.user_id == current_user.id,
+        Resume.id == resume_id_str,
+        Resume.user_id == user_id_str,
     ).first()
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found.")
@@ -57,15 +59,42 @@ def start_analysis(
     db.commit()
     db.refresh(analysis)
 
-    # Enqueue Celery task
-    run_analysis.delay(
-        analysis_id=str(analysis.id),
-        resume_json=resume.parsed_json,
-        jd_text=body.jd_text,
-        user_plan=current_user.plan.value,
-        target_role=body.target_role,
-        demanded_skills=body.demanded_skills,
-    )
+    # Enqueue Celery task with local thread fallback
+    try:
+        run_analysis.delay(
+            analysis_id=str(analysis.id),
+            resume_json=resume.parsed_json,
+            jd_text=body.jd_text,
+            user_plan=current_user.plan.value,
+            target_role=body.target_role,
+            demanded_skills=body.demanded_skills,
+        )
+    except Exception as queue_err:
+        print(f"[Worker Warning] Could not enqueue to Celery/Redis ({queue_err}). Executing in-process fallback.")
+        import threading
+        analysis_id_str = str(analysis.id)
+        resume_json_val = resume.parsed_json
+        jd_text_val = body.jd_text
+        user_plan_val = current_user.plan.value
+        target_role_val = body.target_role
+        demanded_skills_val = body.demanded_skills
+
+        def _run_in_background():
+            try:
+                from workers.analyze_task import run_analysis as direct_run
+                direct_run.run(
+                    None,
+                    analysis_id=analysis_id_str,
+                    resume_json=resume_json_val,
+                    jd_text=jd_text_val,
+                    user_plan=user_plan_val,
+                    target_role=target_role_val,
+                    demanded_skills=demanded_skills_val,
+                )
+            except Exception as direct_err:
+                print(f"[Direct Run Error] {direct_err}")
+
+        threading.Thread(target=_run_in_background, daemon=True).start()
 
     return analysis
 
@@ -77,12 +106,14 @@ def get_analysis(
     current_user: User = Depends(get_current_user),
 ):
     """Poll for analysis results. Check status field: pending | processing | done | failed."""
+    target_analysis_id = str(analysis_id)
+    user_id_str = str(current_user.id)
     analysis = (
         db.query(Analysis)
         .join(Resume)
         .filter(
-            Analysis.id == analysis_id,
-            Resume.user_id == current_user.id,
+            Analysis.id == target_analysis_id,
+            Resume.user_id == user_id_str,
         )
         .first()
     )
