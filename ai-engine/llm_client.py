@@ -216,6 +216,125 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             }
         })
 
+    # 2b. 13-Point Audit Analyzer (audit_analyzer.py)
+    elif "auditor" in system_lower or "13-point" in system_lower or "executive resume auditor" in system_lower:
+        user_lower = user.lower()
+        skills_str = extract_regex(r"RESUME SKILLS:\s*(.*)", user)
+        skills = [s.strip() for s in skills_str.split(",") if s.strip()] if skills_str else ["Software Development"]
+        
+        email_present = "email:" in user_lower and "@" in user_lower
+        phone_present = "phone:" in user_lower and len(extract_regex(r"Phone:\s*([^\n]+)", user)) > 5
+        linkedin_present = "linkedin" in user_lower or "linkedin.com" in user_lower
+        github_present = "github" in user_lower or "github.com" in user_lower
+        location_present = "location:" in user_lower and len(extract_regex(r"Location:\s*([^\n]+)", user)) > 2
+
+        # Count metrics and bullets
+        bullets = re.findall(r"•\s*([^\n]+)", user)
+        quantified_bullets = [b for b in bullets if re.search(r"\d+%|\$\d+|\d+\s*users|\d+\s*k|\d+\s*m|\d+\s*ms", b, re.I)]
+        quant_pct = int(100 * (len(quantified_bullets) / max(1, len(bullets)))) if bullets else 65
+
+        # Check repetitions
+        words = re.findall(r"\b[a-z]{5,}\b", user_lower)
+        stopwords = {"resume", "experience", "skills", "education", "target", "role", "demanded", "contact", "details", "projects", "bullet"}
+        freqs = {}
+        for w in words:
+            if w not in stopwords:
+                freqs[w] = freqs.get(w, 0) + 1
+        overused = [{"word": w, "count": c, "severity": "medium" if c > 5 else "low"} for w, c in sorted(freqs.items(), key=lambda x: x[1], reverse=True)[:3] if c >= 3]
+
+        evidenced_skills = [{"skill": sk, "evidenced_in": "Experience / Projects"} for sk in skills[:5]]
+
+        contact_issues = []
+        if not linkedin_present: contact_issues.append("Missing LinkedIn profile URL in contact header.")
+        if not github_present: contact_issues.append("Missing GitHub/portfolio link in contact header.")
+
+        audit_score = max(50, min(98, 70 + (quant_pct // 5) + len(skills) - len(contact_issues) * 5))
+
+        return json.dumps({
+            "score": audit_score,
+            "parsing": {
+                "status": "pass",
+                "details": f"Parsed {len(bullets)} experience bullets and {len(skills)} skills cleanly into ATS structured schema."
+            },
+            "spelling_grammar": {
+                "status": "pass",
+                "error_count": 0,
+                "errors": []
+            },
+            "quantify_impact": {
+                "status": "pass" if quant_pct >= 50 else "warning",
+                "quantified_percentage": quant_pct,
+                "issues": [b[:80] + "..." for b in bullets if b not in quantified_bullets][:3],
+                "tips": ["Add specific percentage gains, dollar savings, or latency reductions to non-quantified bullets."]
+            },
+            "repetitions": {
+                "status": "pass" if not overused else "warning",
+                "repeated_words": overused,
+                "bullet_start_repetitions": []
+            },
+            "bullets_consistency": {
+                "status": "pass",
+                "punctuation_consistent": True,
+                "length_consistent": True,
+                "issues": []
+            },
+            "essential_sections": {
+                "status": "pass",
+                "present": ["summary", "experience", "education", "skills"],
+                "missing": [],
+                "issues": []
+            },
+            "contact_info": {
+                "status": "pass" if not contact_issues else "warning",
+                "email_present": email_present,
+                "phone_present": phone_present,
+                "location_present": location_present,
+                "linkedin_present": linkedin_present,
+                "github_present": github_present,
+                "issues": contact_issues
+            },
+            "section_ordering": {
+                "status": "pass",
+                "order": ["Contact", "Summary", "Experience", "Skills", "Education"],
+                "issues": []
+            },
+            "design_check": {
+                "status": "pass",
+                "word_count": len(user.split()),
+                "page_length_estimate": 1 if len(user.split()) < 500 else 2,
+                "issues": []
+            },
+            "email_header_filename": {
+                "status": "pass",
+                "email_valid": email_present,
+                "header_links_clickable": linkedin_present or github_present,
+                "filename_valid": True,
+                "issues": []
+            },
+            "dates_links_headings": {
+                "status": "pass",
+                "date_format_consistent": True,
+                "headings_have_links": github_present,
+                "issues": []
+            },
+            "credibility_verification": {
+                "status": "pass",
+                "issues": [] if len(skills) >= 3 else ["Include project metrics backing up listed technical skills."],
+                "matched_skills": evidenced_skills
+            },
+            "risk_benchmarking_gaps": {
+                "interview_risk": "low" if audit_score >= 75 else "medium",
+                "peer_benchmarking_percentile": min(95, audit_score + 5),
+                "linkedin_match_status": "matched" if linkedin_present else "missing",
+                "ageism_date_bias_risk": "low",
+                "employment_gaps": [],
+                "career_progression": "clear_trajectory",
+                "skill_evidence_score": min(95, 70 + len(skills) * 3),
+                "leadership_signals": ["Led", "Spearheaded", "Managed", "Architected"],
+                "issues": contact_issues
+            }
+        })
+
     # 3. Bullet Rewriter (bullet_rewriter.py)
     elif "rewrite" in system_lower or "bullet" in system_lower:
         bullets_block = extract_regex(r"BULLETS TO REWRITE:\s*([\s\S]*)", user)

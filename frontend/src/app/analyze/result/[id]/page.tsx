@@ -79,16 +79,15 @@ export default function ResultPage() {
 
   const r = analysis.results_json!;
   const overall = r.overall_score ?? {};
-  const hasProFeatures = !!(r.personas || r.tone || r.skills || r.interview);
 
   const TABS = [
     { id: "overview",   label: "Overview" },
     { id: "audit",      label: "13-Point Audit" },
-    { id: "personas",   label: "Persona view",       locked: !hasProFeatures },
-    { id: "tone",       label: "Tone report",         locked: !hasProFeatures },
+    { id: "personas",   label: "Persona view" },
+    { id: "tone",       label: "Tone report" },
     { id: "bullets",    label: "Bullet rewriter" },
-    { id: "skills",     label: "Skill audit",         locked: !hasProFeatures },
-    { id: "interview",  label: "Interview prep",      locked: !hasProFeatures },
+    { id: "skills",     label: "Skill audit" },
+    { id: "interview",  label: "Interview prep" },
   ];
 
   return (
@@ -162,11 +161,11 @@ export default function ResultPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
         {activeTab === "overview"  && <OverviewTab r={r} />}
         {activeTab === "audit"     && <DetailedAudit data={r.audit} />}
-        {activeTab === "personas"  && hasProFeatures && <PersonaView data={r.personas} />}
-        {activeTab === "tone"      && hasProFeatures && <ToneReport data={r.tone} />}
+        {activeTab === "personas"  && <PersonaView data={r.personas} />}
+        {activeTab === "tone"      && <ToneReport data={r.tone} />}
         {activeTab === "bullets"   && <BulletRewriter data={r.bullets} />}
-        {activeTab === "skills"    && hasProFeatures && <SkillAudit data={r.skills} />}
-        {activeTab === "interview" && hasProFeatures && <InterviewQuestions data={r.interview} />}
+        {activeTab === "skills"    && <SkillAudit data={r.skills} />}
+        {activeTab === "interview" && <InterviewQuestions data={r.interview} />}
       </div>
     </div>
   );
