@@ -161,7 +161,7 @@ export default function ResultPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
         {activeTab === "overview"  && <OverviewTab r={r} />}
         {activeTab === "audit"     && <DetailedAudit data={r.audit} />}
-        {activeTab === "personas"  && <PersonaView data={r.personas} />}
+        {activeTab === "personas"  && <PersonaView data={r.personas} r={r} />}
         {activeTab === "tone"      && <ToneReport data={r.tone} />}
         {activeTab === "bullets"   && <BulletRewriter data={r.bullets} />}
         {activeTab === "skills"    && <SkillAudit data={r.skills} />}
