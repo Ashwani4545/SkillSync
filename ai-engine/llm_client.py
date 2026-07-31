@@ -328,31 +328,49 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
         skills_str = extract_regex(r"SKILLS:\s*(.*)", user)
         skills = [s.strip() for s in skills_str.split(",") if s.strip()] if skills_str else []
         
-        score = 82
-        if len(skills) > 10:
-            score = 88
-            
+        # Dynamic ats_bot persona scoring & passed checks
+        user_lower = user.lower()
+        passed_checks = ["Valid email contact present", "Standard sections present"]
+        issues = []
+
+        if "linkedin" in user_lower or "linkedin.com" in user_lower:
+            passed_checks.append("LinkedIn profile link present in header")
+        else:
+            issues.append("Missing LinkedIn profile link in header")
+
+        if "github" in user_lower or "github.com" in user_lower:
+            passed_checks.append("GitHub/portfolio profile link present in header")
+        else:
+            issues.append("Missing GitHub or portfolio link in header")
+
+        if len(skills) >= 5:
+            passed_checks.append("Comprehensive skills list provided")
+        else:
+            issues.append("Very brief skills list — expand core technical competencies")
+
+        score = max(55, min(95, 75 + len(skills) * 2 - len(issues) * 6))
+
         return json.dumps({
             "ats_bot": {
                 "verdict": "pass" if score >= 70 else "fail",
                 "score": score,
-                "stop_reading_at": "none",
-                "issues": [] if score >= 80 else ["Low keyword correlation vs Job Description"],
-                "passed_checks": ["Clean contact layout", "Valid email domain", "Standard sections present"]
+                "stop_reading_at": "none" if score >= 70 else "header_format_issues",
+                "issues": issues if issues else ["Low keyword density vs target job description"],
+                "passed_checks": passed_checks
             },
             "hr_recruiter": {
                 "verdict": "shortlist" if score >= 85 else "maybe",
-                "score": score - 5,
+                "score": max(45, score - 5),
                 "stop_reading_at": "none" if score >= 80 else "experience_gap",
-                "red_flags": [] if score >= 80 else ["Unexplained gap in recent role"],
+                "red_flags": [] if score >= 80 else ["Unexplained gap or brief experience in recent role"],
                 "green_flags": ["Solid job stability", "Core technical certifications mentioned"],
-                "first_impression": f"Strong candidate {name} with well-organized technical experience."
+                "first_impression": f"Candidate {name} presents organized technical experience."
             },
             "hiring_manager": {
                 "verdict": "strong" if score >= 85 else "consider",
-                "score": score + 3,
+                "score": min(98, score + 3),
                 "stop_reading_at": "none",
-                "credibility_gaps": [] if score >= 80 else ["Listed advanced skills without detailed project context"],
+                "credibility_gaps": [] if score >= 80 else ["Listed advanced skills without detailed project metrics"],
                 "strengths": ["Demonstrates ownership in core product features"],
                 "probe_questions": [f"Can you explain how you designed the architecture for the skills mentioned like {skills[0]}?" if skills else "Can you describe your most challenging engineering role?"]
             }
