@@ -202,106 +202,107 @@ function OverviewTab({ r }: { r: any }) {
           <SectionGrades data={r.sections} />
         </div>
 
-      {r.ats && (
-        <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
-          {/* Header & Score Banner */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, pb: 16, borderBottom: "1px solid var(--gray-100)" }}>
-            <div>
-              <h3 style={{ margin: "0 0 4px", fontSize: 18, fontFamily: "Syne, sans-serif" }}>ATS Compatibility Audit</h3>
-              <p style={{ margin: 0, fontSize: 13, color: "var(--gray-500)" }}>
-                Keyword density & formatting score vs Applicant Tracking Systems
-              </p>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 24, fontWeight: 800, color: isPass ? "var(--teal-700)" : "var(--coral-700)", fontFamily: "Syne" }}>
-                  {score}<span style={{ fontSize: 14, color: "var(--gray-400)", fontWeight: 500 }}>/100</span>
+        {r.ats && (
+          <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
+            {/* Header & Score Banner */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, pb: 16, borderBottom: "1px solid var(--gray-100)" }}>
+              <div>
+                <h3 style={{ margin: "0 0 4px", fontSize: 18, fontFamily: "Syne, sans-serif" }}>ATS Compatibility Audit</h3>
+                <p style={{ margin: 0, fontSize: 13, color: "var(--gray-500)" }}>
+                  Keyword density & formatting score vs Applicant Tracking Systems
+                </p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: isPass ? "var(--teal-700)" : "var(--coral-700)", fontFamily: "Syne" }}>
+                    {score}<span style={{ fontSize: 14, color: "var(--gray-400)", fontWeight: 500 }}>/100</span>
+                  </div>
+                </div>
+                <div style={{
+                  padding: "6px 14px", borderRadius: 20,
+                  background: isPass ? "var(--teal-50)" : "var(--coral-50)",
+                  color: isPass ? "var(--teal-700)" : "var(--coral-700)",
+                  fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", gap: 6,
+                  border: `1px solid ${isPass ? "var(--teal-500)30" : "var(--coral-500)30"}`
+                }}>
+                  {isPass ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
+                  {isPass ? "PASS (ATS Ready)" : "NEEDS WORK"}
                 </div>
               </div>
-              <div style={{
-                padding: "6px 14px", borderRadius: 20,
-                background: isPass ? "var(--teal-50)" : "var(--coral-50)",
-                color: isPass ? "var(--teal-700)" : "var(--coral-700)",
-                fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", gap: 6,
-                border: `1px solid ${isPass ? "var(--teal-500)30" : "var(--coral-500)30"}`
-              }}>
-                {isPass ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
-                {isPass ? "PASS (ATS Ready)" : "NEEDS WORK"}
+            </div>
+
+            {/* Keyword Density Bar */}
+            <div style={{ marginBottom: 20, background: "var(--gray-50)", padding: 14, borderRadius: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 13, fontWeight: 600 }}>
+                <span style={{ color: "var(--gray-700)" }}>Keyword Density Match</span>
+                <span style={{ color: "var(--teal-700)" }}>{densityPct}%</span>
+              </div>
+              <div style={{ height: 8, background: "var(--gray-200)", borderRadius: 4, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${Math.min(100, Math.max(5, densityPct))}%`, background: isPass ? "var(--teal-500)" : "var(--coral-500)", borderRadius: 4, transition: "width 0.4s" }} />
               </div>
             </div>
-          </div>
 
-          {/* Keyword Density Bar */}
-          <div style={{ marginBottom: 20, background: "var(--gray-50)", padding: 14, borderRadius: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 13, fontWeight: 600 }}>
-              <span style={{ color: "var(--gray-700)" }}>Keyword Density Match</span>
-              <span style={{ color: "var(--teal-700)" }}>{densityPct}%</span>
-            </div>
-            <div style={{ height: 8, background: "var(--gray-200)", borderRadius: 4, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${Math.min(100, Math.max(5, densityPct))}%`, background: isPass ? "var(--teal-500)" : "var(--coral-500)", borderRadius: 4, transition: "width 0.4s" }} />
-            </div>
-          </div>
-
-          {/* Format Issues */}
-          <div style={{ marginBottom: 20 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: "var(--gray-400)", textTransform: "uppercase", marginBottom: 10 }}>FORMAT & STRUCTURE AUDIT</p>
-            {ats.format_issues?.length > 0 && ats.format_issues[0] !== "None detected" ? (
-              ats.format_issues.map((issue: string, i: number) => (
-                <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, fontSize: 14, color: "var(--coral-700)", alignItems: "flex-start", background: "var(--coral-50)40", padding: "8px 12px", borderRadius: 8 }}>
-                  <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 2, color: "var(--coral-600)" }} />
-                  <span>{issue}</span>
+            {/* Format Issues */}
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: "var(--gray-400)", textTransform: "uppercase", marginBottom: 10 }}>FORMAT & STRUCTURE AUDIT</p>
+              {ats.format_issues?.length > 0 && ats.format_issues[0] !== "None detected" ? (
+                ats.format_issues.map((issue: string, i: number) => (
+                  <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, fontSize: 14, color: "var(--coral-700)", alignItems: "flex-start", background: "var(--coral-50)40", padding: "8px 12px", borderRadius: 8 }}>
+                    <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 2, color: "var(--coral-600)" }} />
+                    <span>{issue}</span>
+                  </div>
+                ))
+              ) : (
+                <div style={{ display: "flex", gap: 8, fontSize: 14, color: "var(--teal-700)", background: "var(--teal-50)", padding: "8px 12px", borderRadius: 8, alignItems: "center" }}>
+                  <CheckCircle size={15} /> All header contact links & structural sections present cleanly.
                 </div>
-              ))
-            ) : (
-              <div style={{ display: "flex", gap: 8, fontSize: 14, color: "var(--teal-700)", background: "var(--teal-50)", padding: "8px 12px", borderRadius: 8, alignItems: "center" }}>
-                <CheckCircle size={15} /> All header contact links & structural sections present cleanly.
+              )}
+            </div>
+
+            {/* Found Keywords */}
+            {ats.found_keywords?.length > 0 && ats.found_keywords[0] !== "None" && (
+              <div style={{ marginBottom: 20 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: "var(--gray-400)", textTransform: "uppercase", marginBottom: 10 }}>FOUND KEYWORDS ({ats.found_keywords.length})</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {ats.found_keywords.slice(0, 15).map((kw: string, i: number) => (
+                    <span key={i} style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: "var(--teal-50)", color: "var(--teal-800)", border: "1px solid var(--teal-500)30", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      <CheckCircle size={11} color="var(--teal-600)" /> {kw}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Missing Keywords */}
+            {ats.missing_keywords?.length > 0 && ats.missing_keywords[0] !== "None" && (
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: "var(--gray-400)", textTransform: "uppercase", marginBottom: 10 }}>RECOMMENDED / MISSING KEYWORDS ({ats.missing_keywords.length})</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {ats.missing_keywords.slice(0, 12).map((kw: string, i: number) => (
+                    <span key={i} style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: "var(--coral-50)", color: "var(--coral-800)", border: "1px solid var(--coral-500)30", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      <AlertCircle size={11} color="var(--coral-600)" /> {kw}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </div>
+        )}
 
-          {/* Found Keywords */}
-          {ats.found_keywords?.length > 0 && ats.found_keywords[0] !== "None" && (
-            <div style={{ marginBottom: 20 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: "var(--gray-400)", textTransform: "uppercase", marginBottom: 10 }}>FOUND KEYWORDS ({ats.found_keywords.length})</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {ats.found_keywords.slice(0, 15).map((kw: string, i: number) => (
-                  <span key={i} style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: "var(--teal-50)", color: "var(--teal-800)", border: "1px solid var(--teal-500)30", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                    <CheckCircle size={11} color="var(--teal-600)" /> {kw}
-                  </span>
-                ))}
+        {r.ats?.improvements?.length > 0 && (
+          <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
+            <h3 style={{ margin: "0 0 16px", fontSize: 18, fontFamily: "Syne, sans-serif" }}>Top ATS Improvements</h3>
+            {r.ats.improvements.map((tip: string, i: number) => (
+              <div key={i} style={{ display: "flex", gap: 12, marginBottom: 14, fontSize: 14, color: "var(--gray-700)", alignItems: "flex-start", background: "var(--gray-50)", padding: 12, borderRadius: 10 }}>
+                <div style={{ width: 24, height: 24, borderRadius: "50%", background: "var(--teal-100)", color: "var(--teal-800)", fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {i + 1}
+                </div>
+                <div style={{ lineHeight: 1.5, flex: 1 }}>{tip}</div>
               </div>
-            </div>
-          )}
-
-          {/* Missing Keywords */}
-          {ats.missing_keywords?.length > 0 && ats.missing_keywords[0] !== "None" && (
-            <div>
-              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: "var(--gray-400)", textTransform: "uppercase", marginBottom: 10 }}>RECOMMENDED / MISSING KEYWORDS ({ats.missing_keywords.length})</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {ats.missing_keywords.slice(0, 12).map((kw: string, i: number) => (
-                  <span key={i} style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: "var(--coral-50)", color: "var(--coral-800)", border: "1px solid var(--coral-500)30", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                    <AlertCircle size={11} color="var(--coral-600)" /> {kw}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {r.ats?.improvements?.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
-          <h3 style={{ margin: "0 0 16px", fontSize: 18, fontFamily: "Syne, sans-serif" }}>Top ATS Improvements</h3>
-          {r.ats.improvements.map((tip: string, i: number) => (
-            <div key={i} style={{ display: "flex", gap: 12, marginBottom: 14, fontSize: 14, color: "var(--gray-700)", alignItems: "flex-start", background: "var(--gray-50)", padding: 12, borderRadius: 10 }}>
-              <div style={{ width: 24, height: 24, borderRadius: "50%", background: "var(--teal-100)", color: "var(--teal-800)", fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                {i + 1}
-              </div>
-              <div style={{ lineHeight: 1.5, flex: 1 }}>{tip}</div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
