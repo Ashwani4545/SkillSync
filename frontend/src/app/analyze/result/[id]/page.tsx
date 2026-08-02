@@ -15,6 +15,7 @@ import { RecruiterHeatmap } from "@/components/analysis/RecruiterHeatmap";
 import { GlobalEmployability } from "@/components/analysis/GlobalEmployability";
 import { TopActions } from "@/components/analysis/TopActions";
 import { CareerRoadmap } from "@/components/analysis/CareerRoadmap";
+import { ATSReadinessReportCard } from "@/components/analysis/ATSReadinessReportCard";
 
 const POLL_INTERVAL = 2500; // ms
 
@@ -194,10 +195,12 @@ function OverviewTab({ r }: { r: any }) {
   const densityPct = Math.round((ats.keyword_density ?? 0) * 100);
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-      <div style={{ gridColumn: "1 / -1" }}>
-        <SectionGrades data={r.sections} />
-      </div>
+    <div>
+      <ATSReadinessReportCard r={r} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        <div style={{ gridColumn: "1 / -1" }}>
+          <SectionGrades data={r.sections} />
+        </div>
 
       {r.ats && (
         <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
