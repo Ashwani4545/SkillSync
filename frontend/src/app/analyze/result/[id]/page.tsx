@@ -11,6 +11,10 @@ import { ToneReport } from "@/components/analysis/ToneReport";
 import { InterviewQuestions } from "@/components/analysis/InterviewQuestions";
 import { SkillAudit } from "@/components/analysis/SkillAudit";
 import { DetailedAudit } from "@/components/analysis/DetailedAudit";
+import { RecruiterHeatmap } from "@/components/analysis/RecruiterHeatmap";
+import { GlobalEmployability } from "@/components/analysis/GlobalEmployability";
+import { TopActions } from "@/components/analysis/TopActions";
+import { CareerRoadmap } from "@/components/analysis/CareerRoadmap";
 
 const POLL_INTERVAL = 2500; // ms
 
@@ -83,11 +87,13 @@ export default function ResultPage() {
   const TABS = [
     { id: "overview",   label: "Overview" },
     { id: "audit",      label: "13-Point Audit" },
-    { id: "personas",   label: "Persona view" },
-    { id: "tone",       label: "Tone report" },
-    { id: "bullets",    label: "Bullet rewriter" },
-    { id: "skills",     label: "Skill audit" },
-    { id: "interview",  label: "Interview prep" },
+    { id: "skills",     label: "Skill Audit" },
+    { id: "bullets",    label: "Bullet Rewriter" },
+    { id: "personas",   label: "Heatmap & Personas" },
+    { id: "career",     label: "Career & Salary" },
+    { id: "global",     label: "Global Employability" },
+    { id: "actions",    label: "Top 10 Actions" },
+    { id: "interview",  label: "Interview Prep" },
   ];
 
   return (
@@ -98,7 +104,7 @@ export default function ResultPage() {
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 24, height: 64 }}>
           <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 20, color: "var(--teal-700)" }}>ResumeAI</span>
           <span style={{ color: "var(--gray-300)" }}>›</span>
-          <span style={{ fontSize: 14, color: "var(--gray-500)" }}>Analysis results</span>
+          <span style={{ fontSize: 14, color: "var(--gray-500)" }}>Career Intelligence Report</span>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
             <CheckCircle size={16} color="var(--teal-500)" />
             <span style={{ fontSize: 13, color: "var(--gray-500)" }}>
@@ -125,6 +131,7 @@ export default function ResultPage() {
                 { label: "ATS",     val: overall.breakdown?.ats ?? 0 },
                 { label: "Content", val: overall.breakdown?.content ?? 0 },
                 { label: "Tone",    val: overall.breakdown?.tone ?? 0 },
+                { label: "Audit",   val: overall.breakdown?.audit ?? 0 },
               ].map((b) => (
                 <div key={b.label} style={{ background: "rgba(255,255,255,0.15)", borderRadius: 8, padding: "8px 16px", minWidth: 80, textAlign: "center" }}>
                   <div style={{ fontSize: 22, fontWeight: 700 }}>{b.val || "—"}</div>
@@ -142,16 +149,16 @@ export default function ResultPage() {
           {TABS.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => !tab.locked && setActiveTab(tab.id)}
+              onClick={() => setActiveTab(tab.id)}
               style={{
-                padding: "14px 20px", background: "none", border: "none", cursor: tab.locked ? "default" : "pointer",
+                padding: "14px 20px", background: "none", border: "none", cursor: "pointer",
                 fontSize: 14, fontWeight: activeTab === tab.id ? 600 : 400,
-                color: tab.locked ? "var(--gray-300)" : activeTab === tab.id ? "var(--teal-700)" : "var(--gray-500)",
+                color: activeTab === tab.id ? "var(--teal-700)" : "var(--gray-500)",
                 borderBottom: activeTab === tab.id ? "2px solid var(--teal-700)" : "2px solid transparent",
                 whiteSpace: "nowrap", transition: "all 0.15s",
               }}
             >
-              {tab.label} {tab.locked && <span style={{ fontSize: 10, background: "var(--amber-50)", color: "var(--amber-700)", padding: "1px 5px", borderRadius: 4, marginLeft: 4 }}>Pro</span>}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -161,10 +168,19 @@ export default function ResultPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
         {activeTab === "overview"  && <OverviewTab r={r} />}
         {activeTab === "audit"     && <DetailedAudit data={r.audit} />}
-        {activeTab === "personas"  && <PersonaView data={r.personas} r={r} />}
-        {activeTab === "tone"      && <ToneReport data={r.tone} />}
-        {activeTab === "bullets"   && <BulletRewriter data={r.bullets} />}
         {activeTab === "skills"    && <SkillAudit data={r.skills} />}
+        {activeTab === "bullets"   && <BulletRewriter data={r.bullets} />}
+        {activeTab === "personas"  && (
+          <div>
+            <RecruiterHeatmap r={r} />
+            <div style={{ marginTop: 32 }}>
+              <PersonaView data={r.personas} r={r} />
+            </div>
+          </div>
+        )}
+        {activeTab === "career"    && <CareerRoadmap r={r} />}
+        {activeTab === "global"    && <GlobalEmployability data={r.global_employability} />}
+        {activeTab === "actions"   && <TopActions r={r} />}
         {activeTab === "interview" && <InterviewQuestions data={r.interview} />}
       </div>
     </div>

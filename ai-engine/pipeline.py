@@ -9,18 +9,28 @@ from ai_engine.analyzers.skill_checker import check_skills
 from ai_engine.analyzers.audit_analyzer import analyze_audit
 from ai_engine.generators.bullet_rewriter import rewrite_bullets
 from ai_engine.generators.interview_predictor import predict_interview_questions
+from ai_engine.generators.career_predictor import predict_career_trajectory
+from ai_engine.generators.salary_estimator import estimate_salary
+from ai_engine.generators.cultural_adapter import adapt_for_country
 
 
 def run_full_pipeline(resume_json: dict, jd_text=None, user_plan="free", target_role=None, demanded_skills=None) -> dict:
+    role = target_role or "Software Engineer"
+
     results: dict = {}
-    results["ats"]       = analyze_ats(resume_json, jd_text, target_role, demanded_skills)
+    results["ats"]       = analyze_ats(resume_json, jd_text, role, demanded_skills)
     results["sections"]  = grade_sections(resume_json)
     results["bullets"]   = rewrite_bullets(resume_json)
-    results["audit"]     = analyze_audit(resume_json, jd_text, target_role, demanded_skills)
+    results["audit"]     = analyze_audit(resume_json, jd_text, role, demanded_skills)
     results["tone"]      = analyze_tone(resume_json)
     results["personas"]  = analyze_personas(resume_json)
     results["skills"]    = check_skills(resume_json)
     results["interview"] = predict_interview_questions(resume_json)
+    
+    # Career, Salary, and Global Employability Forecasts
+    results["career"]    = predict_career_trajectory(resume_json)
+    results["salary"]    = estimate_salary(resume_json, role, "Remote (US)")
+    results["global_employability"] = adapt_for_country(resume_json, "United States")
 
     results["overall_score"] = _compute_overall_score(results)
     return results
