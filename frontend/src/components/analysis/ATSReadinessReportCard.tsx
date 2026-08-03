@@ -4,22 +4,30 @@ import { CheckCircle, AlertTriangle, ShieldCheck, FileCheck, Sparkles, Target, A
 export function ATSReadinessReportCard({ r }: { r: any }) {
   const ats = r?.ats || {};
   const overall = r?.overall_score || {};
-  const score = ats.score ?? overall.score ?? 78;
-  const isPass = ats.pass ?? (score >= 70);
+  const sections = r?.sections || {};
+  const audit = r?.audit || {};
+  const skills = r?.skills || {};
+  const tone = r?.tone || {};
+
+  const baseScore = ats.score ?? overall.score ?? 78;
+  const isPass = ats.pass ?? (baseScore >= 70);
+
+  const formatIssues = (ats.format_issues || []).filter((x: string) => x !== "None detected");
+  const missingKws = (ats.missing_keywords || []).filter((x: string) => x !== "None");
 
   const categories = [
-    { name: "File Compatibility", score: 100, status: "Supported PDF/DOCX" },
-    { name: "Parsing Accuracy", score: 92, status: "Clean Layout Extraction" },
-    { name: "Resume Structure", score: Math.round(overall.breakdown?.content ?? 85), status: "Standard Sections Detected" },
-    { name: "Contact Information", score: 95, status: "Links & Handles Present" },
-    { name: "Formatting Quality", score: ats.format_issues?.length === 0 ? 95 : 80, status: "Clean Headings & Alignments" },
-    { name: "ATS Keyword Match", score: Math.round((ats.keyword_density ?? 0.75) * 100), status: `${ats.found_keywords?.length || 0} Target Keywords Found` },
-    { name: "Semantic Skill Match", score: Math.round((ats.score ?? 78) * 0.95), status: "Related Skills Contextually Extracted" },
-    { name: "Experience Quality & STAR", score: r?.sections?.experience?.score ?? 80, status: "Action-Oriented Verbs" },
-    { name: "Achievement Quantification", score: r?.audit?.score ?? 78, status: "Numeric Metrics Present" },
-    { name: "Grammar & Readability", score: r?.tone?.confidence_score ?? 88, status: "Active Voice & Clear Phrasing" },
-    { name: "Recruiter 7s Appeal", score: Math.round((overall.score ?? 80) * 0.98), status: "High First-Glance Impact" },
-    { name: "Skill Evidence Authenticity", score: r?.skills?.authenticity_score ?? 82, status: "Work History Support" },
+    { name: "File Compatibility", score: 100 - formatIssues.length * 5, status: formatIssues.length === 0 ? "Supported Text PDF/DOCX" : "Layout Risks Detected" },
+    { name: "Parsing Accuracy", score: ats.parsing_accuracy ?? Math.max(70, baseScore), status: "Structure Extraction Confidence" },
+    { name: "Resume Structure", score: Math.round(sections.experience?.score ?? sections.summary?.score ?? 80), status: "Standard Headings Verified" },
+    { name: "Contact Information", score: ats.contact_validation?.score ?? (ats.format_issues?.some((i: string) => i.includes("LinkedIn")) ? 75 : 95), status: "Link & Header Validation" },
+    { name: "Formatting Quality", score: Math.max(60, 95 - formatIssues.length * 10), status: formatIssues.length === 0 ? "Clean Single Column" : `${formatIssues.length} Formatting Obstacles` },
+    { name: "ATS Keyword Match", score: Math.round((ats.keyword_density ?? 0.7) * 100), status: `${ats.found_keywords?.length || 0} Target Keywords Found` },
+    { name: "Semantic Skill Match", score: Math.max(50, Math.round(baseScore * 0.95)), status: "Related Skills Contextually Parsed" },
+    { name: "Experience Quality & STAR", score: sections.experience?.score ?? 75, status: "Action Verbs & Responsibilities" },
+    { name: "Achievement Quantification", score: audit.score ?? 75, status: "Numeric Metrics & Scale" },
+    { name: "Grammar & Readability", score: tone.confidence_score ?? 85, status: "Active Voice & Phrasing" },
+    { name: "Recruiter 7s Appeal", score: Math.round(baseScore * 0.92), status: "Visual Focal Point Scan" },
+    { name: "Skill Evidence Authenticity", score: skills.authenticity_score ?? 80, status: "Work History Context Support" },
   ];
 
   const top5Actions = [
@@ -52,7 +60,7 @@ export function ATSReadinessReportCard({ r }: { r: any }) {
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 28, fontWeight: 800, color: isPass ? "var(--teal-700)" : "var(--coral-700)", fontFamily: "Syne" }}>
-              {score}<span style={{ fontSize: 14, color: "var(--gray-400)", fontWeight: 500 }}>/100</span>
+              {baseScore}<span style={{ fontSize: 14, color: "var(--gray-400)", fontWeight: 500 }}>/100</span>
             </div>
             <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gray-500)", textTransform: "uppercase" }}>UNIVERSAL ATS READINESS</div>
           </div>

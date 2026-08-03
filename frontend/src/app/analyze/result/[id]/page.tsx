@@ -16,6 +16,7 @@ import { GlobalEmployability } from "@/components/analysis/GlobalEmployability";
 import { TopActions } from "@/components/analysis/TopActions";
 import { CareerRoadmap } from "@/components/analysis/CareerRoadmap";
 import { ATSReadinessReportCard } from "@/components/analysis/ATSReadinessReportCard";
+import { JDMatcher } from "@/components/analysis/JDMatcher";
 
 const POLL_INTERVAL = 2500; // ms
 
@@ -197,6 +198,7 @@ function OverviewTab({ r }: { r: any }) {
   return (
     <div>
       <ATSReadinessReportCard r={r} />
+      <JDMatcher r={r} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
         <div style={{ gridColumn: "1 / -1" }}>
           <SectionGrades data={r.sections} />
