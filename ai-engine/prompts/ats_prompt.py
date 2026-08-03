@@ -1,24 +1,38 @@
-ATS_SYSTEM_PROMPT = """You are an expert ATS (Applicant Tracking System) analyzer.
-You analyze resumes for ATS compatibility and keyword optimization.
+ATS_SYSTEM_PROMPT = """You are an enterprise-grade AI Applicant Tracking System (ATS) and Senior Technical Recruiter.
+You analyze resumes for general ATS compatibility, parsing quality, structural completeness, and formatting standards without requiring a specific job role or job description.
 
 You ALWAYS respond with valid JSON only. No preamble, no markdown, no explanation outside the JSON.
 
 Your response schema:
 {
-  "score": <integer 0-100>,
+  "mode": "universal_ats",
+  "score": <integer 0-100, overall ATS readiness score>,
   "pass": <boolean — true if score >= 70>,
-  "missing_keywords": [<list of important keywords from JD not found in resume>],
-  "found_keywords": [<list of relevant keywords that ARE present>],
-  "format_issues": [<list of formatting problems that hurt ATS parsing>],
+  "parsing_accuracy": <integer 0-100>,
+  "file_compatibility": {
+    "status": "compatible|risk",
+    "parsing_confidence": <integer 0-100>,
+    "risks": [<list of potential file/layout risks>]
+  },
+  "contact_validation": {
+    "score": <integer 0-100>,
+    "present_fields": [<list of contact fields found>],
+    "missing_fields": [<list of missing contact fields>],
+    "issues": [<list of link/format issues>]
+  },
+  "structure_ratings": {
+    "summary": "excellent|good|average|weak|missing",
+    "experience": "excellent|good|average|weak|missing",
+    "skills": "excellent|good|average|weak|missing",
+    "education": "excellent|good|average|weak|missing",
+    "projects": "excellent|good|average|weak|missing"
+  },
+  "missing_keywords": [<list of general industry-standard keywords missing>],
+  "found_keywords": [<list of technical and professional keywords found>],
+  "format_issues": [<list of formatting or structural problems that hurt ATS parsing>],
   "improvements": [<3-5 specific, actionable improvement suggestions>],
-  "keyword_density": <float — ratio of JD keywords found vs total JD keywords>
+  "keyword_density": <float — ratio of industry keywords found>
 }
-
-Scoring rubric:
-- 90-100: Excellent — strong keyword match, clean format, clear structure
-- 70-89:  Good — passes most ATS filters, minor improvements needed
-- 50-69:  Fair — will be filtered by many ATS systems, needs work
-- 0-49:   Poor — major issues, likely filtered before human review
 """
 
 
@@ -67,10 +81,7 @@ def build_ats_user_prompt(
         end = edu.get("end", "")
         edu_text += f"\n- Degree: {degree} {field} | Institution: {inst} | GPA: {gpa} | Dates: {start}-{end}"
 
-    prompt = f"""Analyze this resume for ATS (Applicant Tracking System) compatibility.
-
-TARGET JOB ROLE: {target_role or "Software Engineer / Tech Professional"}
-DEMANDED SKILLS: {demanded_skills or "Not specified"}
+    prompt = f"""Perform a Universal AI ATS Resume Analysis (No Job Role Required).
 
 CANDIDATE CONTACT DETAILS:
 - Name: {contact.get('name', '')}
@@ -97,13 +108,16 @@ RESUME SECTIONS PRESENT: {list(resume_json.keys())}
 
     if jd_text:
         prompt += f"""
+TARGET JOB ROLE: {target_role or "Software Engineer / Tech Professional"}
+DEMANDED SKILLS: {demanded_skills or "Not specified"}
+
 JOB DESCRIPTION:
 {jd_text[:3000]}
 
 Compare the resume against this job description and identify missing keywords, match density, formatting risks, and actionable ATS score improvements.
 """
     else:
-        prompt += "\nNo job description provided. Analyze for general ATS best practices, section formatting, contact detail completeness, and keyword density for the target role."
+        prompt += "\nMODE: Universal ATS Assessment (No Job Description). Evaluate overall ATS parseability, contact completeness, formatting risks, structure ratings, and general keyword density."
 
     prompt += "\n\nRespond with valid JSON following the schema exactly."
     return prompt

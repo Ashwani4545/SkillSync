@@ -156,8 +156,28 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
         keyword_density = round(len(found) / max(1, total_kws), 2) if total_kws > 0 else 0.85
 
         return json.dumps({
+            "mode": "universal_ats" if not jd else "role_targeted_ats",
             "score": score,
             "pass": score >= 70,
+            "parsing_accuracy": max(88, score),
+            "file_compatibility": {
+                "status": "compatible" if not format_issues or format_issues[0] == "None detected" else "risk",
+                "parsing_confidence": 95,
+                "risks": [fi for fi in format_issues if fi != "None detected"]
+            },
+            "contact_validation": {
+                "score": 95 if (contact.get("email") and contact.get("phone")) else 75,
+                "present_fields": [k for k in ["email", "phone", "linkedin", "github"] if contact.get(k)],
+                "missing_fields": [k for k in ["linkedin", "github"] if not contact.get(k)],
+                "issues": [fi for fi in format_issues if fi != "None detected"]
+            },
+            "structure_ratings": {
+                "summary": "excellent" if len(summary) > 50 else "good" if summary else "weak",
+                "experience": "excellent" if len(experience) >= 2 else "good" if experience else "average",
+                "skills": "excellent" if len(skills) >= 8 else "good" if len(skills) >= 4 else "weak",
+                "education": "good" if len(resume_json.get("education", [])) > 0 else "average",
+                "projects": "good" if len(resume_json.get("projects", [])) > 0 else "average"
+            },
             "missing_keywords": [m.upper() for m in missing[:12]] if missing else ["None"],
             "found_keywords": [f.upper() for f in found[:15]] if found else ["None"],
             "format_issues": format_issues if format_issues else ["None detected"],

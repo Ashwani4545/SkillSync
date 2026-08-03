@@ -39,8 +39,13 @@ export function ATSReadinessReportCard({ r }: { r: any }) {
             <ShieldCheck size={24} />
           </div>
           <div>
-            <h2 style={{ margin: 0, fontSize: 20, fontFamily: "Syne, sans-serif" }}>ATS Readiness Report Card</h2>
-            <p style={{ margin: 0, fontSize: 13, color: "var(--gray-500)" }}>Comprehensive Enterprise-Grade ATS Compatibility Audit</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <h2 style={{ margin: 0, fontSize: 20, fontFamily: "Syne, sans-serif" }}>ATS Readiness Report Card</h2>
+              <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 12, background: "var(--teal-50)", color: "var(--teal-800)", border: "1px solid var(--teal-500)30" }}>
+                Universal ATS Mode (No Role Required)
+              </span>
+            </div>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--gray-500)" }}>General ATS Parseability & Structural Quality Audit</p>
           </div>
         </div>
 
@@ -49,7 +54,7 @@ export function ATSReadinessReportCard({ r }: { r: any }) {
             <div style={{ fontSize: 28, fontWeight: 800, color: isPass ? "var(--teal-700)" : "var(--coral-700)", fontFamily: "Syne" }}>
               {score}<span style={{ fontSize: 14, color: "var(--gray-400)", fontWeight: 500 }}>/100</span>
             </div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gray-500)", textTransform: "uppercase" }}>OVERALL ATS READINESS</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gray-500)", textTransform: "uppercase" }}>UNIVERSAL ATS READINESS</div>
           </div>
           <div style={{ padding: "8px 16px", borderRadius: 20, background: isPass ? "var(--teal-50)" : "var(--coral-50)", color: isPass ? "var(--teal-700)" : "var(--coral-700)", fontWeight: 700, fontSize: 13, border: `1px solid ${isPass ? "var(--teal-500)30" : "var(--coral-500)30"}` }}>
             {isPass ? "✓ ATS APPROVED" : "⚠ ACTION REQUIRED"}
