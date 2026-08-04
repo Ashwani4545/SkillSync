@@ -97,7 +97,20 @@ export function InterviewQuestions({ data }: { data: any }) {
     ]
   };
 
-  const questions = questionsData.questions;
+  const questions = questionsData?.questions || [
+    {
+      question: "Can you describe a challenging technical architecture problem from your recent role and how you resolved it?",
+      trigger: "Core software experience and skills list",
+      why: "To evaluate engineering depth and practical problem-solving ability under real-world project constraints.",
+      good_answer_tip: "Use the STAR method (Situation, Task, Action, Result). State the exact technology used and quantify the performance improvement."
+    },
+    {
+      question: "How do you ensure system performance, code quality, and test reliability across team deployments?",
+      trigger: "Technical delivery quality check",
+      why: "To assess your standards for code maintenance, automated testing, and CI/CD pipelines.",
+      good_answer_tip: "Detail your experience with automated testing, continuous integration, and database profiling tools."
+    }
+  ];
 
   return (
     <div>
@@ -105,7 +118,7 @@ export function InterviewQuestions({ data }: { data: any }) {
       <p style={{ color: "var(--gray-500)", fontSize: 14, marginBottom: 24 }}>
         Based on weak spots in your resume, here are the probing questions a recruiter will likely ask you.
       </p>
-      {questionsData.overall_concern_level && (
+      {questionsData?.overall_concern_level && (
         <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 20, marginBottom: 20, background: questionsData.overall_concern_level === "high" ? "var(--coral-50)" : questionsData.overall_concern_level === "medium" ? "var(--amber-50)" : "var(--teal-50)", color: questionsData.overall_concern_level === "high" ? "var(--coral-700)" : questionsData.overall_concern_level === "medium" ? "var(--amber-700)" : "var(--teal-700)" }}>
           <AlertTriangle size={14} />
           <span style={{ fontSize: 13, fontWeight: 600 }}>Concern level: {questionsData.overall_concern_level}</span>
@@ -113,7 +126,7 @@ export function InterviewQuestions({ data }: { data: any }) {
         </div>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {questions.map((q: any, i: number) => (
+        {questions?.map((q: any, i: number) => (
           <div key={i} style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", overflow: "hidden" }}>
             <button
               onClick={() => setOpen(open === i ? null : i)}

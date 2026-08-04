@@ -155,6 +155,13 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
 
         keyword_density = round(len(found) / max(1, total_kws), 2) if total_kws > 0 else 0.85
 
+        contact_dict = {
+            "email": email_val or ("@" in full_resume_text),
+            "phone": phone_val or bool(re.search(r"\d{7,}", full_resume_text)),
+            "linkedin": linkedin_val or ("linkedin.com" in full_resume_text),
+            "github": github_val or ("github.com" in full_resume_text or "portfolio" in full_resume_text)
+        }
+
         return json.dumps({
             "mode": "universal_ats" if not jd else "role_targeted_ats",
             "score": score,
@@ -166,17 +173,17 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
                 "risks": [fi for fi in format_issues if fi != "None detected"]
             },
             "contact_validation": {
-                "score": 95 if (contact.get("email") and contact.get("phone")) else 75,
-                "present_fields": [k for k in ["email", "phone", "linkedin", "github"] if contact.get(k)],
-                "missing_fields": [k for k in ["linkedin", "github"] if not contact.get(k)],
+                "score": 95 if (contact_dict.get("email") and contact_dict.get("phone")) else 75,
+                "present_fields": [k for k in ["email", "phone", "linkedin", "github"] if contact_dict.get(k)],
+                "missing_fields": [k for k in ["linkedin", "github"] if not contact_dict.get(k)],
                 "issues": [fi for fi in format_issues if fi != "None detected"]
             },
             "structure_ratings": {
                 "summary": "excellent" if len(summary) > 50 else "good" if summary else "weak",
-                "experience": "excellent" if len(experience) >= 2 else "good" if experience else "average",
+                "experience": "excellent" if len(exp_context) > 100 else "good" if exp_context else "average",
                 "skills": "excellent" if len(skills) >= 8 else "good" if len(skills) >= 4 else "weak",
-                "education": "good" if len(resume_json.get("education", [])) > 0 else "average",
-                "projects": "good" if len(resume_json.get("projects", [])) > 0 else "average"
+                "education": "good" if len(edu_context) > 0 else "average",
+                "projects": "good" if len(proj_context) > 0 else "average"
             },
             "missing_keywords": [m.upper() for m in missing[:12]] if missing else ["None"],
             "found_keywords": [f.upper() for f in found[:15]] if found else ["None"],
@@ -1108,6 +1115,15 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
                     edu_text = re.sub(r"^[\-•]\s*", "", line_stripped).strip()
                     if edu_text:
                         edu_entries.append(edu_text)
+
+        contact = {
+            "name": extract_regex(r"Name:\s*([^\n]+)", user),
+            "email": extract_regex(r"Email:\s*([^\n]+)", user) or extract_regex(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", user),
+            "phone": extract_regex(r"Phone:\s*([^\n]+)", user),
+            "location": extract_regex(r"Location:\s*([^\n]+)", user),
+            "linkedin": extract_regex(r"LinkedIn:\s*([^\n]+)", user) or extract_regex(r"linkedin\.com/[^\s]+", user),
+            "github": extract_regex(r"GitHub:\s*([^\n]+)", user) or extract_regex(r"github\.com/[^\s]+", user),
+        }
 
         # 1. Parsing Check
         parsing_details = f"Successfully parsed candidate contact header ({'email' if contact.get('email') else 'no email'}), {len(skills)} skills, {len(exp_entries)} experience roles, and {len(edu_entries)} education entries."
