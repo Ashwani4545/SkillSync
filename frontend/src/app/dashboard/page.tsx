@@ -4,12 +4,13 @@ import Link from "next/link";
 import {
   FileText, Plus, TrendingUp, Clock, Wand2, GitCompare,
   Target, Calendar, BarChart2, Lock, DollarSign, Github,
-  Users, Shield, Globe, Settings
+  Users, Shield, Globe, Settings, ShieldCheck, ChevronDown, ChevronUp
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
 const FEATURE_CARDS = [
   { href:"/analyze/upload",   icon:<Plus size={20}/>,       title:"New analysis",     desc:"Upload a resume for full AI analysis",           color:"var(--teal-700)",   bg:"var(--teal-50)",   plan:"free"   },
+  { href:"/analyze/upload?mode=universal", icon:<ShieldCheck size={20}/>, title:"Universal ATS Check", desc:"Analyze resume ATS readiness without job role or skills", color:"var(--teal-700)", bg:"var(--teal-50)", plan:"free" },
   { href:"/jd-adapter",       icon:<Wand2 size={20}/>,      title:"JD Adapter",       desc:"Tailor your resume to any job description",      color:"var(--blue-700)",   bg:"var(--blue-50)",   plan:"pro"    },
   { href:"/compare",          icon:<GitCompare size={20}/>, title:"A/B Tester",       desc:"Compare two resume versions head-to-head",       color:"var(--purple-700)", bg:"var(--purple-50)", plan:"pro"    },
   { href:"/benchmark",        icon:<BarChart2 size={20}/>,  title:"Benchmark",        desc:"See how you rank vs top 10% in your role",       color:"var(--amber-700)",  bg:"var(--amber-50)",  plan:"pro"    },
@@ -30,6 +31,7 @@ export default function DashboardPage() {
   const [resumes, setResumes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userPlan]            = useState("team"); // replace with real plan from Clerk
+  const [showAllResumes, setShowAllResumes] = useState(false);
 
   useEffect(() => {
     apiClient.get("/resume/")
@@ -38,6 +40,8 @@ export default function DashboardPage() {
   }, []);
 
   const canAccess = (plan: string) => PLAN_RANK[userPlan] >= PLAN_RANK[plan];
+
+  const displayedResumes = showAllResumes ? resumes : resumes.slice(0, 3);
 
   return (
     <div style={{ minHeight:"100vh", background:"var(--gray-50)" }}>
@@ -99,7 +103,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-            {resumes.map(r => (
+            {displayedResumes.map(r => (
               <div key={r.id} style={{ background:"#fff", borderRadius:"var(--radius-lg)", border:"1px solid var(--gray-200)", padding:"16px 20px", display:"flex", alignItems:"center", gap:14 }}>
                 <div style={{ width:40, height:40, borderRadius:10, background:"var(--teal-50)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                   <FileText size={17} color="var(--teal-700)"/>
@@ -127,6 +131,26 @@ export default function DashboardPage() {
                 </div>
               </div>
             ))}
+
+            {resumes.length > 3 && (
+              <div style={{ textAlign: "center", marginTop: 12 }}>
+                <button
+                  onClick={() => setShowAllResumes(!showAllResumes)}
+                  style={{
+                    padding: "10px 20px", borderRadius: 20, border: "1px solid var(--gray-300)",
+                    background: "#fff", color: "var(--gray-700)", fontSize: 13, fontWeight: 700,
+                    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
+                    transition: "all 0.15s ease"
+                  }}
+                >
+                  {showAllResumes ? (
+                    <>View Less <ChevronUp size={14} /></>
+                  ) : (
+                    <>View More ({resumes.length - 3} more resumes) <ChevronDown size={14} /></>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

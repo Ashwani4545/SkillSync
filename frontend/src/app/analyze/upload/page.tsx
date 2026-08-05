@@ -1,14 +1,20 @@
 "use client";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect, Suspense } from "react";
 import { useDropzone } from "react-dropzone";
-import { useRouter } from "next/navigation";
-import { Upload, FileText, X, Loader2, ChevronDown, ChevronUp, Briefcase, Code, FileCode, CheckCircle } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Upload, FileText, X, Loader2, ChevronDown, ChevronUp, Briefcase, Code, FileCode, CheckCircle, ShieldCheck } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
-export default function UploadPage() {
+function UploadFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isUniversalModeParam = searchParams.get("mode") === "universal";
+
   const [file, setFile] = useState<File | null>(null);
   
+  // Universal mode state
+  const [isUniversalMode, setIsUniversalMode] = useState(isUniversalModeParam);
+
   // New Target Job Info states
   const [targetRole, setTargetRole] = useState("");
   const [demandedSkills, setDemandedSkills] = useState("");
@@ -22,6 +28,12 @@ export default function UploadPage() {
   // Global page states
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (isUniversalModeParam) {
+      setIsUniversalMode(true);
+    }
+  }, [isUniversalModeParam]);
 
   // Resume Dropzone
   const onDrop = useCallback((accepted: File[]) => {
@@ -79,13 +91,16 @@ export default function UploadPage() {
       setError("Please select or drop a resume file first.");
       return;
     }
-    if (!targetRole.trim()) {
-      setError("Target job role is required to analyze your CV contextually.");
-      return;
-    }
-    if (!demandedSkills.trim()) {
-      setError("Please specify the demanded skills for this role.");
-      return;
+
+    if (!isUniversalMode) {
+      if (!targetRole.trim()) {
+        setError("Target job role is required for role-targeted analysis. Or switch to Universal ATS mode.");
+        return;
+      }
+      if (!demandedSkills.trim()) {
+        setError("Please specify demanded skills for role-targeted analysis. Or switch to Universal ATS mode.");
+        return;
+      }
     }
 
     setUploading(true);
@@ -100,9 +115,9 @@ export default function UploadPage() {
       // 2. Trigger Comprehensive Audit
       const { data: analysis } = await apiClient.post("/analysis/start", {
         resume_id: resume.id,
-        jd_text: jdText || null,
-        target_role: targetRole,
-        demanded_skills: demandedSkills,
+        jd_text: isUniversalMode ? null : (jdText || null),
+        target_role: isUniversalMode ? "General Professional" : targetRole,
+        demanded_skills: isUniversalMode ? "General Industry Competencies" : demandedSkills,
       });
 
       router.push(`/analyze/result/${analysis.id}`);
@@ -122,6 +137,33 @@ export default function UploadPage() {
           <p style={{ color: "var(--gray-500)", fontSize: 15 }}>Find mistakes, grammar issues, quantify impact, and adapt your CV directly to a job role.</p>
         </div>
 
+        {/* Mode Selector Toggle */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 24, padding: 4, background: "var(--gray-100)", borderRadius: 12 }}>
+          <button
+            type="button"
+            onClick={() => setIsUniversalMode(false)}
+            style={{
+              flex: 1, padding: "10px 14px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
+              background: !isUniversalMode ? "#fff" : "transparent", color: !isUniversalMode ? "var(--teal-800)" : "var(--gray-500)",
+              boxShadow: !isUniversalMode ? "0 2px 6px rgba(0,0,0,0.06)" : "none", transition: "all 0.2s"
+            }}
+          >
+            Targeted Job Role & Skills
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsUniversalMode(true)}
+            style={{
+              flex: 1, padding: "10px 14px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
+              background: isUniversalMode ? "var(--teal-700)" : "transparent", color: isUniversalMode ? "#fff" : "var(--gray-500)",
+              boxShadow: isUniversalMode ? "0 2px 6px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6
+            }}
+          >
+            <ShieldCheck size={16} /> Universal ATS Check (No Role/Skills)
+          </button>
+        </div>
+
         {error && (
           <div style={{ padding: "14px 18px", background: "var(--coral-50)", borderLeft: "4px solid var(--coral-500)", borderRadius: "8px", color: "var(--coral-800)", fontSize: 14, marginBottom: 24 }}>
             {error}
@@ -131,33 +173,42 @@ export default function UploadPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 24, marginBottom: 32 }}>
           
           {/* Target Role & Skills Input Group */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            <div>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--gray-600)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                <Briefcase size={14} color="var(--teal-600)" /> Target Role
-              </label>
-              <input
-                type="text"
-                value={targetRole}
-                onChange={(e) => setTargetRole(e.target.value)}
-                placeholder="e.g. Senior Web Developer"
-                style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", border: "1px solid var(--gray-200)", fontSize: 14, outline: "none", background: "#fff", transition: "all 0.2s" }}
-              />
+          {!isUniversalMode ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div>
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--gray-600)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <Briefcase size={14} color="var(--teal-600)" /> Target Role
+                </label>
+                <input
+                  type="text"
+                  value={targetRole}
+                  onChange={(e) => setTargetRole(e.target.value)}
+                  placeholder="e.g. Senior Web Developer"
+                  style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", border: "1px solid var(--gray-200)", fontSize: 14, outline: "none", background: "#fff", transition: "all 0.2s" }}
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--gray-600)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <Code size={14} color="var(--teal-600)" /> Demanded Skills
+                </label>
+                <input
+                  type="text"
+                  value={demandedSkills}
+                  onChange={(e) => setDemandedSkills(e.target.value)}
+                  placeholder="e.g. React, Node.js, AWS"
+                  style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", border: "1px solid var(--gray-200)", fontSize: 14, outline: "none", background: "#fff", transition: "all 0.2s" }}
+                />
+              </div>
             </div>
-            
-            <div>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--gray-600)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                <Code size={14} color="var(--teal-600)" /> Demanded Skills
-              </label>
-              <input
-                type="text"
-                value={demandedSkills}
-                onChange={(e) => setDemandedSkills(e.target.value)}
-                placeholder="e.g. React, Node.js, AWS"
-                style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", border: "1px solid var(--gray-200)", fontSize: 14, outline: "none", background: "#fff", transition: "all 0.2s" }}
-              />
+          ) : (
+            <div style={{ padding: "14px 18px", borderRadius: 12, background: "var(--teal-50)", border: "1px solid var(--teal-200)", color: "var(--teal-900)", fontSize: 13, display: "flex", alignItems: "center", gap: 10 }}>
+              <ShieldCheck size={20} color="var(--teal-700)" style={{ flexShrink: 0 }} />
+              <div>
+                <strong>Universal ATS Readiness Mode Active:</strong> Evaluating file parseability, contact validation, keyword density, section structure, and formatting quality without assuming any specific profession.
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Resume Dropzone */}
           <div>
@@ -290,5 +341,13 @@ export default function UploadPage() {
         <p style={{ textAlign: "center", fontSize: 11, color: "var(--gray-400)", marginTop: 14 }}>13-Point Check (Spelling, Grammar, Impact, Gaps, Risks, Credibility) in ~15s</p>
       </div>
     </div>
+  );
+}
+
+export default function UploadPage() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: "center", padding: 48, color: "var(--gray-500)" }}>Loading upload portal...</div>}>
+      <UploadFormContent />
+    </Suspense>
   );
 }
