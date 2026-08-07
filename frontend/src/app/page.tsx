@@ -36,80 +36,83 @@ const plans = [
 
 export default function LandingPage() {
   return (
-    <div style={{ background: "var(--gray-50)", minHeight: "100vh" }}>
+    <div style={{ background: "linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 50%, #F0FDF4 100%)", minHeight: "100vh", fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
 
       {/* ── Nav ── */}
-      <nav style={{ borderBottom: "1px solid var(--gray-200)", background: "#fff" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 22, color: "var(--teal-700)" }}>ResumeAI</span>
-          <div style={{ display: "flex", gap: 12 }}>
-            <Link href="/dashboard" style={{ padding: "8px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--gray-200)", color: "var(--gray-700)", textDecoration: "none", fontSize: 14 }}>Sign in</Link>
-            <Link href="/dashboard" style={{ padding: "8px 18px", borderRadius: "var(--radius-md)", background: "var(--teal-700)", color: "#fff", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>Get started free</Link>
+      <nav style={{ borderBottom: "1px solid rgba(226, 232, 240, 0.8)", background: "rgba(255, 255, 255, 0.85)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50 }}>
+        <div style={{ maxWidth: 1150, margin: "0 auto", padding: "0 24px", height: 70, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #0F6E56, #1D9E75)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 18 }}>S</div>
+            <span style={{ fontWeight: 800, fontSize: 24, background: "linear-gradient(135deg, #064035, #0F6E56)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>SkillSync</span>
+          </div>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <Link href="/dashboard" style={{ padding: "9px 20px", borderRadius: 12, border: "1px solid #CBD5E1", color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 600, transition: "all 0.2s" }}>Sign in</Link>
+            <Link href="/dashboard" style={{ padding: "10px 22px", borderRadius: 12, background: "linear-gradient(135deg, #0F6E56, #1D9E75)", color: "#fff", textDecoration: "none", fontSize: 14, fontWeight: 700, boxShadow: "0 4px 12px rgba(15, 110, 86, 0.25)" }}>Get started free</Link>
           </div>
         </div>
       </nav>
 
       {/* ── Hero ── */}
-      <section style={{ textAlign: "center", padding: "96px 24px 64px", maxWidth: 760, margin: "0 auto" }}>
-        <div style={{ display: "inline-block", background: "var(--teal-50)", color: "var(--teal-700)", fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 20, marginBottom: 24, border: "1px solid var(--teal-100)" }}>
-          AI-powered • Built for real job seekers
+      <section style={{ textAlign: "center", padding: "80px 24px 60px", maxWidth: 840, margin: "0 auto" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#E1F5EE", color: "#0F6E56", fontSize: 13, fontWeight: 700, padding: "6px 18px", borderRadius: 30, marginBottom: 24, border: "1px solid rgba(15, 110, 86, 0.2)" }}>
+          <Zap size={15} color="#0F6E56" /> AI-Powered • Built for Real Job Seekers
         </div>
-        <h1 style={{ fontSize: "clamp(36px, 6vw, 64px)", marginBottom: 20, color: "var(--gray-900)" }}>
+        <h1 style={{ fontSize: "clamp(38px, 5.5vw, 64px)", fontWeight: 800, marginBottom: 22, color: "#0F172A", letterSpacing: "-0.03em", lineHeight: 1.15 }}>
           Your resume, seen through<br />
-          <span style={{ color: "var(--teal-700)" }}>three sets of eyes</span>
+          <span style={{ background: "linear-gradient(135deg, #0F6E56 0%, #378ADD 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>three sets of eyes</span>
         </h1>
-        <p style={{ fontSize: 18, color: "var(--gray-500)", lineHeight: 1.7, marginBottom: 40 }}>
-          ATS bot. HR recruiter. Hiring manager. ResumeAI shows you exactly where each one would stop reading — and how to fix it.
+        <p style={{ fontSize: 19, color: "#475569", lineHeight: 1.7, marginBottom: 38, fontWeight: 400 }}>
+          ATS bot. HR recruiter. Hiring manager. SkillSync shows you exactly where each one would stop reading — and how to fix it in seconds.
         </p>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: "var(--radius-md)", background: "var(--teal-700)", color: "#fff", textDecoration: "none", fontSize: 15, fontWeight: 600 }}>
-            Analyze my resume free <ArrowRight size={16} />
+        <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+          <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "16px 32px", borderRadius: 14, background: "linear-gradient(135deg, #0F6E56, #1D9E75)", color: "#fff", textDecoration: "none", fontSize: 16, fontWeight: 700, boxShadow: "0 8px 20px rgba(15, 110, 86, 0.3)" }}>
+            Analyze my resume free <ArrowRight size={18} />
           </Link>
-          <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: "var(--radius-md)", border: "1px solid var(--gray-200)", color: "var(--gray-700)", textDecoration: "none", fontSize: 15 }}>
+          <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "16px 28px", borderRadius: 14, background: "#fff", border: "1px solid #CBD5E1", color: "#334155", textDecoration: "none", fontSize: 16, fontWeight: 600, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
             See a live demo
           </Link>
         </div>
-        <p style={{ marginTop: 16, fontSize: 13, color: "var(--gray-400)" }}>No credit card required · 3 free analyses per month</p>
+        <p style={{ marginTop: 20, fontSize: 13, color: "#64748B", fontWeight: 500 }}>No credit card required · 3 free analyses per month</p>
       </section>
 
       {/* ── Feature grid ── */}
-      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px 80px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
+      <section style={{ maxWidth: 1150, margin: "0 auto", padding: "0 24px 80px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20 }}>
           {features.map((f, i) => (
-            <div key={i} style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: "24px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: "var(--teal-50)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--teal-700)" }}>{f.icon}</div>
-                <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: f.badge === "Unique" ? "var(--teal-50)" : f.badge === "Pro" ? "var(--blue-50)" : "var(--purple-50)", color: f.badge === "Unique" ? "var(--teal-700)" : f.badge === "Pro" ? "var(--blue-700)" : "var(--purple-700)" }}>{f.badge}</span>
+            <div key={i} style={{ background: "rgba(255, 255, 255, 0.9)", backdropFilter: "blur(8px)", borderRadius: 18, border: "1px solid #E2E8F0", padding: "26px", boxShadow: "0 4px 16px rgba(0,0,0,0.03)", transition: "transform 0.2s" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: "#E1F5EE", display: "flex", alignItems: "center", justifyContent: "center", color: "#0F6E56" }}>{f.icon}</div>
+                <span style={{ fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 20, background: f.badge === "Unique" ? "#E1F5EE" : f.badge === "Pro" ? "#E6F1FB" : "#EEEDFE", color: f.badge === "Unique" ? "#0F6E56" : f.badge === "Pro" ? "#185FA5" : "#534AB7" }}>{f.badge}</span>
               </div>
-              <h3 style={{ fontSize: 16, marginBottom: 8, color: "var(--gray-900)" }}>{f.title}</h3>
-              <p style={{ fontSize: 14, color: "var(--gray-500)", lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
+              <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 8, color: "#0F172A" }}>{f.title}</h3>
+              <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── Pricing ── */}
-      <section style={{ background: "#fff", borderTop: "1px solid var(--gray-200)", padding: "80px 24px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <h2 style={{ textAlign: "center", fontSize: 36, marginBottom: 8 }}>Simple, honest pricing</h2>
-          <p style={{ textAlign: "center", color: "var(--gray-500)", marginBottom: 48 }}>Start free, upgrade when you need more</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20 }}>
+      <section style={{ background: "#fff", borderTop: "1px solid #E2E8F0", padding: "80px 24px" }}>
+        <div style={{ maxWidth: 950, margin: "0 auto" }}>
+          <h2 style={{ textAlign: "center", fontSize: 38, fontWeight: 800, color: "#0F172A", marginBottom: 10, letterSpacing: "-0.02em" }}>Simple, honest pricing</h2>
+          <p style={{ textAlign: "center", color: "#64748B", fontSize: 16, marginBottom: 52 }}>Start free, upgrade when you need more power</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24 }}>
             {plans.map((plan, i) => (
-              <div key={i} style={{ borderRadius: "var(--radius-lg)", border: plan.highlight ? "2px solid var(--teal-500)" : "1px solid var(--gray-200)", padding: "28px", position: "relative", background: "#fff" }}>
-                {plan.highlight && <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: "var(--teal-700)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 20 }}>MOST POPULAR</div>}
-                <div style={{ fontSize: 22, fontWeight: 700, color: "var(--gray-900)", marginBottom: 4 }}>{plan.name}</div>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 20 }}>
-                  <span style={{ fontSize: 36, fontWeight: 800, color: plan.highlight ? "var(--teal-700)" : "var(--gray-900)" }}>{plan.price}</span>
-                  <span style={{ color: "var(--gray-400)", fontSize: 14 }}>{plan.desc}</span>
+              <div key={i} style={{ borderRadius: 20, border: plan.highlight ? "2px solid #1D9E75" : "1px solid #E2E8F0", padding: "32px", position: "relative", background: "#fff", boxShadow: plan.highlight ? "0 12px 28px rgba(29, 158, 117, 0.15)" : "0 4px 12px rgba(0,0,0,0.03)" }}>
+                {plan.highlight && <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #0F6E56, #1D9E75)", color: "#fff", fontSize: 11, fontWeight: 800, padding: "4px 14px", borderRadius: 20, letterSpacing: "0.05em" }}>MOST POPULAR</div>}
+                <div style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", marginBottom: 6 }}>{plan.name}</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 22 }}>
+                  <span style={{ fontSize: 40, fontWeight: 800, color: plan.highlight ? "#0F6E56" : "#0F172A" }}>{plan.price}</span>
+                  <span style={{ color: "#64748B", fontSize: 14, fontWeight: 500 }}>{plan.desc}</span>
                 </div>
-                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: 8 }}>
+                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 10 }}>
                   {plan.features.map((f, j) => (
-                    <li key={j} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--gray-700)" }}>
-                      <CheckCircle size={15} color="var(--teal-500)" /> {f}
+                    <li key={j} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "#334155" }}>
+                      <CheckCircle size={16} color="#1D9E75" /> {f}
                     </li>
                   ))}
                 </ul>
-                <Link href="/dashboard" style={{ display: "block", textAlign: "center", padding: "11px", borderRadius: "var(--radius-md)", background: plan.highlight ? "var(--teal-700)" : "var(--gray-100)", color: plan.highlight ? "#fff" : "var(--gray-700)", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
+                <Link href="/dashboard" style={{ display: "block", textAlign: "center", padding: "12px", borderRadius: 12, background: plan.highlight ? "linear-gradient(135deg, #0F6E56, #1D9E75)" : "#F1F5F9", color: plan.highlight ? "#fff" : "#334155", textDecoration: "none", fontSize: 14, fontWeight: 700, transition: "all 0.2s" }}>
                   {plan.name === "Free" ? "Get started free" : `Start ${plan.name}`}
                 </Link>
               </div>
@@ -119,9 +122,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ borderTop: "1px solid var(--gray-200)", padding: "32px 24px", textAlign: "center", color: "var(--gray-400)", fontSize: 13 }}>
-        <span style={{ fontFamily: "Syne", fontWeight: 700, color: "var(--teal-700)", marginRight: 16 }}>ResumeAI</span>
-        © {new Date().getFullYear()} ResumeAI. Built to help real people get real jobs.
+      <footer style={{ borderTop: "1px solid #E2E8F0", padding: "36px 24px", textAlign: "center", color: "#64748B", fontSize: 14, background: "#F8FAFC" }}>
+        <span style={{ fontWeight: 800, color: "#0F6E56", marginRight: 12, fontSize: 16 }}>SkillSync</span>
+        © {new Date().getFullYear()} SkillSync. Built to help real people get real jobs.
       </footer>
     </div>
   );
