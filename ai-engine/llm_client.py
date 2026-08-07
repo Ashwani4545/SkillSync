@@ -139,12 +139,39 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             missing = [k for k in potential_missing if not check_kw_in_text(k, full_resume_text)]
 
         total_kws = len(found) + len(missing)
-        if jd and total_kws > 0:
-            raw_score = int(55 + 45 * (len(found) / total_kws)) - (len(format_issues) * 4)
-        else:
-            raw_score = min(98, max(50, 75 + len(skills) * 2 - len(format_issues) * 5))
 
-        score = max(35, min(100, raw_score))
+        # 1. Keyword Score (0 - 35 pts)
+        if jd and total_kws > 0:
+            kw_score = int((len(found) / total_kws) * 35)
+        else:
+            kw_score = min(35, len(found) * 5 + len(skills) * 2)
+
+        # 2. Contact Header Score (0 - 20 pts)
+        contact_score = 0
+        if email_val or ("@" in full_resume_text): contact_score += 5
+        if phone_val or bool(re.search(r"\d{7,}", full_resume_text)): contact_score += 5
+        if loc_val: contact_score += 3
+        if linkedin_val or ("linkedin.com" in full_resume_text): contact_score += 4
+        if github_val or ("github.com" in full_resume_text or "portfolio" in full_resume_text): contact_score += 3
+
+        # 3. Section Structure Score (0 - 20 pts)
+        struct_score = 0
+        if len(summary.strip()) > 30: struct_score += 4
+        if len(exp_context.strip()) > 50: struct_score += 6
+        if len(skills) >= 4: struct_score += 5
+        if len(edu_context.strip()) > 20: struct_score += 5
+
+        # 4. Metric Quantification Score (0 - 15 pts)
+        bullets_in_exp = re.findall(r"[\-•\*]\s*(.*)", exp_context)
+        metrics_count = sum(1 for b in bullets_in_exp if any(c in b for c in ["%", "$", "£", "€"]) or bool(re.search(r"\b\d+\b", b)))
+        metric_ratio = (metrics_count / max(1, len(bullets_in_exp))) if bullets_in_exp else 0.3
+        metric_score = int(metric_ratio * 15)
+
+        # 5. Formatting Quality Score (0 - 10 pts)
+        format_score = max(0, 10 - len(format_issues) * 3)
+
+        # Total Dynamic ATS Score (0 - 100)
+        score = max(30, min(100, kw_score + contact_score + struct_score + metric_score + format_score))
 
         improvements = []
         if missing:
