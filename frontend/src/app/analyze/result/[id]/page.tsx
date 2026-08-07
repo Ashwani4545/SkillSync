@@ -207,7 +207,7 @@ function OverviewTab({ r }: { r: any }) {
         {r.ats && (
           <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
             {/* Header & Score Banner */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, pb: 16, borderBottom: "1px solid var(--gray-100)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid var(--gray-100)" }}>
               <div>
                 <h3 style={{ margin: "0 0 4px", fontSize: 18, fontFamily: "Syne, sans-serif" }}>ATS Compatibility Audit</h3>
                 <p style={{ margin: 0, fontSize: 13, color: "var(--gray-500)" }}>
