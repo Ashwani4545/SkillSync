@@ -2,21 +2,21 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { CheckCircle, Clock, AlertCircle, Loader2 } from "lucide-react";
-import { apiClient } from "@/lib/api";
-import { ScoreRing } from "@/components/analysis/ScoreRing";
-import { PersonaView } from "@/components/analysis/PersonaView";
-import { SectionGrades } from "@/components/analysis/SectionGrades";
-import { BulletRewriter } from "@/components/resume/BulletRewriter";
-import { ToneReport } from "@/components/analysis/ToneReport";
-import { InterviewQuestions } from "@/components/analysis/InterviewQuestions";
-import { SkillAudit } from "@/components/analysis/SkillAudit";
-import { DetailedAudit } from "@/components/analysis/DetailedAudit";
-import { RecruiterHeatmap } from "@/components/analysis/RecruiterHeatmap";
-import { GlobalEmployability } from "@/components/analysis/GlobalEmployability";
-import { TopActions } from "@/components/analysis/TopActions";
-import { CareerRoadmap } from "@/components/analysis/CareerRoadmap";
-import { ATSReadinessReportCard } from "@/components/analysis/ATSReadinessReportCard";
-import { JDMatcher } from "@/components/analysis/JDMatcher";
+import { apiClient } from "../../../../lib/api";
+import { ScoreRing } from "../../../../components/analysis/ScoreRing";
+import { PersonaView } from "../../../../components/analysis/PersonaView";
+import { SectionGrades } from "../../../../components/analysis/SectionGrades";
+import { BulletRewriter } from "../../../../components/resume/BulletRewriter";
+import { ToneReport } from "../../../../components/analysis/ToneReport";
+import { InterviewQuestions } from "../../../../components/analysis/InterviewQuestions";
+import { SkillAudit } from "../../../../components/analysis/SkillAudit";
+import { DetailedAudit } from "../../../../components/analysis/DetailedAudit";
+import { RecruiterHeatmap } from "../../../../components/analysis/RecruiterHeatmap";
+import { GlobalEmployability } from "../../../../components/analysis/GlobalEmployability";
+import { TopActions } from "../../../../components/analysis/TopActions";
+import { CareerRoadmap } from "../../../../components/analysis/CareerRoadmap";
+import { ATSReadinessReportCard } from "../../../../components/analysis/ATSReadinessReportCard";
+import { JDMatcher } from "../../../../components/analysis/JDMatcher";
 
 const POLL_INTERVAL = 2500; // ms
 
