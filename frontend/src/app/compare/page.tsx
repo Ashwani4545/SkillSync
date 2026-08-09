@@ -125,11 +125,12 @@ function ResumeSelector({ label, value, onChange, resumes, color, bg }: any) {
   );
 }
 
+const COMPARE_STEPS = ["Loading both resumes...", "Scoring ATS compatibility...", "Comparing tone & content...", "Evaluating relevance...", "Declaring a winner..."];
+
 function ProcessingState() {
-  const steps = ["Loading both resumes...", "Scoring ATS compatibility...", "Comparing tone & content...", "Evaluating relevance...", "Declaring a winner..."];
   const [idx, setIdx] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setIdx(i => (i + 1) % steps.length), 2000);
+    const t = setInterval(() => setIdx(i => (i + 1) % COMPARE_STEPS.length), 2000);
     return () => clearInterval(t);
   }, []);
   return (
@@ -138,7 +139,7 @@ function ProcessingState() {
         <Loader2 size={26} color="var(--teal-700)" style={{ animation: "spin 1s linear infinite" }} />
       </div>
       <h2 style={{ fontSize: 22, marginBottom: 8 }}>Comparing your resumes</h2>
-      <p style={{ color: "var(--gray-500)" }}>{steps[idx]}</p>
+      <p style={{ color: "var(--gray-500)" }}>{COMPARE_STEPS[idx]}</p>
     </div>
   );
 }
