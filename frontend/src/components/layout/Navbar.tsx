@@ -317,7 +317,7 @@ export function Navbar() {
                   color: "#0F6E56",
                   display: "inline-flex",
                   alignItems: "center",
-                  justify: "center",
+                  justifyContent: "center",
                   marginBottom: 12,
                 }}
               >
@@ -345,7 +345,7 @@ export function Navbar() {
                 width: "100%",
                 display: "flex",
                 alignItems: "center",
-                justify: "center",
+                justifyContent: "center",
                 gap: 10,
                 padding: "12px 16px",
                 borderRadius: 12,
