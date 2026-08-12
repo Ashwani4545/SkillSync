@@ -37,28 +37,35 @@ def run_full_pipeline(resume_json: dict, jd_text=None, user_plan="free", target_
 
 
 def _compute_overall_score(results: dict) -> dict:
-    scores = []
     ats_score = results.get("ats", {}).get("score", 0)
-    if ats_score: scores.append(ats_score)
-    
-    audit_score = results.get("audit", {}).get("score", 0)
-    if audit_score: scores.append(audit_score)
     
     sec_scores = results.get("sections", {})
+    content_score = 0
     if sec_scores:
-        vals = [v.get("score", 0) for v in sec_scores.values() if isinstance(v, dict) and "score" in v]
-        if vals: scores.append(sum(vals) / len(vals))
+        exp_s = sec_scores.get("experience", {}).get("score", 0)
+        if exp_s:
+            content_score = exp_s
+        else:
+            vals = [v.get("score", 0) for v in sec_scores.values() if isinstance(v, dict) and "score" in v]
+            content_score = round(sum(vals) / len(vals)) if vals else 80
+    else:
+        content_score = 80
         
-    tone_score = results.get("tone", {}).get("confidence_score", 0)
-    if tone_score: scores.append(tone_score)
-    
-    overall = round(sum(scores) / len(scores)) if scores else 0
+    tone_dict = results.get("tone", {})
+    tone_score = tone_dict.get("score") or tone_dict.get("confidence_score") or 82
+
+    audit_dict = results.get("audit", {})
+    audit_score = audit_dict.get("score") or 85
+
+    valid_scores = [s for s in [ats_score, content_score, tone_score, audit_score] if s > 0]
+    overall = round(sum(valid_scores) / len(valid_scores)) if valid_scores else 78
+
     return {
         "score": overall,
         "grade": _score_to_grade(overall),
         "breakdown": {
-            "ats":     results.get("ats", {}).get("score", 0),
-            "content": sec_scores.get("experience", {}).get("score", 0) if sec_scores else 0,
+            "ats":     ats_score,
+            "content": content_score,
             "tone":    tone_score,
             "audit":   audit_score,
         },

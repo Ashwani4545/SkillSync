@@ -217,17 +217,94 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             "keyword_density": keyword_density
         })
 
-    # 2. Section Grader (section_grader.py)
-    elif "grade" in system_lower or "section" in system_lower:
-        summary = extract_regex(r"SUMMARY:\s*(.*?)(?=EXPERIENCE:|$)", user)
-        experience = extract_regex(r"EXPERIENCE:\s*(.*?)(?=EDUCATION:|$)", user)
-        education = extract_regex(r"EDUCATION:\s*(.*?)(?=SKILLS:|$)", user)
-        skills_str = extract_regex(r"SKILLS:\s*(.*)", user)
+    # 2. 13-Point Audit Analyzer (audit_analyzer.py)
+    elif "audit" in system_lower or "auditor" in system_lower or "13-point" in system_lower:
+        user_lower = user.lower()
+        skills_str = extract_regex(r"RESUME SKILLS:\s*(.*)", user)
+        skills = [s.strip() for s in skills_str.split(",") if s.strip()] if skills_str else ["Software Development"]
         
-        sum_score = 85 if len(summary) > 20 else 50
-        exp_score = 85 if len(experience) > 30 else 50
-        edu_score = 90 if len(education) > 10 else 50
-        sk_score = 90 if len(skills_str) > 10 else 50
+        email_present = "email:" in user_lower and "@" in user_lower
+        phone_present = "phone:" in user_lower and len(extract_regex(r"Phone:\s*([^\n]+)", user)) > 5
+        linkedin_present = "linkedin" in user_lower or "linkedin.com" in user_lower
+        github_present = "github" in user_lower or "github.com" in user_lower
+        location_present = "location:" in user_lower and len(extract_regex(r"Location:\s*([^\n]+)", user)) > 2
+
+        # Count metrics and bullets
+        bullets = re.findall(r"•\s*([^\n]+)", user)
+        quantified_bullets = [b for b in bullets if re.search(r"\d+%|\$\d+|\d+\s*users|\d+\s*k|\d+\s*m|\d+\s*ms", b, re.I)]
+        quant_pct = int(100 * (len(quantified_bullets) / max(1, len(bullets)))) if bullets else 65
+
+        contact_issues = []
+        if not linkedin_present: contact_issues.append("Missing LinkedIn profile URL in contact header.")
+        if not github_present: contact_issues.append("Missing GitHub/portfolio link in contact header.")
+
+        audit_score = max(65, min(98, 75 + (quant_pct // 5) + len(skills) - len(contact_issues) * 5))
+
+        return json.dumps({
+            "score": audit_score,
+            "parsing": {
+                "status": "pass",
+                "details": f"Parsed {len(bullets)} experience bullets and {len(skills)} skills cleanly into ATS structured schema."
+            },
+            "spelling_grammar": {
+                "status": "pass",
+                "error_count": 0,
+                "errors": []
+            },
+            "quantify_impact": {
+                "status": "pass" if quant_pct >= 50 else "warning",
+                "quantified_percentage": quant_pct,
+                "issues": [b[:80] + "..." for b in bullets if b not in quantified_bullets][:3],
+                "tips": ["Add specific percentage gains, dollar savings, or latency reductions to non-quantified bullets."]
+            },
+            "contact_info": {
+                "status": "pass" if not contact_issues else "warning",
+                "email_present": email_present,
+                "phone_present": phone_present,
+                "location_present": location_present,
+                "linkedin_present": linkedin_present,
+                "github_present": github_present,
+                "issues": contact_issues
+            }
+        })
+
+    # 3. Tone Analyzer (tone_analyzer.py)
+    elif "tone" in system_lower or "passive" in system_lower or "hedging" in system_lower:
+        user_text = user.lower()
+        weak_count = sum(1 for w in ["responsible for", "helped with", "assisted in", "worked on", "involved in"] if w in user_text)
+        tone_score = max(65, min(95, 88 - weak_count * 5))
+        
+        return json.dumps({
+            "confidence_score": tone_score,
+            "score": tone_score,
+            "grade": "A" if tone_score >= 85 else "B" if tone_score >= 75 else "C",
+            "passive_phrases": [
+                {"phrase": "responsible for", "section": "experience", "fix": "Led and executed"}
+            ] if weak_count > 0 else [],
+            "filler_words": ["worked on", "assisted"],
+            "tone_by_section": {
+                "summary": {"score": tone_score, "notes": "Active and confident phrasing"},
+                "experience": {"score": tone_score - 2, "notes": "Strong verb usage throughout bullets"},
+                "skills": {"score": tone_score + 2, "notes": "Direct technical skill list"}
+            },
+            "top_improvements": [
+                "Use strong action verbs like Led, Architected, and Scaled",
+                "Add quantified metrics to support achievements",
+                "Eliminate passive phrasing like 'responsible for'"
+            ]
+        })
+
+    # 4. Section Grader (section_grader.py)
+    elif "grade each section" in system_lower or "section grader" in system_lower:
+        summary = extract_regex(r"SUMMARY:\s*([\s\S]*?)(?=EXPERIENCE:|$)", user)
+        experience = extract_regex(r"EXPERIENCE:\s*([\s\S]*?)(?=EDUCATION:|$)", user)
+        education = extract_regex(r"EDUCATION:\s*([\s\S]*?)(?=SKILLS:|$)", user)
+        skills_str = extract_regex(r"SKILLS:\s*([\s\S]*?)$", user)
+        
+        sum_score = min(95, 65 + (len(summary) // 5)) if len(summary) > 20 else 60
+        exp_score = min(95, 70 + (len(experience) // 10)) if len(experience) > 30 else 65
+        edu_score = min(98, 75 + (len(education) // 5)) if len(education) > 10 else 70
+        sk_score = min(95, 75 + (len(skills_str) // 3)) if len(skills_str) > 5 else 70
         
         overall_score = int((sum_score + exp_score + edu_score + sk_score) / 4)
         
@@ -265,125 +342,6 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
                     "Include links to portfolios or GitHub in the header",
                     "Align skills naturally with the job description keywords"
                 ]
-            }
-        })
-
-    # 2b. 13-Point Audit Analyzer (audit_analyzer.py)
-    elif "auditor" in system_lower or "13-point" in system_lower or "executive resume auditor" in system_lower:
-        user_lower = user.lower()
-        skills_str = extract_regex(r"RESUME SKILLS:\s*(.*)", user)
-        skills = [s.strip() for s in skills_str.split(",") if s.strip()] if skills_str else ["Software Development"]
-        
-        email_present = "email:" in user_lower and "@" in user_lower
-        phone_present = "phone:" in user_lower and len(extract_regex(r"Phone:\s*([^\n]+)", user)) > 5
-        linkedin_present = "linkedin" in user_lower or "linkedin.com" in user_lower
-        github_present = "github" in user_lower or "github.com" in user_lower
-        location_present = "location:" in user_lower and len(extract_regex(r"Location:\s*([^\n]+)", user)) > 2
-
-        # Count metrics and bullets
-        bullets = re.findall(r"•\s*([^\n]+)", user)
-        quantified_bullets = [b for b in bullets if re.search(r"\d+%|\$\d+|\d+\s*users|\d+\s*k|\d+\s*m|\d+\s*ms", b, re.I)]
-        quant_pct = int(100 * (len(quantified_bullets) / max(1, len(bullets)))) if bullets else 65
-
-        # Check repetitions
-        words = re.findall(r"\b[a-z]{5,}\b", user_lower)
-        stopwords = {"resume", "experience", "skills", "education", "target", "role", "demanded", "contact", "details", "projects", "bullet"}
-        freqs = {}
-        for w in words:
-            if w not in stopwords:
-                freqs[w] = freqs.get(w, 0) + 1
-        overused = [{"word": w, "count": c, "severity": "medium" if c > 5 else "low"} for w, c in sorted(freqs.items(), key=lambda x: x[1], reverse=True)[:3] if c >= 3]
-
-        evidenced_skills = [{"skill": sk, "evidenced_in": "Experience / Projects"} for sk in skills[:5]]
-
-        contact_issues = []
-        if not linkedin_present: contact_issues.append("Missing LinkedIn profile URL in contact header.")
-        if not github_present: contact_issues.append("Missing GitHub/portfolio link in contact header.")
-
-        audit_score = max(50, min(98, 70 + (quant_pct // 5) + len(skills) - len(contact_issues) * 5))
-
-        return json.dumps({
-            "score": audit_score,
-            "parsing": {
-                "status": "pass",
-                "details": f"Parsed {len(bullets)} experience bullets and {len(skills)} skills cleanly into ATS structured schema."
-            },
-            "spelling_grammar": {
-                "status": "pass",
-                "error_count": 0,
-                "errors": []
-            },
-            "quantify_impact": {
-                "status": "pass" if quant_pct >= 50 else "warning",
-                "quantified_percentage": quant_pct,
-                "issues": [b[:80] + "..." for b in bullets if b not in quantified_bullets][:3],
-                "tips": ["Add specific percentage gains, dollar savings, or latency reductions to non-quantified bullets."]
-            },
-            "repetitions": {
-                "status": "pass" if not overused else "warning",
-                "repeated_words": overused,
-                "bullet_start_repetitions": []
-            },
-            "bullets_consistency": {
-                "status": "pass",
-                "punctuation_consistent": True,
-                "length_consistent": True,
-                "issues": []
-            },
-            "essential_sections": {
-                "status": "pass",
-                "present": ["summary", "experience", "education", "skills"],
-                "missing": [],
-                "issues": []
-            },
-            "contact_info": {
-                "status": "pass" if not contact_issues else "warning",
-                "email_present": email_present,
-                "phone_present": phone_present,
-                "location_present": location_present,
-                "linkedin_present": linkedin_present,
-                "github_present": github_present,
-                "issues": contact_issues
-            },
-            "section_ordering": {
-                "status": "pass",
-                "order": ["Contact", "Summary", "Experience", "Skills", "Education"],
-                "issues": []
-            },
-            "design_check": {
-                "status": "pass",
-                "word_count": len(user.split()),
-                "page_length_estimate": 1 if len(user.split()) < 500 else 2,
-                "issues": []
-            },
-            "email_header_filename": {
-                "status": "pass",
-                "email_valid": email_present,
-                "header_links_clickable": linkedin_present or github_present,
-                "filename_valid": True,
-                "issues": []
-            },
-            "dates_links_headings": {
-                "status": "pass",
-                "date_format_consistent": True,
-                "headings_have_links": github_present,
-                "issues": []
-            },
-            "credibility_verification": {
-                "status": "pass",
-                "issues": [] if len(skills) >= 3 else ["Include project metrics backing up listed technical skills."],
-                "matched_skills": evidenced_skills
-            },
-            "risk_benchmarking_gaps": {
-                "interview_risk": "low" if audit_score >= 75 else "medium",
-                "peer_benchmarking_percentile": min(95, audit_score + 5),
-                "linkedin_match_status": "matched" if linkedin_present else "missing",
-                "ageism_date_bias_risk": "low",
-                "employment_gaps": [],
-                "career_progression": "clear_trajectory",
-                "skill_evidence_score": min(95, 70 + len(skills) * 3),
-                "leadership_signals": ["Led", "Spearheaded", "Managed", "Architected"],
-                "issues": contact_issues
             }
         })
 
