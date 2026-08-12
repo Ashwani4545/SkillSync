@@ -38,7 +38,7 @@ export function Navbar() {
             height: 64,
             display: "flex",
             alignItems: "center",
-            justify: "space-between",
+            justifyContent: "space-between",
           }}
         >
           {/* Brand Logo */}
