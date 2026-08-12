@@ -277,7 +277,7 @@ export function Navbar() {
             zIndex: 1000,
             display: "flex",
             alignItems: "center",
-            justify: "center",
+            justifyContent: "center",
             padding: 20,
           }}
         >
