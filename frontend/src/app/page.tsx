@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle, Zap, Users, Target, TrendingUp } from "lucide-react";
+import { Navbar } from "../components/layout/Navbar";
 
 const features = [
   {
@@ -39,18 +40,7 @@ export default function LandingPage() {
     <div style={{ background: "linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 50%, #F0FDF4 100%)", minHeight: "100vh", fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
 
       {/* ── Nav ── */}
-      <nav style={{ borderBottom: "1px solid rgba(226, 232, 240, 0.8)", background: "rgba(255, 255, 255, 0.85)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: 1150, margin: "0 auto", padding: "0 24px", height: 70, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #0F6E56, #1D9E75)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 18 }}>S</div>
-            <span style={{ fontWeight: 800, fontSize: 24, background: "linear-gradient(135deg, #064035, #0F6E56)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>SkillSync</span>
-          </div>
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <Link href="/dashboard" style={{ padding: "9px 20px", borderRadius: 12, border: "1px solid #CBD5E1", color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 600, transition: "all 0.2s" }}>Sign in</Link>
-            <Link href="/dashboard" style={{ padding: "10px 22px", borderRadius: 12, background: "linear-gradient(135deg, #0F6E56, #1D9E75)", color: "#fff", textDecoration: "none", fontSize: 14, fontWeight: 700, boxShadow: "0 4px 12px rgba(15, 110, 86, 0.25)" }}>Get started free</Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* ── Hero ── */}
       <section style={{ textAlign: "center", padding: "80px 24px 60px", maxWidth: 840, margin: "0 auto" }}>

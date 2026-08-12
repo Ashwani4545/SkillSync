@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Navbar } from "../../components/layout/Navbar";
 import {
   FileText, Plus, TrendingUp, Clock, Wand2, GitCompare,
   Target, Calendar, BarChart2, Lock, DollarSign, Github,
@@ -46,22 +47,7 @@ export default function DashboardPage() {
   return (
     <div style={{ minHeight:"100vh", background:"var(--gray-50)" }}>
       {/* Nav */}
-      <div style={{ background:"#fff", borderBottom:"1px solid var(--gray-200)", padding:"0 24px" }}>
-        <div style={{ maxWidth:1100, margin:"0 auto", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <span style={{ fontFamily:"Syne", fontWeight:800, fontSize:22, color:"var(--teal-700)" }}>ResumeAI</span>
-          <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-            <span style={{ fontSize:12, fontWeight:700, padding:"4px 12px", borderRadius:20, background:"var(--amber-50)", color:"var(--amber-700)", textTransform:"uppercase", letterSpacing:"0.05em" }}>
-              {userPlan} plan
-            </span>
-            <Link href="/settings" style={{ display:"flex", alignItems:"center", gap:5, padding:"8px 14px", borderRadius:"var(--radius-md)", border:"1px solid var(--gray-200)", color:"var(--gray-600)", textDecoration:"none", fontSize:13 }}>
-              <Settings size={14}/> Settings
-            </Link>
-            <Link href="/billing" style={{ padding:"8px 16px", borderRadius:"var(--radius-md)", background:"var(--teal-700)", color:"#fff", textDecoration:"none", fontSize:13, fontWeight:600 }}>
-              Upgrade
-            </Link>
-          </div>
-        </div>
-      </div>
+      <Navbar />
 
       <div style={{ maxWidth:1100, margin:"0 auto", padding:"40px 24px" }}>
         {/* Feature grid */}
