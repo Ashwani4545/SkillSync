@@ -59,7 +59,7 @@ export function Navbar() {
                 background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
                 display: "flex",
                 alignItems: "center",
-                justify: "center",
+                justifyContent: "center",
                 color: "#fff",
                 fontWeight: 800,
                 fontSize: 16,
