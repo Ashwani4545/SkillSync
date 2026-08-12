@@ -87,8 +87,9 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             pattern = rf"(?:\b|\_){re.escape(kw_clean)}(?:\b|\_)"
             return bool(re.search(pattern, text))
 
-        found = []
-        missing = []
+        # Scan ALL known technical terms present anywhere in full_resume_text
+        found_tech_terms = [kw for kw in KNOWN_TECH_TERMS if check_kw_in_text(kw, full_resume_text)]
+        all_skills_combined = list(set(skills + found_tech_terms))
 
         if jd:
             jd_lower = jd.lower()
@@ -116,23 +117,19 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             for w in top_jd_words:
                 jd_keywords.add(w)
 
-            for kw in sorted(jd_keywords):
-                if check_kw_in_text(kw, full_resume_text):
-                    found.append(kw)
-                else:
-                    missing.append(kw)
+            found = [kw for kw in sorted(jd_keywords) if check_kw_in_text(kw, full_resume_text)]
+            missing = [kw for kw in sorted(jd_keywords) if kw not in found]
         else:
-            # Without JD: match skills present vs target role expectations
-            found = [s for s in skills if check_kw_in_text(s, full_resume_text)]
+            found = all_skills_combined
             if not found:
-                found = [s for s in skills[:5]]
+                found = ["git", "communication", "problem solving"]
             
-            # Recommend common complementary skills based on candidate stack
+            # Complementary skills missing based on tech stack
             potential_missing = []
             if any(k in full_resume_text for k in ["python", "fastapi", "django", "flask"]):
-                potential_missing.extend(["unit testing", "postgresql", "git", "docker"])
+                potential_missing.extend(["unit testing", "postgresql", "docker", "ci/cd"])
             elif any(k in full_resume_text for k in ["javascript", "react", "typescript", "node"]):
-                potential_missing.extend(["typescript", "next.js", "git", "rest api"])
+                potential_missing.extend(["typescript", "next.js", "rest api", "unit testing"])
             else:
                 potential_missing.extend(["git", "ci/cd", "agile"])
 
@@ -144,34 +141,35 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
         if jd and total_kws > 0:
             kw_score = int((len(found) / total_kws) * 35)
         else:
-            kw_score = min(35, len(found) * 5 + len(skills) * 2)
+            # Dynamic keyword score based on total technical & domain terms identified
+            kw_score = min(35, 12 + len(all_skills_combined) * 3)
 
         # 2. Contact Header Score (0 - 20 pts)
         contact_score = 0
-        if email_val or ("@" in full_resume_text): contact_score += 5
+        if email_val or ("@" in full_resume_text): contact_score += 6
         if phone_val or bool(re.search(r"\d{7,}", full_resume_text)): contact_score += 5
         if loc_val: contact_score += 3
-        if linkedin_val or ("linkedin.com" in full_resume_text): contact_score += 4
+        if linkedin_val or ("linkedin.com" in full_resume_text): contact_score += 3
         if github_val or ("github.com" in full_resume_text or "portfolio" in full_resume_text): contact_score += 3
 
         # 3. Section Structure Score (0 - 20 pts)
         struct_score = 0
-        if len(summary.strip()) > 30: struct_score += 4
-        if len(exp_context.strip()) > 50: struct_score += 6
-        if len(skills) >= 4: struct_score += 5
-        if len(edu_context.strip()) > 20: struct_score += 5
+        if len(summary.strip()) > 20: struct_score += 5
+        if len(exp_context.strip()) > 30: struct_score += 6
+        if len(all_skills_combined) >= 3 or len(skills) >= 3: struct_score += 5
+        if len(edu_context.strip()) > 10: struct_score += 4
 
-        # 4. Metric Quantification Score (0 - 15 pts)
-        bullets_in_exp = re.findall(r"[\-•\*]\s*(.*)", exp_context)
-        metrics_count = sum(1 for b in bullets_in_exp if any(c in b for c in ["%", "$", "£", "€"]) or bool(re.search(r"\b\d+\b", b)))
-        metric_ratio = (metrics_count / max(1, len(bullets_in_exp))) if bullets_in_exp else 0.3
-        metric_score = int(metric_ratio * 15)
+        # 4. Metric & Action Verbs Score (0 - 15 pts)
+        action_verbs = ["built", "developed", "created", "designed", "implemented", "led", "managed", "optimized", "engineered", "scaled", "reduced", "increased", "achieved", "automated"]
+        action_verb_count = sum(1 for v in action_verbs if v in full_resume_text)
+        metrics_count = len(re.findall(r"\b\d+%\b|\$\d+|\b\d+\s*(?:users|projects|clients|ms|seconds|hrs|x|percent)\b", full_resume_text))
+        metric_score = min(15, 6 + action_verb_count * 2 + metrics_count * 3)
 
         # 5. Formatting Quality Score (0 - 10 pts)
-        format_score = max(0, 10 - len(format_issues) * 3)
+        format_score = max(6, 10 - len(format_issues))
 
         # Total Dynamic ATS Score (0 - 100)
-        score = max(30, min(100, kw_score + contact_score + struct_score + metric_score + format_score))
+        score = max(45, min(98, kw_score + contact_score + struct_score + metric_score + format_score))
 
         improvements = []
         if missing:
