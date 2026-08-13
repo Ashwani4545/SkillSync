@@ -14,14 +14,24 @@ export const metadata: Metadata = {
   },
 };
 
+const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "";
+const isClerkKeyValid =
+  Boolean(publishableKey) &&
+  publishableKey.startsWith("pk_test_") &&
+  !publishableKey.includes("ZXhhbXBsZQ");
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body>
-          <QueryProvider>{children}</QueryProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+  const content = (
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <QueryProvider>{children}</QueryProvider>
+      </body>
+    </html>
   );
+
+  if (isClerkKeyValid) {
+    return <ClerkProvider publishableKey={publishableKey}>{content}</ClerkProvider>;
+  }
+
+  return content;
 }
