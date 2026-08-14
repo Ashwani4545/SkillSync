@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
-import { Settings, Zap, User, LogIn, Sparkles, Shield, X, Mail } from "lucide-react";
+import { Settings, Zap, User, LogIn, Sparkles, Shield, X, Mail, ChevronDown } from "lucide-react";
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "";
 const isClerkKeyValid =
