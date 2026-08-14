@@ -553,6 +553,40 @@ function FallbackNavbar() {
   const [modalMode, setModalMode] = useState<"signin" | "signup">("signin");
   const [emailInput, setEmailInput] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [userState, setUserState] = useState<{
+    isAuthenticated: boolean;
+    name: string;
+    email: string;
+  }>({
+    isAuthenticated: false,
+    name: "",
+    email: "",
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isAuth =
+        localStorage.getItem("user_authenticated") === "true" ||
+        document.cookie.includes("user_authenticated=true");
+      const name = localStorage.getItem("user_name") || "Ashwani Pandey";
+      const email = localStorage.getItem("user_email") || "ashwani.pandey@gmail.com";
+      setUserState({ isAuthenticated: isAuth, name, email });
+    }
+  }, []);
+
+  const handleSignOut = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("user_authenticated");
+      localStorage.removeItem("user_email");
+      localStorage.removeItem("user_name");
+      localStorage.removeItem("user_provider");
+      document.cookie = "user_authenticated=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+    setUserState({ isAuthenticated: false, name: "", email: "" });
+    setShowUserDropdown(false);
+    window.location.href = "/";
+  };
 
   const handleGoogleAuth = () => {
     setIsGoogleLoading(true);
@@ -648,55 +682,208 @@ function FallbackNavbar() {
             </Link>
           </div>
 
-          {/* Right Auth / Sign In buttons */}
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <button
-              onClick={() => {
-                setModalMode("signin");
-                setShowModal(true);
-              }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "8px 16px",
-                borderRadius: 10,
-                border: "1px solid var(--gray-300, #CBD5E1)",
-                background: "#ffffff",
-                color: "var(--gray-700, #334155)",
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-            >
-              <LogIn size={15} /> Sign in
-            </button>
+          {/* Right Auth / User Account Menu */}
+          {userState.isAuthenticated ? (
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "4px 10px",
+                  borderRadius: 20,
+                  background: "var(--amber-50, #FEF3C7)",
+                  color: "var(--amber-700, #B45309)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                TEAM PLAN
+              </span>
 
-            <button
-              onClick={() => {
-                setModalMode("signup");
-                setShowModal(true);
-              }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "8px 18px",
-                borderRadius: 10,
-                background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
-                color: "#ffffff",
-                border: "none",
-                fontSize: 14,
-                fontWeight: 700,
-                cursor: "pointer",
-                boxShadow: "0 3px 10px rgba(15, 110, 86, 0.25)",
-                transition: "all 0.2s",
-              }}
-            >
-              <Sparkles size={15} /> Get Started Free
-            </button>
-          </div>
+              <Link
+                href="/settings"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "7px 12px",
+                  borderRadius: "var(--radius-md, 8px)",
+                  border: "1px solid var(--gray-200, #E2E8F0)",
+                  color: "var(--gray-700, #334155)",
+                  textDecoration: "none",
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                <Settings size={14} /> Settings
+              </Link>
+
+              <Link
+                href="/billing"
+                style={{
+                  padding: "7px 14px",
+                  borderRadius: "var(--radius-md, 8px)",
+                  background: "var(--teal-700, #0F6E56)",
+                  color: "#fff",
+                  textDecoration: "none",
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                Upgrade
+              </Link>
+
+              {/* Account Dropdown */}
+              <div style={{ position: "relative" }}>
+                <button
+                  onClick={() => setShowUserDropdown(!showUserDropdown)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "4px 10px 4px 6px",
+                    borderRadius: 20,
+                    background: "#F1F5F9",
+                    border: "1px solid #CBD5E1",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      background: "#0F6E56",
+                      color: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 700,
+                      fontSize: 13,
+                    }}
+                  >
+                    {userState.name ? userState.name[0].toUpperCase() : "A"}
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#334155" }}>
+                    {userState.name || "Account"}
+                  </span>
+                  <ChevronDown size={14} color="#64748B" />
+                </button>
+
+                {showUserDropdown && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      top: 42,
+                      width: 220,
+                      background: "#ffffff",
+                      borderRadius: 12,
+                      boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
+                      border: "1px solid #E2E8F0",
+                      padding: 8,
+                      zIndex: 200,
+                    }}
+                  >
+                    <div style={{ padding: "8px 12px", borderBottom: "1px solid #F1F5F9" }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>
+                        {userState.name}
+                      </div>
+                      <div style={{ fontSize: 11, color: "#64748B", wordBreak: "break-all" }}>
+                        {userState.email}
+                      </div>
+                    </div>
+                    <Link
+                      href="/settings"
+                      onClick={() => setShowUserDropdown(false)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "8px 12px",
+                        borderRadius: 8,
+                        fontSize: 13,
+                        color: "#334155",
+                        textDecoration: "none",
+                        marginTop: 4,
+                      }}
+                    >
+                      <Settings size={14} /> Account Settings
+                    </Link>
+                    <button
+                      onClick={handleSignOut}
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "8px 12px",
+                        borderRadius: 8,
+                        fontSize: 13,
+                        color: "#DC2626",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        marginTop: 2,
+                      }}
+                    >
+                      <LogIn size={14} style={{ transform: "rotate(180deg)" }} /> Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <button
+                onClick={() => {
+                  setModalMode("signin");
+                  setShowModal(true);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 16px",
+                  borderRadius: 10,
+                  border: "1px solid var(--gray-300, #CBD5E1)",
+                  background: "#ffffff",
+                  color: "var(--gray-700, #334155)",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                <LogIn size={15} /> Sign in
+              </button>
+
+              <button
+                onClick={() => {
+                  setModalMode("signup");
+                  setShowModal(true);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 18px",
+                  borderRadius: 10,
+                  background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
+                  color: "#ffffff",
+                  border: "none",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: "0 3px 10px rgba(15, 110, 86, 0.25)",
+                  transition: "all 0.2s",
+                }}
+              >
+                <Sparkles size={15} /> Get Started Free
+              </button>
+            </div>
+          )}
         </div>
       </nav>
 
