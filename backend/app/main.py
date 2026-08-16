@@ -1,12 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-import sentry_sdk
+try:
+    import sentry_sdk
+except ImportError:
+    sentry_sdk = None
 
 from app.routers import (
     resume, analysis, jd, career, benchmark, billing,
     health, compare, gap, share, github, recruiter,
-    api_keys, bias, language, admin, whitelabel
+    api_keys, bias, language, admin, whitelabel, two_factor
 )
 from app.db import base  # noqa
 from app.core.config import settings
@@ -70,6 +73,7 @@ app.include_router(api_keys.router,    prefix="/api/v1/keys",         tags=["api
 app.include_router(bias.router,        prefix="/api/v1/bias",         tags=["bias-scanner"])
 app.include_router(language.router,    prefix="/api/v1/language",     tags=["language-adapter"])
 app.include_router(whitelabel.router,  prefix="/api/v1/whitelabel",   tags=["whitelabel"])
+app.include_router(two_factor.router,  prefix="/api/v1/auth/2fa",     tags=["2fa"])
 app.include_router(admin.router,       prefix="/api/v1/admin",        tags=["admin"])
 
 

@@ -55,7 +55,13 @@ def test_upload_and_analysis():
 
     print("\nFinal Poll Result Status:", poll_data.get("status"))
     if poll_data.get("status") == "done":
-        print("SUCCESS! Results JSON keys:", list((poll_data.get("results_json") or {}).keys()))
+        results_json = poll_data["results_json"]
+        print("\n=== DYNAMIC OVERALL SCORE BREAKDOWN ===")
+        print("Overall Score:", results_json["overall_score"]["score"])
+        print("Grade:", results_json["overall_score"]["grade"])
+        print("Breakdown:", results_json["overall_score"]["breakdown"])
+        print("=======================================\n")
+        print("SUCCESS! Results JSON keys:", list(results_json.keys()))
 
 if __name__ == "__main__":
     test_upload_and_analysis()

@@ -20,6 +20,9 @@ import {
   Building,
   MapPin,
   CheckCircle,
+  X,
+  QrCode,
+  Download,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
@@ -53,7 +56,20 @@ export default function SettingsPage() {
     confirmPassword: "",
   });
   const [passwordSaved, setPasswordSaved] = useState(false);
-  const [twoFactor, setTwoFactor] = useState(true);
+
+  // 2FA Flow State
+  const [show2FAModal, setShow2FAModal] = useState(false);
+  const [setup2FAData, setSetup2FAData] = useState<{
+    secret: string;
+    qr_code_base64: string;
+    backup_codes: string[];
+  } | null>(null);
+  const [totpCodeInput, setTotpCodeInput] = useState("");
+  const [is2FALoading, setIs2FALoading] = useState(false);
+  const [twoFactorActive, setTwoFactorActive] = useState(false);
+  const [setupStep, setSetupStep] = useState<"qr" | "backup">("qr");
+  const [secretCopied, setSecretCopied] = useState(false);
+  const [backupsCopied, setBackupsCopied] = useState(false);
 
   // Notifications State
   const [notifications, setNotifications] = useState({
@@ -98,6 +114,76 @@ export default function SettingsPage() {
     setPasswordSaved(true);
     setPasswordState({ currentPassword: "", newPassword: "", confirmPassword: "" });
     setTimeout(() => setPasswordSaved(false), 2500);
+  };
+
+  const start2FASetup = async () => {
+    setIs2FALoading(true);
+    try {
+      const { data } = await apiClient.post("/auth/2fa/setup");
+      setSetup2FAData(data);
+      setSetupStep("qr");
+      setTotpCodeInput("");
+      setShow2FAModal(true);
+    } catch (err: any) {
+      alert("Error generating 2FA setup: " + (err.message || err));
+    } finally {
+      setIs2FALoading(false);
+    }
+  };
+
+  const handleVerify2FACode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!setup2FAData || !totpCodeInput.trim()) return;
+    setIs2FALoading(true);
+    try {
+      const { data } = await apiClient.post("/auth/2fa/verify", {
+        secret: setup2FAData.secret,
+        code: totpCodeInput,
+        backup_codes: setup2FAData.backup_codes,
+      });
+      if (data.verified) {
+        setTwoFactorActive(true);
+        setSetupStep("backup");
+      }
+    } catch (err: any) {
+      alert("Invalid 6-digit verification code. Please check your Authenticator app and try again.");
+    } finally {
+      setIs2FALoading(false);
+    }
+  };
+
+  const handleDisable2FA = async () => {
+    if (!confirm("Are you sure you want to disable Two-Factor Authentication? Your account security level will decrease.")) return;
+    try {
+      await apiClient.post("/auth/2fa/disable");
+      setTwoFactorActive(false);
+      setSetup2FAData(null);
+    } catch (err: any) {
+      alert("Failed to disable 2FA: " + err.message);
+    }
+  };
+
+  const copySecret = () => {
+    if (setup2FAData) navigator.clipboard.writeText(setup2FAData.secret);
+    setSecretCopied(true);
+    setTimeout(() => setSecretCopied(false), 2000);
+  };
+
+  const copyBackupCodes = () => {
+    if (setup2FAData) navigator.clipboard.writeText(setup2FAData.backup_codes.join("\n"));
+    setBackupsCopied(true);
+    setTimeout(() => setBackupsCopied(false), 2000);
+  };
+
+  const downloadBackupCodes = () => {
+    if (!setup2FAData) return;
+    const textContent = `RESUMEAI EMERGENCY RECOVERY BACKUP CODES\nAccount: ${profile.email}\nGenerated: ${new Date().toLocaleString()}\n\n` + setup2FAData.backup_codes.join("\n");
+    const blob = new Blob([textContent], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ResumeAI-2FA-Backup-Codes.txt";
+    a.click();
   };
 
   const createKey = async () => {
@@ -493,7 +579,7 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* TAB 4: SECURITY & PASSWORDS */}
+          {/* TAB 4: SECURITY & PASSWORDS & REAL 2FA */}
           {tab === "security" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               <div style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #E2E8F0", padding: 32, boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
@@ -561,27 +647,60 @@ export default function SettingsPage() {
               </div>
 
               {/* 2FA Card */}
-              <div style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #E2E8F0", padding: 28, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: "#0F172A", marginBottom: 4 }}>Two-Factor Authentication (2FA)</div>
-                  <div style={{ fontSize: 14, color: "#64748B" }}>Add an extra layer of security using an authenticator app.</div>
+              <div style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #E2E8F0", padding: 28, boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <Shield size={20} color={twoFactorActive ? "#0F6E56" : "#64748B"} />
+                      <div style={{ fontSize: 17, fontWeight: 800, color: "#0F172A" }}>Two-Factor Authentication (2FA)</div>
+                    </div>
+                    <p style={{ fontSize: 14, color: "#64748B", margin: "4px 0 0" }}>
+                      Protect your account with Google Authenticator, Authy, or 1Password TOTP verification.
+                    </p>
+                  </div>
+
+                  {twoFactorActive ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 20, background: "#E6F4F1", color: "#0F6E56", fontWeight: 700, fontSize: 13 }}>
+                      <CheckCircle size={15} /> ✓ 2FA Active
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={start2FASetup}
+                      disabled={is2FALoading}
+                      style={{
+                        padding: "10px 20px",
+                        borderRadius: 10,
+                        border: "none",
+                        background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
+                        color: "#ffffff",
+                        fontWeight: 700,
+                        fontSize: 14,
+                        cursor: "pointer",
+                        boxShadow: "0 3px 10px rgba(15, 110, 86, 0.2)",
+                      }}
+                    >
+                      {is2FALoading ? "Generating Setup..." : "Enable 2FA"}
+                    </button>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setTwoFactor(!twoFactor)}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: 8,
-                    border: `1px solid ${twoFactor ? "#A3E0D3" : "#CBD5E1"}`,
-                    background: twoFactor ? "#E6F4F1" : "#ffffff",
-                    color: twoFactor ? "#0F6E56" : "#475569",
-                    fontWeight: 700,
-                    fontSize: 13,
-                    cursor: "pointer",
-                  }}
-                >
-                  {twoFactor ? "✓ 2FA Active" : "Enable 2FA"}
-                </button>
+
+                {twoFactorActive && (
+                  <div style={{ paddingTop: 16, borderTop: "1px solid #F1F5F9", display: "flex", gap: 12 }}>
+                    <button
+                      onClick={() => { setSetupStep("backup"); setShow2FAModal(true); }}
+                      style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #CBD5E1", background: "#ffffff", color: "#334155", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
+                    >
+                      View Emergency Recovery Codes
+                    </button>
+                    <button
+                      onClick={handleDisable2FA}
+                      style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #FCA5A5", background: "#FEF2F2", color: "#991B1B", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
+                    >
+                      Disable 2FA
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -619,6 +738,105 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+
+      {/* 2FA SETUP MODAL DIALOG */}
+      {show2FAModal && setup2FAData && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.65)", backdropFilter: "blur(6px)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: "#ffffff", borderRadius: 20, maxWidth: 520, width: "100%", padding: 32, boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", border: "1px solid #E2E8F0", position: "relative" }}>
+            <button onClick={() => setShow2FAModal(false)} style={{ position: "absolute", right: 20, top: 20, background: "none", border: "none", color: "#64748B", cursor: "pointer" }}>
+              <X size={20} />
+            </button>
+
+            {setupStep === "qr" && (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <Shield size={22} color="#0F6E56" />
+                  <h3 style={{ fontSize: 20, fontWeight: 800, color: "#0F172A", margin: 0 }}>Set Up Two-Factor Auth</h3>
+                </div>
+                <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 20px" }}>
+                  Scan this QR code with Google Authenticator, Authy, or 1Password to bind your account.
+                </p>
+
+                {/* QR Code display */}
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 20, padding: 16, background: "#F8FAFC", borderRadius: 16, border: "1px solid #E2E8F0" }}>
+                  <img src={setup2FAData.qr_code_base64} alt="2FA QR Code" style={{ width: 180, height: 180, borderRadius: 8 }} />
+                </div>
+
+                {/* Manual Secret Entry */}
+                <div style={{ marginBottom: 24 }}>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>OR ENTER SECRET KEY MANUALLY</label>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <code style={{ flex: 1, padding: "10px 12px", background: "#F1F5F9", borderRadius: 8, fontSize: 14, fontFamily: "DM Mono, monospace", color: "#0F172A", fontWeight: 700, wordBreak: "break-all" }}>
+                      {setup2FAData.secret}
+                    </code>
+                    <button type="button" onClick={copySecret} style={{ padding: "10px 14px", borderRadius: 8, border: "none", background: secretCopied ? "#0F6E56" : "#E6F4F1", color: secretCopied ? "#ffffff" : "#0F6E56", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
+                      {secretCopied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
+                    </button>
+                  </div>
+                </div>
+
+                {/* 6-Digit TOTP Verification Form */}
+                <form onSubmit={handleVerify2FACode}>
+                  <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#0F172A", marginBottom: 8 }}>
+                    Enter 6-Digit Code from Authenticator App
+                  </label>
+                  <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+                    <input
+                      type="text"
+                      required
+                      maxLength={8}
+                      placeholder="e.g. 123456"
+                      value={totpCodeInput}
+                      onChange={(e) => setTotpCodeInput(e.target.value)}
+                      style={{ flex: 1, padding: "12px 16px", borderRadius: 10, border: "1.5px solid #0F6E56", fontSize: 18, fontFamily: "DM Mono, monospace", textAlign: "center", letterSpacing: "0.2em", fontWeight: 700, outline: "none" }}
+                    />
+                    <button
+                      type="submit"
+                      disabled={is2FALoading || !totpCodeInput.trim()}
+                      style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #0F6E56, #1D9E75)", color: "#ffffff", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
+                    >
+                      {is2FALoading ? "Verifying..." : "Verify & Activate"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {setupStep === "backup" && (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <CheckCircle size={24} color="#0F6E56" />
+                  <h3 style={{ fontSize: 20, fontWeight: 800, color: "#0F172A", margin: 0 }}>2FA Successfully Activated!</h3>
+                </div>
+                <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 20px" }}>
+                  Save your emergency recovery codes. You can use these to log in if you ever lose your phone.
+                </p>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: 16, background: "#F8FAFC", borderRadius: 12, border: "1px solid #E2E8F0", marginBottom: 20 }}>
+                  {setup2FAData.backup_codes.map((code, idx) => (
+                    <div key={idx} style={{ padding: "8px 12px", background: "#ffffff", borderRadius: 8, border: "1px solid #E2E8F0", fontFamily: "DM Mono, monospace", fontSize: 14, fontWeight: 700, color: "#0F172A", textAlign: "center" }}>
+                      {code}
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+                  <button type="button" onClick={copyBackupCodes} style={{ flex: 1, padding: "10px", borderRadius: 8, border: "1px solid #CBD5E1", background: "#ffffff", color: "#334155", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                    {backupsCopied ? <><Check size={14} /> Copied All</> : <><Copy size={14} /> Copy Codes</>}
+                  </button>
+                  <button type="button" onClick={downloadBackupCodes} style={{ flex: 1, padding: "10px", borderRadius: 8, border: "1px solid #CBD5E1", background: "#ffffff", color: "#334155", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                    <Download size={14} /> Download (.txt)
+                  </button>
+                </div>
+
+                <button onClick={() => setShow2FAModal(false)} style={{ width: "100%", padding: "12px", borderRadius: 10, border: "none", background: "#0F6E56", color: "#ffffff", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                  Finish 2FA Setup
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
