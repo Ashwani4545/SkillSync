@@ -150,7 +150,7 @@ export default function SettingsPage() {
     <div style={{ minHeight: "100vh", background: "#F8FAFC" }}>
       {/* Header */}
       <div style={{ background: "#ffffff", borderBottom: "1px solid #E2E8F0", padding: "0 24px" }}>
-        <div style={{ maxWidth: 1050, margin: "0 auto", height: 64, display: "flex", alignItems: "center", justifyBetween: "space-between" }}>
+        <div style={{ maxWidth: 1050, margin: "0 auto", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <a href="/dashboard" style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 22, color: "#0F6E56", textDecoration: "none" }}>ResumeAI</a>
             <span style={{ color: "#CBD5E1", fontSize: 16 }}>/</span>
