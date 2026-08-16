@@ -122,7 +122,10 @@ function UploadFormContent() {
 
       router.push(`/analyze/result/${analysis.id}`);
     } catch (e: any) {
-      setError(e?.response?.data?.detail || "Upload or analysis initiation failed. Please try again.");
+      console.error("Upload error:", e);
+      const detailMsg = e?.response?.data?.detail;
+      const errorText = typeof detailMsg === "string" ? detailMsg : detailMsg ? JSON.stringify(detailMsg) : (e?.message || "Upload or analysis initiation failed. Please try again.");
+      setError(errorText);
       setUploading(false);
     }
   };

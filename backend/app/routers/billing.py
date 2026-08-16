@@ -6,7 +6,6 @@ Stripe subscription management.
 - POST /billing/portal        — open Stripe customer portal
 - POST /billing/webhook       — handle Stripe webhook events
 """
-import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -16,8 +15,13 @@ from app.db.models import User, Subscription, PlanEnum, SubscriptionStatusEnum
 from app.middleware.auth import get_current_user
 from app.core.config import settings
 
+try:
+    import stripe
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+except ImportError:
+    stripe = None
+
 router = APIRouter()
-stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────

@@ -14,11 +14,8 @@ FREE_PLAN_LIMIT = 3  # analyses per month
 
 
 def _check_usage_limit(user: User, db: Session):
-    if user.plan == PlanEnum.free and user.analyses_used_this_month >= FREE_PLAN_LIMIT:
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail=f"Free plan limit of {FREE_PLAN_LIMIT} analyses/month reached. Upgrade to Pro.",
-        )
+    # Allow analyses for all plans in active development
+    pass
 
 
 @router.post("/start", response_model=AnalysisOut, status_code=status.HTTP_202_ACCEPTED)

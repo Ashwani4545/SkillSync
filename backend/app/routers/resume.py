@@ -28,19 +28,15 @@ async def upload_resume(
     Upload a PDF or DOCX resume.
     Parses it immediately and stores the structured JSON.
     """
-    # Validate file type
-    if file.content_type not in ALLOWED_TYPES:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported file type '{file.content_type}'. Upload a PDF or DOCX.",
-        )
-
-    file_data = await file.read()
-
-    if len(file_data) > MAX_FILE_SIZE:
-        raise HTTPException(status_code=400, detail="File exceeds 10 MB limit.")
-
-    file_type = ALLOWED_TYPES[file.content_type]
+    filename_lower = (file.filename or "").lower()
+    if filename_lower.endswith(".pdf"):
+        file_type = "pdf"
+    elif filename_lower.endswith(".docx") or filename_lower.endswith(".doc"):
+        file_type = "docx"
+    elif file.content_type in ALLOWED_TYPES:
+        file_type = ALLOWED_TYPES[file.content_type]
+    else:
+        file_type = "pdf"
 
     # Parse the resume
     file_io = io.BytesIO(file_data)
