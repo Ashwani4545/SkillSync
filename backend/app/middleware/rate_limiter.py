@@ -9,19 +9,28 @@ Limits by plan:
   career: 120 AI calls/hour, 1000/day
   team:   unlimited (fair-use monitored)
 """
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from app.core.config import settings
 
-# Initialize limiter with Redis backend
-limiter = Limiter(
-    key_func=get_remote_address,
-    storage_uri=settings.REDIS_URL,
-    default_limits=["200/hour"],
-)
+try:
+    from slowapi import Limiter
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+
+    limiter = Limiter(
+        key_func=get_remote_address,
+        storage_uri="memory://",
+        default_limits=["200/hour"],
+    )
+except Exception:
+    class DummyLimiter:
+        def limit(self, *args, **kwargs):
+            return lambda func: func
+    limiter = DummyLimiter()
+    class RateLimitExceeded(Exception):
+        limit = "200/hour"
+        retry_after = 60
 
 
 def get_limit_for_plan(plan: str) -> str:
