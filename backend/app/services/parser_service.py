@@ -29,17 +29,49 @@ from typing import BinaryIO
 
 def parse_pdf(file: BinaryIO) -> dict:
     """Extract and structure text from a PDF file."""
-    import pdfplumber
-
     full_text = ""
-    with pdfplumber.open(file) as pdf:
-        for page in pdf.pages:
-            text = page.extract_text(x_tolerance=3, y_tolerance=3)
-            if text:
-                full_text += text + "\n"
 
-    # If pdfplumber returns nothing, file is likely scanned — try OCR
+    # Strategy 1: pdfplumber
+    try:
+        import pdfplumber
+        file.seek(0)
+        with pdfplumber.open(file) as pdf:
+            for page in pdf.pages:
+                text = page.extract_text(x_tolerance=3, y_tolerance=3)
+                if text:
+                    full_text += text + "\n"
+    except Exception as e:
+        print(f"[PDF parser] pdfplumber error: {e}")
+
+    # Strategy 2: PyMuPDF / fitz
     if not full_text.strip():
+        try:
+            import fitz
+            file.seek(0)
+            doc = fitz.open(stream=file.read(), filetype="pdf")
+            for page in doc:
+                text = page.get_text()
+                if text:
+                    full_text += text + "\n"
+        except Exception as e:
+            print(f"[PDF parser] fitz error: {e}")
+
+    # Strategy 3: pypdf
+    if not full_text.strip():
+        try:
+            from pypdf import PdfReader
+            file.seek(0)
+            reader = PdfReader(file)
+            for page in reader.pages:
+                text = page.extract_text()
+                if text:
+                    full_text += text + "\n"
+        except Exception as e:
+            print(f"[PDF parser] pypdf error: {e}")
+
+    # Strategy 4: OCR for scanned PDFs
+    if not full_text.strip():
+        file.seek(0)
         full_text = _ocr_pdf(file)
 
     return _structure_text(full_text)
@@ -50,6 +82,7 @@ def _ocr_pdf(file: BinaryIO) -> str:
     try:
         import pytesseract
         from pdf2image import convert_from_bytes
+        file.seek(0)
         images = convert_from_bytes(file.read())
         return "\n".join(pytesseract.image_to_string(img) for img in images)
     except Exception:
