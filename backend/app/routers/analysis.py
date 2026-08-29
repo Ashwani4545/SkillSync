@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from app.db.session import get_db
+from app.db.session import get_db, SessionLocal
 from app.db.models import Analysis, Resume, User, AnalysisStatusEnum, PlanEnum
 from app.middleware.auth import get_current_user
 from app.schemas.analysis import AnalysisStartRequest, AnalysisOut, AnalysisListOut
@@ -79,8 +79,13 @@ def start_analysis(
         def _run_in_background():
             try:
                 from workers.analyze_task import run_analysis as direct_run
+                # NOTE: direct_run.run is already a *bound* method (Celery's
+                # bind=True wraps `self` in automatically) — passing `None`
+                # here as well used to fill `analysis_id` positionally AND
+                # via the `analysis_id=` kwarg below, raising "got multiple
+                # values for argument 'analysis_id'" and silently leaving
+                # every fallback-path analysis stuck in "pending" forever.
                 direct_run.run(
-                    None,
                     analysis_id=analysis_id_str,
                     resume_json=resume_json_val,
                     jd_text=jd_text_val,
@@ -90,6 +95,17 @@ def start_analysis(
                 )
             except Exception as direct_err:
                 print(f"[Direct Run Error] {direct_err}")
+                # Surface the failure instead of leaving the analysis stuck
+                # in "pending" with no way for the client to know it died.
+                fail_db = SessionLocal()
+                try:
+                    failed_analysis = fail_db.query(Analysis).filter(Analysis.id == analysis_id_str).first()
+                    if failed_analysis and failed_analysis.status != AnalysisStatusEnum.done:
+                        failed_analysis.status = AnalysisStatusEnum.failed
+                        failed_analysis.error_msg = str(direct_err)
+                        fail_db.commit()
+                finally:
+                    fail_db.close()
 
         threading.Thread(target=_run_in_background, daemon=True).start()
 

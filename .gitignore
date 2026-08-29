@@ -1,32 +1,58 @@
-# Environments
-.env
-*.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Dependency directories
+# Dependencies
 node_modules/
-jspm_packages/
+frontend/node_modules/
+.pnp
+.pnp.js
 
-# Build outputs
+# Production build outputs
 .next/
+frontend/.next/
 out/
 build/
 dist/
 
-# Python cache and venv
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+env/
 venv/
 .venv/
-env/
-.env/
+ENV/
+*.egg-info/
+.eggs/
 
-# Local database
+# Database & Storage
 *.db
+*.sqlite
+*.sqlite3
+resumeai.db
+backend/resumeai.db
+postgres_data/
+redis_data/
 
-# Local junction
-ai_engine
+# Environment Variables
+.env
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
+backend/.env
+
+# Logs & Diagnostics
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.system_generated/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE & Scratch
+.idea/
+.vscode/
+scratch/

@@ -38,6 +38,10 @@ async def upload_resume(
     else:
         file_type = "pdf"
 
+    file_data = await file.read()
+    if len(file_data) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="File exceeds the 10 MB limit.")
+
     # Parse the resume
     file_io = io.BytesIO(file_data)
     try:

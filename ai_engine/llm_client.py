@@ -217,58 +217,16 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             "keyword_density": keyword_density
         })
 
-    # 2. 13-Point Audit Analyzer (audit_analyzer.py)
-    elif "audit" in system_lower or "auditor" in system_lower or "13-point" in system_lower:
-        user_lower = user.lower()
-        skills_str = extract_regex(r"RESUME SKILLS:\s*(.*)", user)
-        skills = [s.strip() for s in skills_str.split(",") if s.strip()] if skills_str else ["Software Development"]
-        
-        email_present = "email:" in user_lower and "@" in user_lower
-        phone_present = "phone:" in user_lower and len(extract_regex(r"Phone:\s*([^\n]+)", user)) > 5
-        linkedin_present = "linkedin" in user_lower or "linkedin.com" in user_lower
-        github_present = "github" in user_lower or "github.com" in user_lower
-        location_present = "location:" in user_lower and len(extract_regex(r"Location:\s*([^\n]+)", user)) > 2
+    # NOTE: the older, simpler "13-Point Audit" branch that used to live here
+    # (hardcoded `spelling_grammar: {status: pass, errors: []}` regardless of
+    # actual input) was removed — it was an earlier `elif "audit"...` branch
+    # that unconditionally shadowed the fuller audit_analyzer implementation
+    # further down in this function (see the comment block below, "13. Risk,
+    # Benchmarking & Gaps" / "Comprehensive CV Audit"), which has real
+    # spelling/grammar, quantify-impact, and repetition detection but could
+    # never be reached because Python's elif takes the first match.
 
-        # Count metrics and bullets
-        bullets = re.findall(r"•\s*([^\n]+)", user)
-        quantified_bullets = [b for b in bullets if re.search(r"\d+%|\$\d+|\d+\s*users|\d+\s*k|\d+\s*m|\d+\s*ms", b, re.I)]
-        quant_pct = int(100 * (len(quantified_bullets) / max(1, len(bullets)))) if bullets else 65
 
-        contact_issues = []
-        if not linkedin_present: contact_issues.append("Missing LinkedIn profile URL in contact header.")
-        if not github_present: contact_issues.append("Missing GitHub/portfolio link in contact header.")
-
-        audit_score = max(65, min(98, 75 + (quant_pct // 5) + len(skills) - len(contact_issues) * 5))
-
-        return json.dumps({
-            "score": audit_score,
-            "parsing": {
-                "status": "pass",
-                "details": f"Parsed {len(bullets)} experience bullets and {len(skills)} skills cleanly into ATS structured schema."
-            },
-            "spelling_grammar": {
-                "status": "pass",
-                "error_count": 0,
-                "errors": []
-            },
-            "quantify_impact": {
-                "status": "pass" if quant_pct >= 50 else "warning",
-                "quantified_percentage": quant_pct,
-                "issues": [b[:80] + "..." for b in bullets if b not in quantified_bullets][:3],
-                "tips": ["Add specific percentage gains, dollar savings, or latency reductions to non-quantified bullets."]
-            },
-            "contact_info": {
-                "status": "pass" if not contact_issues else "warning",
-                "email_present": email_present,
-                "phone_present": phone_present,
-                "location_present": location_present,
-                "linkedin_present": linkedin_present,
-                "github_present": github_present,
-                "issues": contact_issues
-            }
-        })
-
-    # 3. Tone Analyzer (tone_analyzer.py)
     elif "tone" in system_lower or "passive" in system_lower or "hedging" in system_lower:
         user_text = user.lower()
         weak_count = sum(1 for w in ["responsible for", "helped with", "assisted in", "worked on", "involved in"] if w in user_text)
@@ -1559,8 +1517,11 @@ def call_claude(
     max_tokens: int = 1000, retries: int = 2,
     temperature: float = 0.3, allow_fallback: bool = True,
 ) -> str:
-    # Local Development Mock Fallback
-    if os.environ.get("ENVIRONMENT") == "development" or os.environ.get("ANTHROPIC_API_KEY", "").startswith("sk-ant-..."):
+    # Local Development Mock Fallback — explicit opt-in only, so a real
+    # ANTHROPIC_API_KEY set in ENVIRONMENT=development still calls Claude.
+    # Set USE_MOCK_LLM=true to force the heuristic mock (e.g. to save API
+    # credits while iterating on non-AI code).
+    if os.environ.get("USE_MOCK_LLM", "").lower() == "true" or os.environ.get("ANTHROPIC_API_KEY", "").startswith("sk-ant-..."):
         return _generate_smart_mock_response(system, user)
 
     client = _get_claude()

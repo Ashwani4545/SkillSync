@@ -34,9 +34,8 @@ class Settings(BaseSettings):
     STRIPE_TEAM_PRICE_ID: str = ""
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: str = ""
 
-    # Pinecone (optional)
-    PINECONE_API_KEY: str = ""
-    PINECONE_ENVIRONMENT: str = ""
+    # Mock LLM (dev/testing — skips real Claude/OpenAI calls)
+    USE_MOCK_LLM: bool = False
 
     # Monitoring
     SENTRY_DSN: str = ""
