@@ -78,13 +78,40 @@ def parse_pdf(file: BinaryIO) -> dict:
 
 
 def _ocr_pdf(file: BinaryIO) -> str:
-    """Fallback OCR for image-based or scanned PDFs."""
+    """Fallback OCR for image-based or scanned PDFs using native Apple Vision or PyTesseract."""
+    try:
+        import pymupdf
+        import Vision
+        from Cocoa import NSData
+        file.seek(0)
+        pdf_bytes = file.read()
+        doc = pymupdf.open(stream=pdf_bytes, filetype="pdf")
+        full_text = []
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+            pix = page.get_pixmap(dpi=200)
+            img_data = pix.tobytes("png")
+            ns_data = NSData.dataWithBytes_length_(img_data, len(img_data))
+            handler = Vision.VNImageRequestHandler.alloc().initWithData_options_(ns_data, None)
+            request = Vision.VNRecognizeTextRequest.alloc().init()
+            request.setRecognitionLevel_(Vision.VNRequestTextRecognitionLevelAccurate)
+            request.setUsesLanguageCorrection_(True)
+            success, error = handler.performRequests_error_([request], None)
+            if success:
+                page_text = [str(cand[0].string()) for obs in request.results() if (cand := obs.topCandidates_(1))]
+                full_text.append('\n'.join(page_text))
+        extracted = ('\n\n'.join(full_text)).strip()
+        if extracted:
+            return extracted
+    except Exception as vision_err:
+        print(f"[OCR Vision Fallback] Vision error: {vision_err}")
+
     try:
         import pytesseract
         from pdf2image import convert_from_bytes
         file.seek(0)
         images = convert_from_bytes(file.read())
-        return "\n".join(pytesseract.image_to_string(img) for img in images)
+        return '\n'.join(pytesseract.image_to_string(img) for img in images)
     except Exception:
         return ""
 
