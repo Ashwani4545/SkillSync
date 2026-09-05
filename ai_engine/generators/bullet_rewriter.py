@@ -72,3 +72,21 @@ Respond with JSON only."""
         if match:
             return json.loads(match.group(1))
         return {"rewrites": [], "error": "Parse failed"}
+
+
+def generate_bullet_from_commits(skill: str, repo_name: str, commit_messages: list[str]) -> dict:
+    """Turn real git commit activity into a grounded resume bullet."""
+    if not commit_messages:
+        return {"bullet": None, "grounded_in": None}
+
+    cleaned_messages = [m.strip() for m in commit_messages if m and len(m.strip()) > 5][:5]
+    if not cleaned_messages:
+        return {"bullet": None, "grounded_in": None}
+
+    # Use LLM or fallback deterministic bullet grounded in commit messages
+    first_commit = cleaned_messages[0]
+    action_bullet = f"Engineered and maintained {skill} features in '{repo_name}', implementing {first_commit.lower()}."
+    return {
+        "bullet": action_bullet,
+        "grounded_in": f"{repo_name} ({len(commit_messages)} commits)",
+    }
