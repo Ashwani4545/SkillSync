@@ -52,6 +52,11 @@ app.add_middleware(
 
 # ── Phase 1 — Foundation ──────────────────────────────────────────────────────
 app.include_router(health.router,      prefix="/api/v1",              tags=["health"])
+
+@app.get("/health", tags=["health"])
+def root_health():
+    return {"status": "ok"}
+
 app.include_router(resume.router,      prefix="/api/v1/resume",       tags=["resume"])
 app.include_router(analysis.router,    prefix="/api/v1/analysis",     tags=["analysis"])
 app.include_router(billing.router,     prefix="/api/v1/billing",      tags=["billing"])
