@@ -56,11 +56,17 @@ def run_benchmark_endpoint(body: BenchmarkRequest, db: Session=Depends(get_db), 
         def _execute_benchmark():
             try:
                 from ai_engine.comparators.benchmark_engine import benchmark_resume
-                res = benchmark_resume(
-                    resume.parsed_json,
-                    body.target_role,
-                    body.industry or "technology"
-                )
+                from app.db.session import SessionLocal
+                thread_db = SessionLocal()
+                try:
+                    res = benchmark_resume(
+                        resume.parsed_json,
+                        body.target_role,
+                        body.industry or "technology",
+                        db=thread_db,
+                    )
+                finally:
+                    thread_db.close()
                 benchmark_tasks_store[task_id] = {"status": "done", "result": res}
             except Exception as ex:
                 benchmark_tasks_store[task_id] = {"status": "failed", "error": str(ex)}

@@ -1,5 +1,5 @@
 # Web framework
-fastapi==0.111.0
+fastapi==0.110.3
 uvicorn[standard]==0.29.0
 python-multipart==0.0.9
 
@@ -23,10 +23,8 @@ anthropic==0.26.0
 openai==1.30.1
 langchain==0.2.1
 langchain-anthropic==0.1.13
-sentence-transformers==2.7.0
 
 # NLP
-spacy==3.7.4
 nltk==3.8.1
 
 # File parsing

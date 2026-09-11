@@ -4,6 +4,7 @@ Cross-references claimed skills against experience bullets.
 Flags skills listed without any supporting evidence in the resume.
 """
 import json
+from ai_engine.json_utils import safe_parse_llm_json
 from ai_engine.llm_client import call_claude
 
 SKILL_SYSTEM = """You are a skeptical technical recruiter who verifies skill claims.
@@ -46,11 +47,4 @@ Respond with JSON only."""
 
     response = call_claude(system=SKILL_SYSTEM, user=user_prompt, max_tokens=1000)
 
-    try:
-        return json.loads(response)
-    except json.JSONDecodeError:
-        import re
-        match = re.search(r"```json\s*([\s\S]+?)\s*```", response)
-        if match:
-            return json.loads(match.group(1))
-        return {"authenticity_score": 0, "error": "Parse failed"}
+    return safe_parse_llm_json(response, fallback={"authenticity_score": 0, "error": "Parse failed"})

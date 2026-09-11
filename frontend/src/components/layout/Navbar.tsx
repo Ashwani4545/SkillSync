@@ -10,6 +10,7 @@ import {
   SignedOut,
 } from "@clerk/nextjs";
 import { Sparkles, ChevronDown } from "lucide-react";
+import { isClerkConfigured } from "@/lib/clerk";
 
 // Primary links shown directly in the bar. Everything else lives in the
 // "More" dropdown so every route in frontend/src/app is actually reachable
@@ -31,12 +32,6 @@ const MORE_LINKS = [
   { href: "/github", label: "GitHub Sync" },
   { href: "/recruiter", label: "Recruiter View" },
 ];
-
-const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "";
-const isClerkKeyValid =
-  Boolean(publishableKey) &&
-  publishableKey.startsWith("pk_test_") &&
-  !publishableKey.includes("ZXhhbXBsZQ");
 
 export function Navbar() {
   const [showMore, setShowMore] = useState(false);
@@ -164,9 +159,12 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Auth */}
+        {/* Auth — real Clerk components, no mocked state. Falls back to a
+            disabled-looking placeholder if Clerk env vars aren't set yet,
+            instead of crashing (SignedIn/SignedOut require a ClerkProvider,
+            which layout.tsx only renders when isClerkConfigured() is true). */}
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          {isClerkKeyValid ? (
+          {isClerkConfigured() ? (
             <>
               <SignedIn>
                 <Link
@@ -182,20 +180,6 @@ export function Navbar() {
                   }}
                 >
                   Settings
-                </Link>
-                <Link
-                  href="/billing"
-                  style={{
-                    padding: "7px 14px",
-                    borderRadius: 8,
-                    background: "var(--teal-700, #0F6E56)",
-                    color: "#fff",
-                    textDecoration: "none",
-                    fontSize: 13,
-                    fontWeight: 600,
-                  }}
-                >
-                  Upgrade
                 </Link>
                 <UserButton afterSignOutUrl="/" />
               </SignedIn>
@@ -240,26 +224,19 @@ export function Navbar() {
               </SignedOut>
             </>
           ) : (
-            <>
-              <Link
-                href="/dashboard"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "8px 18px",
-                  borderRadius: 10,
-                  background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
-                  color: "#ffffff",
-                  textDecoration: "none",
-                  fontSize: 14,
-                  fontWeight: 700,
-                  boxShadow: "0 3px 10px rgba(15, 110, 86, 0.25)",
-                }}
-              >
-                <Sparkles size={15} /> Dashboard
-              </Link>
-            </>
+            <span
+              title="Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY to enable sign-in"
+              style={{
+                padding: "8px 14px",
+                borderRadius: 10,
+                border: "1px dashed var(--gray-300, #CBD5E1)",
+                color: "var(--gray-400, #94A3B8)",
+                fontSize: 13,
+                fontWeight: 600,
+              }}
+            >
+              Sign-in not configured
+            </span>
           )}
         </div>
       </div>

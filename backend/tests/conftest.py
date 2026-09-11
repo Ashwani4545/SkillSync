@@ -25,6 +25,7 @@ import os
 # Must be set before any app modules are imported.
 os.environ.setdefault("ENVIRONMENT", "test")
 os.environ.setdefault("USE_MOCK_LLM", "true")
+os.environ.setdefault("USE_MOCK_EMBEDDINGS", "true")
 os.environ.setdefault("ANTHROPIC_API_KEY", "test_key")
 os.environ.setdefault("CLERK_SECRET_KEY", "test_key")
 os.environ.setdefault("DATABASE_URL", "sqlite:///./test_resumeai.db")
@@ -64,7 +65,7 @@ def test_user(db_session):
     user = User(
         email="test@example.com",
         clerk_id="user_test_123",
-        plan=PlanEnum.pro,
+        plan=PlanEnum.career,  # career+ required by require_career (used by /github/proof-score)
     )
     db_session.add(user)
     db_session.commit()

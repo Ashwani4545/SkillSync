@@ -5,6 +5,7 @@ Returns original and rewritten versions for each bullet.
 """
 import json
 from ai_engine.llm_client import call_claude
+from ai_engine.json_utils import safe_parse_llm_json
 
 BULLET_SYSTEM = """You are a professional resume writer. Rewrite weak resume bullets.
 
@@ -64,29 +65,53 @@ Respond with JSON only."""
 
     response = call_claude(system=BULLET_SYSTEM, user=user_prompt, max_tokens=2000)
 
-    try:
-        return json.loads(response)
-    except json.JSONDecodeError:
-        import re
-        match = re.search(r"```json\s*([\s\S]+?)\s*```", response)
-        if match:
-            return json.loads(match.group(1))
-        return {"rewrites": [], "error": "Parse failed"}
+    return safe_parse_llm_json(response, fallback={"rewrites": [], "error": "Parse failed"})
+
+
+COMMIT_BULLET_SYSTEM = """You are a professional resume writer. Draft a single resume bullet
+point based ONLY on real commit history and repo evidence provided — do not invent
+metrics, scale, or outcomes that aren't reasonably inferable from the evidence given.
+
+Formula: Strong Action Verb + What Was Built + Technology Used + Inferred Impact (only if evidence supports it)
+
+Rules:
+- Ground every claim in the provided commit messages / repo metadata — if the evidence
+  doesn't support a specific number, describe the work qualitatively instead of guessing a metric
+- Under 20 words
+- Never use "responsible for", "helped", "assisted", "worked on"
+
+Respond ONLY with valid JSON. Schema:
+{
+  "bullet": "<the drafted bullet>",
+  "grounded_in": "<one short phrase citing what evidence it's based on, e.g. '14 commits adding REST endpoints'>",
+  "confidence": "high|medium|low"
+}"""
 
 
 def generate_bullet_from_commits(skill: str, repo_name: str, commit_messages: list[str]) -> dict:
-    """Turn real git commit activity into a grounded resume bullet."""
+    """
+    Drafts a resume bullet for `skill` sourced from real commit messages in
+    `repo_name`, rather than rewriting resume text the user already wrote.
+    Used by the Proof Score flow to offer a replacement for skills flagged
+    as "weak" or "unverified" — see backend/app/routers/github.py's
+    /proof-score endpoint.
+    """
     if not commit_messages:
-        return {"bullet": None, "grounded_in": None}
+        return {
+            "bullet": None,
+            "grounded_in": None,
+            "confidence": "low",
+            "note": "No commit messages available to draft from.",
+        }
 
-    cleaned_messages = [m.strip() for m in commit_messages if m and len(m.strip()) > 5][:5]
-    if not cleaned_messages:
-        return {"bullet": None, "grounded_in": None}
+    commit_list = "\n".join(f"- {m}" for m in commit_messages[:15])
+    user_prompt = f"""Draft one resume bullet demonstrating the skill "{skill}",
+based on this real commit history from the repo "{repo_name}":
 
-    # Use LLM or fallback deterministic bullet grounded in commit messages
-    first_commit = cleaned_messages[0]
-    action_bullet = f"Engineered and maintained {skill} features in '{repo_name}', implementing {first_commit.lower()}."
-    return {
-        "bullet": action_bullet,
-        "grounded_in": f"{repo_name} ({len(commit_messages)} commits)",
-    }
+{commit_list}
+
+Respond with JSON only."""
+
+    response = call_claude(system=COMMIT_BULLET_SYSTEM, user=user_prompt, max_tokens=300)
+
+    return safe_parse_llm_json(response, fallback={"bullet": None, "grounded_in": None, "confidence": "low", "error": "Parse failed"})

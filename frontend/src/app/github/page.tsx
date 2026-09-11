@@ -1,7 +1,23 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Github, Loader2, Star, GitFork, ExternalLink, CheckCircle, Plus } from "lucide-react";
+import { Github, Loader2, Star, GitFork, ExternalLink, CheckCircle, Plus, AlertTriangle, XCircle, Share2, Copy } from "lucide-react";
 import { apiClient } from "@/lib/api";
+
+type ProofSkill = {
+  skill: string;
+  status: "verified" | "weak" | "unverified";
+  confidence: number;
+  evidence_repo: string | null;
+  evidence_url: string | null;
+  reason: string | null;
+  suggested_bullet: string | null;
+};
+
+const STATUS_META: Record<ProofSkill["status"], { color: string; bg: string; Icon: any; label: string }> = {
+  verified:   { color: "var(--teal-700)",  bg: "var(--teal-50)",  Icon: CheckCircle,   label: "Verified" },
+  weak:       { color: "var(--amber-700)", bg: "var(--amber-50)", Icon: AlertTriangle, label: "Weak evidence" },
+  unverified: { color: "var(--coral-700)", bg: "var(--coral-50)", Icon: XCircle,       label: "Unverified" },
+};
 
 export default function GithubPage() {
   const [resumes, setResumes]     = useState<any[]>([]);
@@ -11,6 +27,12 @@ export default function GithubPage() {
   const [status, setStatus]       = useState<"idle"|"loading"|"done"|"error">("idle");
   const [error, setError]         = useState("");
   const [copied, setCopied]       = useState<string | null>(null);
+
+  // Proof Score state
+  const [proofStatus, setProofStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [proofData, setProofData]     = useState<any | null>(null);
+  const [proofError, setProofError]   = useState("");
+  const [shareUrl, setShareUrl]       = useState<string | null>(null);
 
   useEffect(() => {
     apiClient.get("/resume/").then(({ data }) => setResumes(data.resumes ?? []));
@@ -36,6 +58,33 @@ export default function GithubPage() {
     navigator.clipboard.writeText(text);
     setCopied(key);
     setTimeout(() => setCopied(null), 1500);
+  };
+
+  const handleComputeProofScore = async () => {
+    if (!username.trim() || !resumeId) return;
+    setProofStatus("loading"); setProofError(""); setProofData(null); setShareUrl(null);
+    try {
+      const { data } = await apiClient.post("/github/proof-score", {
+        github_username: username.trim(),
+        resume_id: resumeId,
+        generate_bullets_for_weak_skills: true,
+      });
+      setProofData(data);
+      setProofStatus("done");
+    } catch (e: any) {
+      setProofError(e.response?.data?.detail || e.message || "Proof Score computation failed.");
+      setProofStatus("error");
+    }
+  };
+
+  const handleShareProofScore = async () => {
+    if (!proofData?.proof_score_id) return;
+    try {
+      const { data } = await apiClient.post(`/github/proof-score/${proofData.proof_score_id}/share`);
+      setShareUrl(`${window.location.origin}/share/proof/${data.share_token}`);
+    } catch {
+      /* non-fatal — share button just stays as-is */
+    }
   };
 
   const repos: any[]   = result?.repos ?? [];
@@ -82,10 +131,17 @@ export default function GithubPage() {
 
             {error && <div style={{ padding: "12px 16px", background: "var(--coral-50)", borderRadius: "var(--radius-md)", color: "var(--coral-700)", fontSize: 14, marginBottom: 16 }}>{error}</div>}
 
-            <button onClick={handleMatch} disabled={!username.trim() || !resumeId}
-              style={{ padding: "14px 32px", borderRadius: "var(--radius-md)", border: "none", background: (!username.trim() || !resumeId) ? "var(--gray-200)" : "var(--gray-900)", color: (!username.trim() || !resumeId) ? "var(--gray-400)" : "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-              <Github size={18} /> Match GitHub to resume
-            </button>
+            <div style={{ display: "flex", gap: 12 }}>
+              <button onClick={handleMatch} disabled={!username.trim() || !resumeId}
+                style={{ padding: "14px 32px", borderRadius: "var(--radius-md)", border: "none", background: (!username.trim() || !resumeId) ? "var(--gray-200)" : "var(--gray-900)", color: (!username.trim() || !resumeId) ? "var(--gray-400)" : "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+                <Github size={18} /> Match GitHub to resume
+              </button>
+              <button onClick={handleComputeProofScore} disabled={!username.trim() || !resumeId || proofStatus === "loading"}
+                style={{ padding: "14px 32px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--teal-700)", background: "#fff", color: (!username.trim() || !resumeId) ? "var(--gray-400)" : "var(--teal-700)", fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+                {proofStatus === "loading" ? <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> : <CheckCircle size={18} />}
+                Compute Proof Score
+              </button>
+            </div>
           </>
         )}
 
@@ -194,6 +250,95 @@ export default function GithubPage() {
             <button onClick={() => { setStatus("idle"); setResult(null); }} style={{ padding: "11px 24px", borderRadius: "var(--radius-md)", border: "1px solid var(--gray-200)", background: "#fff", color: "var(--gray-600)", fontSize: 14, cursor: "pointer" }}>
               Try another username
             </button>
+          </div>
+        )}
+
+        {proofError && (
+          <div style={{ padding: "12px 16px", background: "var(--coral-50)", borderRadius: "var(--radius-md)", color: "var(--coral-700)", fontSize: 14, marginTop: 16 }}>
+            {proofError}
+          </div>
+        )}
+
+        {proofStatus === "done" && proofData && (
+          <div style={{ marginTop: 32 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div>
+                <h2 style={{ fontSize: 22, margin: "0 0 4px" }}>Proof Score</h2>
+                <p style={{ color: "var(--gray-500)", fontSize: 13, margin: 0 }}>
+                  Every claimed skill, checked against real commit history — not just keyword matching.
+                </p>
+              </div>
+              <button onClick={handleShareProofScore}
+                style={{ padding: "10px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--gray-200)", background: "#fff", color: "var(--gray-700)", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                <Share2 size={14} /> Share
+              </button>
+            </div>
+
+            {shareUrl && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: "var(--teal-50)", borderRadius: "var(--radius-md)", marginBottom: 16, fontSize: 13 }}>
+                <span style={{ flex: 1, color: "var(--teal-700)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{shareUrl}</span>
+                <button onClick={() => navigator.clipboard.writeText(shareUrl)}
+                  style={{ border: "none", background: "none", cursor: "pointer", color: "var(--teal-700)", display: "flex", alignItems: "center" }}>
+                  <Copy size={14} />
+                </button>
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
+              <div style={{ flex: "1 1 140px", background: "var(--gray-900)", borderRadius: "var(--radius-lg)", padding: "18px 20px", textAlign: "center" }}>
+                <div style={{ fontSize: 32, fontWeight: 800, color: "#fff", fontFamily: "Syne" }}>{proofData.overall_score}</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", fontWeight: 600, marginTop: 2 }}>Overall Proof Score</div>
+              </div>
+              <div style={{ flex: "1 1 120px", background: "var(--teal-50)", borderRadius: "var(--radius-lg)", padding: "18px 20px", textAlign: "center" }}>
+                <div style={{ fontSize: 28, fontWeight: 800, color: "var(--teal-700)", fontFamily: "Syne" }}>{proofData.verified_count}</div>
+                <div style={{ fontSize: 12, color: "var(--teal-700)", fontWeight: 600, marginTop: 2 }}>Verified</div>
+              </div>
+              <div style={{ flex: "1 1 120px", background: "var(--amber-50)", borderRadius: "var(--radius-lg)", padding: "18px 20px", textAlign: "center" }}>
+                <div style={{ fontSize: 28, fontWeight: 800, color: "var(--amber-700)", fontFamily: "Syne" }}>{proofData.weak_count}</div>
+                <div style={{ fontSize: 12, color: "var(--amber-700)", fontWeight: 600, marginTop: 2 }}>Weak</div>
+              </div>
+              <div style={{ flex: "1 1 120px", background: "var(--coral-50)", borderRadius: "var(--radius-lg)", padding: "18px 20px", textAlign: "center" }}>
+                <div style={{ fontSize: 28, fontWeight: 800, color: "var(--coral-700)", fontFamily: "Syne" }}>{proofData.unverified_count}</div>
+                <div style={{ fontSize: 12, color: "var(--coral-700)", fontWeight: 600, marginTop: 2 }}>Unverified</div>
+              </div>
+            </div>
+
+            <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 8 }}>
+              {(proofData.skills ?? []).map((s: ProofSkill) => {
+                const meta = STATUS_META[s.status];
+                const Icon = meta.Icon;
+                return (
+                  <div key={s.skill} style={{ padding: "16px 18px", borderBottom: "1px solid var(--gray-100)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontWeight: 700, fontSize: 14, color: "var(--gray-900)" }}>{s.skill}</span>
+                        <span style={{ display: "flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 999, fontSize: 11, fontWeight: 700, color: meta.color, background: meta.bg }}>
+                          <Icon size={11} /> {meta.label}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: 12, color: "var(--gray-400)" }}>{s.confidence}% confidence</span>
+                    </div>
+                    {s.reason && <p style={{ fontSize: 12.5, color: "var(--gray-500)", margin: "0 0 4px" }}>{s.reason}</p>}
+                    {s.evidence_repo && s.evidence_url && (
+                      <a href={s.evidence_url} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, color: "var(--teal-700)", textDecoration: "none", fontWeight: 600 }}>
+                        → {s.evidence_repo}
+                      </a>
+                    )}
+                    {s.suggested_bullet && (
+                      <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 8 }}>
+                        <div style={{ flex: 1, padding: "10px 14px", background: "var(--gray-50)", borderRadius: "var(--radius-md)", fontSize: 13, color: "var(--gray-800)", lineHeight: 1.5, fontStyle: "italic" }}>
+                          • {s.suggested_bullet}
+                        </div>
+                        <button onClick={() => copyBullet(s.suggested_bullet!, `proof-${s.skill}`)}
+                          style={{ padding: "10px 14px", borderRadius: "var(--radius-md)", border: "none", background: copied === `proof-${s.skill}` ? "var(--teal-700)" : "var(--gray-900)", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap", flexShrink: 0 }}>
+                          {copied === `proof-${s.skill}` ? <><CheckCircle size={12} /> Copied</> : <><Plus size={12} /> Copy bullet</>}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

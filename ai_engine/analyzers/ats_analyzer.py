@@ -5,6 +5,7 @@ Checks keyword density vs JD, formatting issues, and parseable structure.
 """
 import json
 from ai_engine.llm_client import call_claude
+from ai_engine.json_utils import safe_parse_llm_json
 from ai_engine.prompts.ats_prompt import ATS_SYSTEM_PROMPT, build_ats_user_prompt
 
 
@@ -38,12 +39,4 @@ def analyze_ats(
         max_tokens=1200,
     )
 
-    try:
-        return json.loads(response_text)
-    except json.JSONDecodeError:
-        # Extract JSON from markdown fences if present
-        import re
-        match = re.search(r"```json\s*([\s\S]+?)\s*```", response_text)
-        if match:
-            return json.loads(match.group(1))
-        return {"score": 0, "error": "Failed to parse ATS response", "raw": response_text}
+    return safe_parse_llm_json(response_text, fallback={"score": 0, "error": "Failed to parse ATS response"})

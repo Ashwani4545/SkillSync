@@ -3,6 +3,7 @@ interview_predictor.py
 Generates likely recruiter/interviewer questions based on weak or vague resume spots.
 """
 import json
+from ai_engine.json_utils import safe_parse_llm_json
 from ai_engine.llm_client import call_claude
 
 INTERVIEW_SYSTEM = """You are a senior technical recruiter with 15 years of experience.
@@ -52,11 +53,4 @@ Respond with JSON only."""
 
     response = call_claude(system=INTERVIEW_SYSTEM, user=user_prompt, max_tokens=1500)
 
-    try:
-        return json.loads(response)
-    except json.JSONDecodeError:
-        import re
-        match = re.search(r"```json\s*([\s\S]+?)\s*```", response)
-        if match:
-            return json.loads(match.group(1))
-        return {"questions": [], "error": "Parse failed"}
+    return safe_parse_llm_json(response, fallback={"questions": [], "error": "Parse failed"})

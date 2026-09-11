@@ -6,6 +6,7 @@ against a specific job description. Returns a winner with detailed reasoning.
 Phase 2 feature — Pro plan and above.
 """
 import json, re
+from ai_engine.json_utils import safe_parse_llm_json
 from ai_engine.llm_client import call_claude
 from ai_engine.analyzers.ats_analyzer import analyze_ats
 from ai_engine.analyzers.section_grader import grade_sections
@@ -70,19 +71,12 @@ Respond with JSON only."""
         temperature=0.2,
     )
 
-    try:
-        result = json.loads(response)
-    except json.JSONDecodeError:
-        match = re.search(r"```json\s*([\s\S]+?)\s*```", response)
-        if match:
-            result = json.loads(match.group(1))
-        else:
-            result = {
-                "winner": "tie",
-                "confidence": "low",
-                "error": "Parse failed",
-                "overall_scores": {"A": scores_a["ats"], "B": scores_b["ats"]},
-            }
+    result = safe_parse_llm_json(response, fallback={
+        "winner": "tie",
+        "confidence": "low",
+        "error": "Parse failed",
+        "overall_scores": {"A": scores_a["ats"], "B": scores_b["ats"]},
+    })
 
     # Attach raw scores
     result["raw_scores"] = {"A": scores_a, "B": scores_b}

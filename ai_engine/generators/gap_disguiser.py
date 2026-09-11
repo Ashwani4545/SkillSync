@@ -6,6 +6,7 @@ Never fabricates — only reframes truthfully what likely happened.
 Phase 2 feature — Pro plan and above.
 """
 import json, re
+from ai_engine.json_utils import safe_parse_llm_json
 from datetime import datetime
 from ai_engine.llm_client import call_claude
 
@@ -71,13 +72,7 @@ Respond with JSON only."""
         temperature=0.3,
     )
 
-    try:
-        return json.loads(response)
-    except json.JSONDecodeError:
-        match = re.search(r"```json\s*([\s\S]+?)\s*```", response)
-        if match:
-            return json.loads(match.group(1))
-        return {"gaps_detected": [], "error": "Parse failed"}
+    return safe_parse_llm_json(response, fallback={"gaps_detected": [], "error": "Parse failed"})
 
 
 def _build_timeline(experience: list) -> str:

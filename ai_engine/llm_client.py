@@ -303,6 +303,74 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             }
         })
 
+    # 2.5 Commit-to-Bullet Generator (bullet_rewriter.generate_bullet_from_commits) —
+    # checked BEFORE the general bullet-rewrite branch below, since both
+    # prompts mention "resume bullet" and would otherwise collide.
+    elif "commit history" in system_lower and "resume bullet" in system_lower:
+        commit_lines = re.findall(r"^-\s*(.+)$", user, re.MULTILINE)
+        skill_match = re.search(r'skill\s*"([^"]+)"', user)
+        repo_match = re.search(r'repo\s*"([^"]+)"', user)
+        skill = skill_match.group(1) if skill_match else "this skill"
+        repo = repo_match.group(1) if repo_match else "the repository"
+
+        if not commit_lines:
+            return json.dumps({"bullet": None, "grounded_in": None, "confidence": "low"})
+
+        verbs = ["Built", "Implemented", "Developed", "Shipped", "Engineered"]
+        verb = verbs[len(commit_lines) % len(verbs)]
+        topic = commit_lines[0][:60].rstrip(".")
+
+        return json.dumps({
+            "bullet": f"{verb} {topic.lower()} using {skill} in a {len(commit_lines)}-commit "
+                       f"feature effort on {repo}.",
+            "grounded_in": f"{len(commit_lines)} commits in '{repo}', incl. \"{commit_lines[0][:50]}\"",
+            "confidence": "high" if len(commit_lines) >= 5 else "medium",
+        })
+
+    # 2.8 Grounded Benchmark Comparator (benchmark_engine.py, real-data path)
+    # and 2.9 Industry Benchmarking Comparator (benchmark_engine.py, simulated
+    # path) — BOTH must be checked before "3. Bullet Rewriter" below: the
+    # simulated benchmark prompt's own JSON schema literally contains the
+    # field name "bullet_quality", which used to satisfy the bullet-rewriter
+    # branch's overly-broad `"bullet" in system_lower` check first, so the
+    # benchmark simulation mock never actually ran (silently returned
+    # bullet-rewrite-shaped data instead). Moving these two branches earlier
+    # fixes that collision.
+    elif "you have been given real" in system_lower and "do not invent" in system_lower:
+        role = extract_regex(r"TARGET ROLE:\s*(.*)", user) or "this role"
+        return json.dumps({
+            "top_gap": f"Quantification is the largest measured gap against similar top-tier {role} resumes — "
+                       f"add specific metrics (%, $, time saved) to more bullets.",
+            "strengths_vs_benchmark": ["Structure and skills breadth are in line with the matched benchmark set."],
+            "role_specific_advice": [
+                "Add a number, percentage, or dollar figure to each experience bullet where possible.",
+                "Expand 1-2 experience entries with an additional quantified outcome.",
+                f"Mirror language from top {role} resumes' skill groupings, not just individual keywords.",
+            ],
+        })
+
+    elif "benchmarks resumes against" in system_lower or "benchmark_system" in system_lower:
+        role = extract_regex(r"TARGET ROLE:\s*(.*)", user) or "Software Engineer"
+        industry = extract_regex(r"INDUSTRY:\s*(.*)", user) or "Technology"
+        quant_rate = int(extract_regex(r"Quantified bullets:\s*\d+/\d+\s*\((\d+)%\)", user, "40"))
+
+        overall = min(99, max(45, 55 + quant_rate // 3))
+
+        return json.dumps({
+            "overall_percentile": overall,
+            "dimensions": {
+                "bullet_quality":    { "user_score": 75, "benchmark_score": 85, "gap": -10, "tips": ["Incorporate stronger action verbs into experience statements."] },
+                "keyword_density":   { "user_score": 80, "benchmark_score": 88, "gap": -8, "tips": ["Align tech keywords closer to the target role requirements."] },
+                "quantification":    { "user_score": quant_rate, "benchmark_score": 75, "gap": quant_rate - 75, "tips": ["Include specific figures/outcomes in at least 60% of experience descriptions."] },
+                "experience_depth":  { "user_score": 82, "benchmark_score": 80, "gap": 2, "tips": ["Experience matches the industry baseline, focus on showing leadership."] },
+                "skills_relevance":  { "user_score": 85, "benchmark_score": 90, "gap": -5, "tips": ["Group and catalog tech skills systematically."] },
+                "structure":         { "user_score": 90, "benchmark_score": 85, "gap": 5, "tips": ["Structure is clean and parses effectively."] }
+            },
+            "top_gap": "Lack of quantified results and impact metrics in core role descriptions.",
+            "strengths_vs_benchmark": ["Structure and clear visual layout of resume sections", "Broad baseline tech skills matching target industry"],
+            "role_specific_advice": [f"For '{role}' in '{industry}', prioritize demonstrating ownership of microservices, cloud deployments, and system performance scaling."]
+        })
+
     # 3. Bullet Rewriter (bullet_rewriter.py)
     elif "rewrite" in system_lower or "bullet" in system_lower:
         bullets_block = extract_regex(r"BULLETS TO REWRITE:\s*([\s\S]*)", user)
@@ -562,29 +630,6 @@ def _generate_smart_mock_response(system: str, user: str) -> str:
             "loser_issues": ["Contains several passive descriptions ('responsible for')", "Incomplete technical details in header"],
             "recommendation": f"Use Version {winner} as it presents much stronger outcomes and matches standard ATS filters better.",
             "best_of_both": ["Combine the cleaner contact header format of Version A with the experience details of Version B."]
-        })
-
-    # 9. Industry Benchmarking Comparator (benchmark_engine.py)
-    elif "benchmarks resumes against" in system_lower or "benchmark_system" in system_lower:
-        role = extract_regex(r"TARGET ROLE:\s*(.*)", user) or "Software Engineer"
-        industry = extract_regex(r"INDUSTRY:\s*(.*)", user) or "Technology"
-        quant_rate = int(extract_regex(r"Quantified bullets:\s*\d+/\d+\s*\((\d+)%\)", user, "40"))
-        
-        overall = min(99, max(45, 55 + quant_rate // 3))
-        
-        return json.dumps({
-            "overall_percentile": overall,
-            "dimensions": {
-                "bullet_quality":    { "user_score": 75, "benchmark_score": 85, "gap": -10, "tips": ["Incorporate stronger action verbs into experience statements."] },
-                "keyword_density":   { "user_score": 80, "benchmark_score": 88, "gap": -8, "tips": ["Align tech keywords closer to the target role requirements."] },
-                "quantification":    { "user_score": quant_rate, "benchmark_score": 75, "gap": quant_rate - 75, "tips": ["Include specific figures/outcomes in at least 60% of experience descriptions."] },
-                "experience_depth":  { "user_score": 82, "benchmark_score": 80, "gap": 2, "tips": ["Experience matches the industry baseline, focus on showing leadership."] },
-                "skills_relevance":  { "user_score": 85, "benchmark_score": 90, "gap": -5, "tips": ["Group and catalog tech skills systematically."] },
-                "structure":         { "user_score": 90, "benchmark_score": 85, "gap": 5, "tips": ["Structure is clean and parses effectively."] }
-            },
-            "top_gap": "Lack of quantified results and impact metrics in core role descriptions.",
-            "strengths_vs_benchmark": ["Structure and clear visual layout of resume sections", "Broad baseline tech skills matching target industry"],
-            "role_specific_advice": [f"For '{role}' in '{industry}', prioritize demonstrating ownership of microservices, cloud deployments, and system performance scaling."]
         })
 
     # 10. Career Path Trajectory Predictor (career_predictor.py)
@@ -1521,8 +1566,38 @@ def call_claude(
     # ANTHROPIC_API_KEY set in ENVIRONMENT=development still calls Claude.
     # Set USE_MOCK_LLM=true to force the heuristic mock (e.g. to save API
     # credits while iterating on non-AI code).
-    if os.environ.get("USE_MOCK_LLM", "").lower() == "true" or os.environ.get("ANTHROPIC_API_KEY", "").startswith("sk-ant-..."):
+    if (
+        os.environ.get("USE_MOCK_LLM", "").lower() == "true"
+        or os.environ.get("ANTHROPIC_API_KEY", "").startswith("sk-ant-...")
+        or (
+            not os.environ.get("ANTHROPIC_API_KEY")
+            and os.environ.get("ENVIRONMENT", "development") == "development"
+        )
+    ):
         return _generate_smart_mock_response(system, user)
+
+    return call_claude_raw(
+        system, user, model=model, max_tokens=max_tokens, retries=retries,
+        temperature=temperature, allow_fallback=allow_fallback,
+    )
+
+
+def call_claude_raw(
+    system: str, user: str,
+    model: str = "claude-sonnet-4-20250514",
+    max_tokens: int = 1000, retries: int = 2,
+    temperature: float = 0.3, allow_fallback: bool = True,
+) -> str:
+    """
+    Always calls the real Anthropic API — never the keyword-dispatch mock in
+    _generate_smart_mock_response(). Extracted out of call_claude() so that
+    callers with their own, distinctive system prompt (whose text might
+    accidentally contain trigger words like "bullet" or "benchmark" that the
+    mock dispatcher keys off of — e.g. career_intelligence_engine.py's
+    system prompt, which literally contains section headers named
+    "BULLET REWRITER" and "BENCHMARKING") can implement their own dedicated
+    mock instead of risking a silent mismatch against an unrelated branch.
+    """
 
     client = _get_claude()
     last_error = None

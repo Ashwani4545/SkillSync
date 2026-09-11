@@ -6,6 +6,7 @@ resume JSON that maximizes keyword match while preserving authentic voice.
 Phase 2 feature — Pro plan and above.
 """
 import json, re
+from ai_engine.json_utils import safe_parse_llm_json
 from ai_engine.llm_client import call_claude
 
 JD_ADAPTER_SYSTEM = """You are a professional resume writer who specializes in tailoring
@@ -80,14 +81,7 @@ Return the fully tailored resume as JSON. Do not fabricate anything."""
         temperature=0.2,
     )
 
-    try:
-        result = json.loads(response)
-    except json.JSONDecodeError:
-        match = re.search(r"```json\s*([\s\S]+?)\s*```", response)
-        if match:
-            result = json.loads(match.group(1))
-        else:
-            result = {"error": "Parse failed", "raw": response[:500]}
+    result = safe_parse_llm_json(response, fallback={"error": "Parse failed"})
 
     # Always preserve original contact info
     result["contact"] = resume_json.get("contact", {})

@@ -4,6 +4,7 @@ Detects passive language, filler phrases, hedging, and weak word choices.
 Returns a confidence score per section and rewrite suggestions.
 """
 import json, re
+from ai_engine.json_utils import safe_parse_llm_json
 from ai_engine.llm_client import call_claude
 
 WEAK_PHRASES = [
@@ -60,14 +61,7 @@ Respond with JSON only."""
 
     response = call_claude(system=TONE_SYSTEM, user=user_prompt, max_tokens=1200)
 
-    try:
-        return json.loads(response)
-    except json.JSONDecodeError:
-        import re as _re
-        match = _re.search(r"```json\s*([\s\S]+?)\s*```", response)
-        if match:
-            return json.loads(match.group(1))
-        return {"confidence_score": 82, "score": 82, "error": "Parse failed"}
+    return safe_parse_llm_json(response, fallback={"confidence_score": 82, "score": 82, "error": "Parse failed"})
 
 
 def _pre_flag_weak_phrases(text: str) -> list[str]:

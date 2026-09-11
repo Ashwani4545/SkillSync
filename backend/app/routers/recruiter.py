@@ -11,7 +11,7 @@ from typing import Optional
 import io
 
 from app.db.session import get_db
-from app.db.models import User, Resume, Analysis, AnalysisStatusEnum
+from app.db.models import User, Resume, Analysis, AnalysisStatusEnum, ProofScore
 from app.middleware.auth import get_current_user, require_team
 from app.services import parser_service, storage_service
 from workers.analyze_task import run_analysis
@@ -133,8 +133,12 @@ def list_candidates(
     current_user: User = Depends(require_team),
     skip: int = 0,
     limit: int = 50,
+    min_proof_score: Optional[int] = None,
+    sort_by: str = "uploaded_at",  # "uploaded_at" | "score" | "proof_score"
 ):
-    """List all uploaded candidates with their latest analysis scores."""
+    """List all uploaded candidates with their latest analysis score AND
+    latest Proof Score — lets a recruiter filter/sort by verified GitHub
+    evidence rather than keyword match alone."""
     from sqlalchemy import desc
 
     resumes = (
@@ -156,15 +160,32 @@ def list_candidates(
         )
         score = None
         if latest and latest.results_json:
-            score = latest.results_json.get("overall_score", {}).get("score")
+            score = latest.results_json.get("career_readiness", {}).get("overall_career_readiness")
+
+        latest_proof = (
+            db.query(ProofScore)
+            .filter(ProofScore.resume_id == r.id)
+            .order_by(desc(ProofScore.created_at))
+            .first()
+        )
+
+        if min_proof_score is not None and (not latest_proof or latest_proof.overall_score < min_proof_score):
+            continue
 
         candidates.append({
             "resume_id":   str(r.id),
             "filename":    r.filename,
             "name":        r.parsed_json.get("contact", {}).get("name") if r.parsed_json else None,
             "score":       score,
+            "proof_score": latest_proof.overall_score if latest_proof else None,
+            "proof_score_verified_count": latest_proof.verified_count if latest_proof else None,
             "analysis_id": str(latest.id) if latest else None,
             "uploaded_at": r.created_at.isoformat(),
         })
+
+    if sort_by == "score":
+        candidates.sort(key=lambda c: (c["score"] is not None, c["score"]), reverse=True)
+    elif sort_by == "proof_score":
+        candidates.sort(key=lambda c: (c["proof_score"] is not None, c["proof_score"]), reverse=True)
 
     return {"candidates": candidates, "total": len(candidates)}

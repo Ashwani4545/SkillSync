@@ -16,6 +16,7 @@ Performs a detailed 13-to-15 point audit of the CV:
 13. Risk analysis (interview risk, benchmarking, ageism/date bias, gaps, career progression, leadership signals).
 """
 import json
+from ai_engine.json_utils import safe_parse_llm_json
 from ai_engine.llm_client import call_claude
 
 AUDIT_SYSTEM_PROMPT = """You are a senior executive resume auditor and career consultant.
@@ -202,15 +203,4 @@ def analyze_audit(
         max_tokens=2500,
     )
 
-    try:
-        return json.loads(response_text)
-    except json.JSONDecodeError:
-        # Extract JSON from markdown fences if present
-        import re
-        match = re.search(r"```json\s*([\s\S]+?)\s*```", response_text)
-        if match:
-            try:
-                return json.loads(match.group(1))
-            except json.JSONDecodeError:
-                pass
-        return {"score": 85, "error": "Failed to parse Audit response", "raw": response_text}
+    return safe_parse_llm_json(response_text, fallback={"score": 85, "error": "Failed to parse Audit response"})

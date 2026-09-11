@@ -1,22 +1,21 @@
 "use client";
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useCallback, useState, useEffect, Suspense } from "react";
+import { useDropzone } from "react-dropzone";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Upload, FileText, X, Loader2, ChevronDown, ChevronUp, Briefcase, Code, FileCode, CheckCircle, ShieldCheck, RefreshCw, FolderOpen } from "lucide-react";
+import { Upload, FileText, X, Loader2, ChevronDown, ChevronUp, Briefcase, Code, FileCode, CheckCircle, ShieldCheck } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
 function UploadFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isUniversalModeParam = searchParams.get("mode") === "universal";
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
   
   // Universal mode state
   const [isUniversalMode, setIsUniversalMode] = useState(isUniversalModeParam);
 
-  // Target Job Info states
+  // New Target Job Info states
   const [targetRole, setTargetRole] = useState("");
   const [demandedSkills, setDemandedSkills] = useState("");
   
@@ -36,40 +35,22 @@ function UploadFormContent() {
     }
   }, [isUniversalModeParam]);
 
-  // File selection handler
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (selected) {
-      setError("");
-      setFile(selected);
-    }
-    // reset input value so re-selecting same file triggers change
-    if (e.target) e.target.value = "";
-  };
+  // Resume Dropzone
+  const onDrop = useCallback((accepted: File[]) => {
+    setError("");
+    if (accepted[0]) setFile(accepted[0]);
+  }, []);
 
-  // Drag and drop handlers
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-    const droppedFile = e.dataTransfer.files?.[0];
-    if (droppedFile) {
-      setError("");
-      setFile(droppedFile);
-    }
-  };
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "application/pdf": [".pdf"],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+    },
+    maxFiles: 1,
+    maxSize: 10 * 1024 * 1024,
+    onDropRejected: (r) => setError(r[0]?.errors[0]?.message || "Invalid resume file"),
+  });
 
   // JD File Handler
   const handleJdFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,7 +78,6 @@ function UploadFormContent() {
       setError(err?.response?.data?.detail || "Failed to extract text from Job Description.");
     } finally {
       setExtractingJd(false);
-      if (e.target) e.target.value = "";
     }
   };
 
@@ -144,37 +124,31 @@ function UploadFormContent() {
     } catch (e: any) {
       console.error("Upload error:", e);
       const detailMsg = e?.response?.data?.detail;
-      const errorText = typeof detailMsg === "string" ? detailMsg : detailMsg ? JSON.stringify(detailMsg) : (e?.message || "Upload or analysis initiation failed. Please check backend connection.");
+      const errorText = typeof detailMsg === "string" ? detailMsg : detailMsg ? JSON.stringify(detailMsg) : (e?.message || "Upload or analysis initiation failed. Please try again.");
       setError(errorText);
       setUploading(false);
     }
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
-      <div style={{ width: "100%", maxWidth: 680, background: "#ffffff", borderRadius: "24px", boxShadow: "0 20px 40px -10px rgba(15, 23, 42, 0.12)", padding: "40px", border: "1px solid #E2E8F0" }}>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
+      <div style={{ width: "100%", maxWidth: 650, background: "rgba(255, 255, 255, 0.95)", backdropFilter: "blur(10px)", borderRadius: "24px", boxShadow: "0 20px 40px rgba(0,0,0,0.1)", padding: "40px", border: "1px solid rgba(255,255,255,0.8)" }}>
 
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1.5, color: "var(--teal-700)", textTransform: "uppercase", background: "var(--teal-50)", border: "1px solid var(--teal-100)", padding: "6px 16px", borderRadius: 20 }}>
-            Enterprise AI Resume Auditor
-          </span>
-          <h1 style={{ fontSize: 30, fontWeight: 800, color: "var(--gray-900)", marginTop: 12, marginBottom: 8, fontFamily: "Syne, sans-serif", letterSpacing: "-0.02em" }}>
-            Audit & Benchmark Resume
-          </h1>
-          <p style={{ color: "var(--gray-500)", fontSize: 14, margin: 0 }}>
-            Identify ATS keywords, recruiter friction, metric improvements, and career calibration.
-          </p>
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 2, color: "var(--teal-700)", textTransform: "uppercase", background: "var(--teal-50)", padding: "6px 16px", borderRadius: 20 }}>Interactive CV Auditor</span>
+          <h1 style={{ fontSize: 32, fontWeight: 800, color: "var(--gray-900)", marginTop: 12, marginBottom: 8, fontFamily: "Syne, sans-serif" }}>Audit Your Resume</h1>
+          <p style={{ color: "var(--gray-500)", fontSize: 15 }}>Find mistakes, grammar issues, quantify impact, and adapt your CV directly to a job role.</p>
         </div>
 
         {/* Mode Selector Toggle */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 24, padding: 4, background: "var(--gray-100)", borderRadius: 14 }}>
+        <div style={{ display: "flex", gap: 10, marginBottom: 24, padding: 4, background: "var(--gray-100)", borderRadius: 12 }}>
           <button
             type="button"
             onClick={() => setIsUniversalMode(false)}
             style={{
-              flex: 1, padding: "11px 14px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
-              background: !isUniversalMode ? "#ffffff" : "transparent", color: !isUniversalMode ? "var(--teal-800)" : "var(--gray-500)",
-              boxShadow: !isUniversalMode ? "0 2px 8px rgba(15, 23, 42, 0.06)" : "none", transition: "all 0.2s"
+              flex: 1, padding: "10px 14px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
+              background: !isUniversalMode ? "#fff" : "transparent", color: !isUniversalMode ? "var(--teal-800)" : "var(--gray-500)",
+              boxShadow: !isUniversalMode ? "0 2px 6px rgba(0,0,0,0.06)" : "none", transition: "all 0.2s"
             }}
           >
             Targeted Job Role & Skills
@@ -183,9 +157,9 @@ function UploadFormContent() {
             type="button"
             onClick={() => setIsUniversalMode(true)}
             style={{
-              flex: 1, padding: "11px 14px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
-              background: isUniversalMode ? "var(--teal-700)" : "transparent", color: isUniversalMode ? "#ffffff" : "var(--gray-500)",
-              boxShadow: isUniversalMode ? "0 2px 8px rgba(15, 110, 86, 0.2)" : "none", transition: "all 0.2s",
+              flex: 1, padding: "10px 14px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
+              background: isUniversalMode ? "var(--teal-700)" : "transparent", color: isUniversalMode ? "#fff" : "var(--gray-500)",
+              boxShadow: isUniversalMode ? "0 2px 6px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 6
             }}
           >
@@ -194,146 +168,87 @@ function UploadFormContent() {
         </div>
 
         {error && (
-          <div style={{ padding: "14px 18px", background: "var(--coral-50)", borderLeft: "4px solid var(--coral-500)", borderRadius: "10px", color: "var(--coral-700)", fontSize: 14, marginBottom: 24, fontWeight: 500 }}>
+          <div style={{ padding: "14px 18px", background: "var(--coral-50)", borderLeft: "4px solid var(--coral-500)", borderRadius: "8px", color: "var(--coral-800)", fontSize: 14, marginBottom: 24 }}>
             {error}
           </div>
         )}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 22, marginBottom: 32 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 24, marginBottom: 32 }}>
           
           {/* Target Role & Skills Input Group */}
           {!isUniversalMode ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div>
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--gray-600)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  <Briefcase size={14} color="var(--teal-600)" /> Target Role *
+                  <Briefcase size={14} color="var(--teal-600)" /> Target Role
                 </label>
                 <input
                   type="text"
                   value={targetRole}
                   onChange={(e) => setTargetRole(e.target.value)}
-                  placeholder="e.g. Full Stack Engineer"
-                  style={{ width: "100%", padding: "12px 14px", borderRadius: "12px", border: "1px solid var(--gray-200)", fontSize: 14, outline: "none", background: "#fff", transition: "all 0.2s" }}
+                  placeholder="e.g. Senior Web Developer"
+                  style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", border: "1px solid var(--gray-200)", fontSize: 14, outline: "none", background: "#fff", transition: "all 0.2s" }}
                 />
               </div>
               
               <div>
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--gray-600)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  <Code size={14} color="var(--teal-600)" /> Demanded Skills *
+                  <Code size={14} color="var(--teal-600)" /> Demanded Skills
                 </label>
                 <input
                   type="text"
                   value={demandedSkills}
                   onChange={(e) => setDemandedSkills(e.target.value)}
-                  placeholder="e.g. React, Python, Docker"
-                  style={{ width: "100%", padding: "12px 14px", borderRadius: "12px", border: "1px solid var(--gray-200)", fontSize: 14, outline: "none", background: "#fff", transition: "all 0.2s" }}
+                  placeholder="e.g. React, Node.js, AWS"
+                  style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", border: "1px solid var(--gray-200)", fontSize: 14, outline: "none", background: "#fff", transition: "all 0.2s" }}
                 />
               </div>
             </div>
           ) : (
-            <div style={{ padding: "12px 16px", background: "var(--teal-50)", border: "1px solid var(--teal-100)", borderRadius: "12px", display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "var(--teal-800)" }}>
-              <ShieldCheck size={18} color="var(--teal-700)" style={{ flexShrink: 0 }} />
-              <span><strong>Universal Mode Active:</strong> Audits CV parseability, keyword density, section structure, and formatting quality without assuming a specific job role.</span>
+            <div style={{ padding: "14px 18px", borderRadius: 12, background: "var(--teal-50)", border: "1px solid var(--teal-200)", color: "var(--teal-900)", fontSize: 13, display: "flex", alignItems: "center", gap: 10 }}>
+              <ShieldCheck size={20} color="var(--teal-700)" style={{ flexShrink: 0 }} />
+              <div>
+                <strong>Universal ATS Readiness Mode Active:</strong> Evaluating file parseability, contact validation, keyword density, section structure, and formatting quality without assuming any specific profession.
+              </div>
             </div>
           )}
 
-          {/* Resume Upload Box */}
+          {/* Resume Dropzone */}
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <label style={{ fontSize: 12, fontWeight: 700, color: "var(--gray-600)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Upload Resume (CV)
-              </label>
-              <span style={{ fontSize: 11, color: "var(--gray-400)" }}>PDF, DOCX up to 15MB</span>
-            </div>
-
-            {/* Hidden native input */}
-            <input
-              type="file"
-              id="resume-file-input"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
-              style={{ display: "none" }}
-            />
-
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--gray-600)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Upload Resume (CV)
+            </label>
             <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
+              {...getRootProps()}
               style={{
-                border: `2px dashed ${isDragOver ? "var(--teal-500)" : file ? "var(--teal-600)" : "var(--gray-300)"}`,
+                border: `2px dashed ${isDragActive ? "var(--teal-500)" : file ? "var(--teal-500)" : "var(--gray-200)"}`,
                 borderRadius: "16px",
-                background: isDragOver ? "var(--teal-50)" : file ? "#F0FDF4" : "#F8FAFC",
-                padding: "32px 20px",
+                background: isDragActive ? "var(--teal-50)" : file ? "var(--teal-50)20" : "#fff",
+                padding: "36px 20px",
                 textAlign: "center",
-                transition: "all 0.2s ease",
+                cursor: "pointer",
+                transition: "all 0.2s",
               }}
             >
+              <input {...getInputProps()} />
               {file ? (
                 <div>
-                  <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--teal-100)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-                    <FileText size={28} color="var(--teal-700)" />
-                  </div>
-                  <p style={{ fontWeight: 700, color: "var(--gray-900)", marginBottom: 4, fontSize: 15 }}>{file.name}</p>
-                  <p style={{ fontSize: 12, color: "var(--gray-500)", marginBottom: 14 }}>{(file.size / 1024).toFixed(1)} KB · Ready to analyze</p>
-                  
-                  <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      style={{
-                        padding: "8px 18px", fontSize: 13, fontWeight: 700, color: "var(--teal-800)",
-                        background: "#ffffff", border: "1px solid var(--teal-200, #B8E6D5)", borderRadius: 8,
-                        cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
-                      }}
-                    >
-                      <RefreshCw size={14} /> Change file
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFile(null)}
-                      style={{
-                        padding: "8px 18px", fontSize: 13, fontWeight: 700, color: "var(--coral-700)",
-                        background: "var(--coral-50)", border: "1px solid var(--coral-100)", borderRadius: 8,
-                        cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6
-                      }}
-                    >
-                      <X size={14} /> Remove
-                    </button>
-                  </div>
+                  <FileText size={44} color="var(--teal-700)" style={{ margin: "0 auto 12px" }} />
+                  <p style={{ fontWeight: 600, color: "var(--gray-900)", marginBottom: 4 }}>{file.name}</p>
+                  <p style={{ fontSize: 12, color: "var(--gray-400)" }}>{(file.size / 1024).toFixed(0)} KB</p>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setFile(null); }}
+                    style={{ marginTop: 12, fontSize: 12, color: "var(--coral-500)", background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}
+                  >
+                    <X size={12} /> Remove file
+                  </button>
                 </div>
               ) : (
                 <div>
-                  <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--gray-100)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-                    <Upload size={28} color="var(--teal-700)" />
-                  </div>
-                  <p style={{ fontWeight: 700, color: "var(--gray-800)", marginBottom: 4, fontSize: 15 }}>
-                    {isDragOver ? "Drop your resume file here" : "Drag & drop your resume file"}
-                  </p>
-                  <p style={{ fontSize: 13, color: "var(--gray-500)", marginBottom: 16 }}>
-                    Supports PDF and DOCX formats with instant OCR extraction
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 8,
-                      padding: "10px 24px",
-                      borderRadius: "10px",
-                      background: "var(--gray-900)",
-                      color: "#ffffff",
-                      fontSize: 14,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      border: "none",
-                      boxShadow: "0 4px 10px rgba(15, 23, 42, 0.15)",
-                    }}
-                  >
-                    <FolderOpen size={16} /> Browse File
-                  </button>
+                  <Upload size={40} color="var(--gray-300)" style={{ margin: "0 auto 14px" }} />
+                  <p style={{ fontWeight: 600, color: "var(--gray-700)", marginBottom: 4 }}>{isDragActive ? "Drop the resume here" : "Drag & drop your resume file"}</p>
+                  <p style={{ fontSize: 13, color: "var(--gray-400)" }}>PDF or DOCX · Up to 10 MB</p>
+                  <div style={{ marginTop: 14, display: "inline-block", padding: "6px 18px", borderRadius: "8px", background: "var(--gray-100)", color: "var(--gray-600)", fontSize: 13, fontWeight: 500 }}>Browse File</div>
                 </div>
               )}
             </div>
@@ -342,7 +257,6 @@ function UploadFormContent() {
           {/* Job Description section */}
           <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid var(--gray-200)", overflow: "hidden" }}>
             <button
-              type="button"
               onClick={() => setShowJD(!showJD)}
               style={{ width: "100%", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "var(--gray-700)", fontWeight: 600 }}
             >
@@ -355,9 +269,7 @@ function UploadFormContent() {
                 
                 {/* JD file upload */}
                 <div style={{ border: "1px dashed var(--gray-200)", borderRadius: "12px", padding: 16, background: "var(--gray-50)" }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--gray-500)", display: "block", marginBottom: 8, textTransform: "uppercase" }}>
-                    Upload JD Document or Screenshot (PNG/JPG/PDF)
-                  </span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--gray-500)", display: "block", marginBottom: 8 }}>UPLOAD JD DOCUMENT OR IMAGE (PNG/JPG/PDF)</span>
                   
                   {jdFile ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 12, background: "#fff", padding: "10px 14px", borderRadius: 8, border: "1px solid var(--gray-200)" }}>
@@ -375,26 +287,26 @@ function UploadFormContent() {
                           <CheckCircle size={14} /> Extracted
                         </div>
                       )}
-                      <button type="button" onClick={handleRemoveJdFile} style={{ background: "none", border: "none", color: "var(--coral-500)", cursor: "pointer", padding: 4 }}>
+                      <button onClick={handleRemoveJdFile} style={{ background: "none", border: "none", color: "var(--coral-500)", cursor: "pointer", padding: 4 }}>
                         <X size={16} />
                       </button>
                     </div>
                   ) : (
-                    <label style={{ display: "block", cursor: "pointer" }}>
+                    <div style={{ position: "relative", cursor: "pointer" }}>
                       <input
                         type="file"
                         onChange={handleJdFileChange}
                         accept="application/pdf,image/png,image/jpeg,image/jpg"
-                        style={{ display: "none" }}
+                        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" }}
                       />
                       <div style={{ padding: "12px", border: "1px solid var(--gray-200)", background: "#fff", borderRadius: 8, textAlign: "center", fontSize: 13, color: "var(--gray-600)", fontWeight: 500 }}>
                         Choose PDF, Image or Screenshot of the JD
                       </div>
-                    </label>
+                    </div>
                   )}
                 </div>
 
-                <div style={{ textAlign: "center", fontSize: 11, color: "var(--gray-400)", fontWeight: 700 }}>— OR PASTE TEXT DIRECTLY —</div>
+                <div style={{ textAlign: "center", fontSize: 11, color: "var(--gray-400)", fontWeight: 600 }}>— OR PASTE TEXT DIRECTLY —</div>
 
                 {/* JD text area */}
                 <textarea
@@ -411,28 +323,25 @@ function UploadFormContent() {
         </div>
 
         <button
-          type="button"
           onClick={handleSubmit}
           disabled={!file || uploading || extractingJd}
           style={{
-            width: "100%", padding: "18px", borderRadius: "14px", border: "none",
-            background: !file || uploading || extractingJd ? "var(--gray-200)" : "linear-gradient(135deg, var(--teal-700) 0%, var(--teal-600) 100%)",
-            color: !file || uploading || extractingJd ? "var(--gray-400)" : "#ffffff",
+            width: "100%", padding: "18px", borderRadius: "12px", border: "none",
+            background: !file || uploading || extractingJd ? "var(--gray-200)" : "var(--teal-700)",
+            color: !file || uploading || extractingJd ? "var(--gray-400)" : "#fff",
             fontSize: 16, fontWeight: 700, cursor: !file || uploading || extractingJd ? "not-allowed" : "pointer",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            fontFamily: "Syne, sans-serif", transition: "all 0.2s ease",
-            boxShadow: !file || uploading || extractingJd ? "none" : "0 8px 20px rgba(15, 110, 86, 0.25)",
+            fontFamily: "Syne, sans-serif", transition: "all 0.2s",
+            boxShadow: !file || uploading || extractingJd ? "none" : "0 8px 16px rgba(13, 148, 136, 0.2)",
           }}
         >
           {uploading ? (
-            <><Loader2 size={18} className="animate-spin" /> Parsing & Auditing CV with AI...</>
+            <><Loader2 size={18} className="animate-spin" /> Parsing & Auditing CV...</>
           ) : (
             "Start Comprehensive Audit →"
           )}
         </button>
-        <p style={{ textAlign: "center", fontSize: 12, color: "var(--gray-400)", marginTop: 14 }}>
-          13-Point Check (Spelling, Grammar, Impact, Gaps, Risks, Credibility) in ~15s
-        </p>
+        <p style={{ textAlign: "center", fontSize: 11, color: "var(--gray-400)", marginTop: 14 }}>13-Point Check (Spelling, Grammar, Impact, Gaps, Risks, Credibility) in ~15s</p>
       </div>
     </div>
   );

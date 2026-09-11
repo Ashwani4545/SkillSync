@@ -485,10 +485,30 @@ CREATE TABLE subscriptions (
 
 ### Frontend — Vercel
 
+This is a monorepo — the Next.js app lives in `frontend/`, not the repo root.
+A root-level `vercel.json` (already in this repo) tells Vercel how to build
+it, so **importing the repo as-is at the repo root now works** — you don't
+need to manually set a "Root Directory" in the Vercel dashboard.
+
 ```bash
-cd frontend
-npx vercel --prod
+# Either: import the GitHub repo directly in the Vercel dashboard, or:
+npx vercel --prod   # run from the repo root
 ```
+
+The build succeeds even with zero environment variables set (verified: Clerk
+sign-in gracefully shows "Sign-in not configured" instead of crashing, and
+API calls fall back to `localhost:8000` with a console warning instead of
+crashing). For a fully working deployment, set these in the Vercel project's
+Environment Variables:
+
+| Variable | Needed for |
+|---|---|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | Real sign-in/sign-up (Clerk) |
+| `NEXT_PUBLIC_BACKEND_URL` | Pointing the frontend at your deployed backend instead of `localhost:8000` |
+
+The backend (FastAPI + Postgres + Redis + Celery worker) isn't something
+Vercel can host — it needs a container platform (see below). Deploy that
+first, then set `NEXT_PUBLIC_BACKEND_URL` to its public URL.
 
 Set all `NEXT_PUBLIC_*` environment variables in the Vercel dashboard.
 
@@ -522,17 +542,54 @@ The `.github/workflows/deploy.yml` pipeline runs on every push to `main`:
 
 ---
 
+## Benchmark Data (Real Vector-Similarity Comparison)
+
+`benchmark_engine.py` compares a resume against real, ingested top-tier
+resumes for a role/industry — not a simulation — once enough data has been
+ingested for that combination. Below 5 matches, it falls back to an
+LLM-simulated estimate and marks the response `"data_source": "simulated"`
+so callers can tell the difference; `"real_benchmark_data"` means the
+percentiles are measured, not invented.
+
+To ingest a local folder of resumes (PDF/DOCX):
+
+```bash
+cd backend
+python scripts/ingest_benchmark_resumes.py \
+  --folder /path/to/your/resumes \
+  --target-role "Software Engineer" \
+  --industry technology
+```
+
+**Privacy:** the script extracts only an embedding vector and structural
+stats (bullet count, quantification rate, skills count) from each resume —
+name, email, phone, and raw text are read into memory to compute those
+numbers and are never written to the database. Embeddings are generated
+locally via `sentence-transformers` (`all-MiniLM-L6-v2`) — no external API
+call, no per-resume cost, and no resume content ever leaves your machine.
+
 ## Roadmap
 
 ### Phase 1 — MVP (Weeks 1–8)
 - [x] Project setup, auth, database
-- [ ] Resume upload and parsing (PDF + DOCX)
-- [ ] ATS scoring + section grading
-- [ ] Bullet rewriter
-- [ ] Tone and confidence analyzer
-- [ ] Persona-based analysis (ATS / HR / HM)
+- [x] Resume upload and parsing (PDF + DOCX)
+- [x] ATS scoring + section grading
+- [x] Bullet rewriter
+- [x] Tone and confidence analyzer
+- [x] Persona-based analysis (ATS / HR / HM)
 - [ ] Stripe billing (free + pro plans)
 - [ ] User dashboard
+
+*Checked items above are the ones with an actual passing end-to-end test
+behind them (`backend/tests/test_resume_analysis_flow.py`,
+`test_pipeline_hardening.py`) — upload → parse → run the full analyzer
+pipeline → poll to `"done"` → read back a real ATS score and persona
+result. That loop is also now resilient: any one analyzer failing (a bad
+LLM response, a downstream Phase 3/4 analyzer erroring) no longer takes
+the whole analysis down — see `ai_engine/json_utils.py` and
+`ai_engine/pipeline.py`'s per-stage isolation. Billing and the dashboard
+are unchecked because I haven't verified them the same way — not because
+they don't exist in the code.
 
 ### Phase 2 — Differentiators (Weeks 9–16)
 - [ ] One-click JD adapter
@@ -540,15 +597,26 @@ The `.github/workflows/deploy.yml` pipeline runs on every push to `main`:
 - [ ] Resume A/B tester
 - [ ] Skill authenticity checker
 - [ ] Career gap advisor
-- [ ] Industry benchmark comparison
+- [x] Industry benchmark comparison
 - [ ] Shareable score cards
 
 ### Phase 3 — Career Intelligence (Weeks 17–24)
 - [ ] Career trajectory predictor
 - [ ] Real-time salary calibration
-- [ ] GitHub / portfolio integration
+- [x] GitHub / portfolio integration
 - [ ] LinkedIn OAuth + profile sync
 - [ ] Expanded benchmark database
+
+*Industry benchmark comparison is checked because it's now backed by real
+vector-similarity comparison (`ai_engine/comparators/benchmark_engine.py`
++ `ai_engine/embeddings.py`), not simulation — tested in
+`test_benchmark_engine.py`. GitHub integration is checked for the Proof
+Score feature (`backend/app/routers/github.py`'s `/proof-score` endpoint,
+tested end-to-end in `test_proof_score.py`) — cross-references resume
+skill claims against real commit history. "Expanded benchmark database"
+stays unchecked: the ingestion pipeline exists
+(`backend/scripts/ingest_benchmark_resumes.py`) but no dataset has
+actually been run through it yet.
 
 ### Phase 4 — V2 Advanced (Month 7+)
 - [ ] Multilingual + cultural format adapter

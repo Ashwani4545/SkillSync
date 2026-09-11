@@ -9,6 +9,7 @@ Each persona returns where they'd stop reading and why.
 """
 import json
 from ai_engine.llm_client import call_claude
+from ai_engine.json_utils import safe_parse_llm_json
 
 
 PERSONA_SYSTEM = """You are simulating how three different resume reviewers read a resume.
@@ -70,11 +71,4 @@ Respond with JSON only."""
         max_tokens=1500,
     )
 
-    try:
-        return json.loads(response)
-    except json.JSONDecodeError:
-        import re
-        match = re.search(r"```json\s*([\s\S]+?)\s*```", response)
-        if match:
-            return json.loads(match.group(1))
-        return {"error": "Parse failed", "raw": response}
+    return safe_parse_llm_json(response, fallback={})

@@ -42,7 +42,8 @@ services:
         condition: service_started
     volumes:
       - ./backend:/app
-      - ./ai-engine:/app/ai_engine
+      - ./ai_engine:/app/ai_engine
+      - ./workers:/app/workers
 
   worker:
     build:
@@ -62,7 +63,8 @@ services:
       - redis
     volumes:
       - ./backend:/app
-      - ./ai-engine:/app/ai_engine
+      - ./ai_engine:/app/ai_engine
+      - ./workers:/app/workers
 
   postgres:
     image: pgvector/pgvector:pg16

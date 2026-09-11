@@ -3,6 +3,7 @@ section_grader.py
 Grades each resume section individually with targeted improvement tips.
 """
 import json
+from ai_engine.json_utils import safe_parse_llm_json
 from ai_engine.llm_client import call_claude
 
 GRADER_SYSTEM = """You are a professional resume reviewer. Grade each section of the resume.
@@ -50,11 +51,4 @@ Respond with JSON only."""
 
     response = call_claude(system=GRADER_SYSTEM, user=user_prompt, max_tokens=1000)
 
-    try:
-        return json.loads(response)
-    except json.JSONDecodeError:
-        import re
-        match = re.search(r"```json\s*([\s\S]+?)\s*```", response)
-        if match:
-            return json.loads(match.group(1))
-        return {"error": "Parse failed", "raw": response}
+    return safe_parse_llm_json(response, fallback={"error": "Parse failed"})

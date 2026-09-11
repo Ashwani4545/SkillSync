@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,42 +9,34 @@
   --teal-50:  #E1F5EE;
   --teal-100: #B8E6D5;
   --teal-500: #1D9E75;
-  --teal-600: #148A63;
   --teal-700: #0F6E56;
-  --teal-800: #095240;
   --teal-900: #064035;
 
   --blue-50:  #E6F1FB;
-  --blue-100: #CEE3F8;
   --blue-500: #378ADD;
   --blue-700: #185FA5;
 
   --purple-50:  #EEEDFE;
-  --purple-100: #DDD9FC;
   --purple-500: #7F77DD;
   --purple-700: #534AB7;
 
   --amber-50:  #FAEEDA;
-  --amber-100: #F6DDB0;
   --amber-500: #EF9F27;
   --amber-700: #854F0B;
 
   --coral-50:  #FAECE7;
-  --coral-100: #F5D3C7;
   --coral-500: #D85A30;
   --coral-700: #712B13;
 
   /* Neutrals */
-  --gray-50:  #F8FAFC;
-  --gray-100: #F1F5F9;
-  --gray-200: #E2E8F0;
-  --gray-300: #CBD5E1;
-  --gray-400: #94A3B8;
-  --gray-500: #64748B;
-  --gray-600: #475569;
-  --gray-700: #334155;
-  --gray-800: #1E293B;
-  --gray-900: #0F172A;
+  --gray-50:  #FAFAF8;
+  --gray-100: #F1EFE8;
+  --gray-200: #E2DFD6;
+  --gray-300: #C5C2B8;
+  --gray-400: #888780;
+  --gray-500: #5F5E5A;
+  --gray-700: #2C2C2A;
+  --gray-900: #18181A;
 
   /* Spacing */
   --radius-sm: 6px;
@@ -58,21 +50,12 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: #F8FAFC;
-  color: #0F172A;
+  background: #FAFAF8;
+  color: #18181A;
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: none;
 }
 
 h1, h2, h3, h4 {
@@ -90,18 +73,6 @@ code, pre, .mono {
 ::-webkit-scrollbar-track { background: var(--gray-100); }
 ::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
-
-/* Card styles & interactions */
-.feature-card {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
-}
-
-.feature-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
-  border-color: var(--teal-500) !important;
-}
 
 /* Animations */
 @keyframes fadeUp {

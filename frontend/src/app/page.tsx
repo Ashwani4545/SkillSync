@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle, Zap, Users, Target, TrendingUp } from "lucide-react";
 import { Navbar } from "../components/layout/Navbar";
+import { Hero3D } from "../components/hero/Hero3D";
 
 const features = [
   {
@@ -51,10 +52,13 @@ export default function LandingPage() {
           Your resume, seen through<br />
           <span style={{ background: "linear-gradient(135deg, #0F6E56 0%, #378ADD 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>three sets of eyes</span>
         </h1>
-        <p style={{ fontSize: 19, color: "#475569", lineHeight: 1.7, marginBottom: 38, fontWeight: 400 }}>
+        <p style={{ fontSize: 19, color: "#475569", lineHeight: 1.7, marginBottom: 8, fontWeight: 400 }}>
           ATS bot. HR recruiter. Hiring manager. SkillSync shows you exactly where each one would stop reading — and how to fix it in seconds.
         </p>
-        <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+
+        <Hero3D />
+
+        <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", marginTop: 8 }}>
           <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "16px 32px", borderRadius: 14, background: "linear-gradient(135deg, #0F6E56, #1D9E75)", color: "#fff", textDecoration: "none", fontSize: 16, fontWeight: 700, boxShadow: "0 8px 20px rgba(15, 110, 86, 0.3)" }}>
             Analyze my resume free <ArrowRight size={18} />
           </Link>

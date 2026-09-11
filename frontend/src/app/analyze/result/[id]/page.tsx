@@ -1,24 +1,26 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { CheckCircle, Clock, AlertCircle, Loader2 } from "lucide-react";
+import {
+  CheckCircle, AlertCircle, Loader2, ShieldCheck, ShieldAlert, ShieldX,
+  TrendingUp, Target, Map, ListChecks, MessageSquareQuote, Sparkles,
+} from "lucide-react";
 import { apiClient } from "../../../../lib/api";
 import { ScoreRing } from "../../../../components/analysis/ScoreRing";
 import { PersonaView } from "../../../../components/analysis/PersonaView";
-import { SectionGrades } from "../../../../components/analysis/SectionGrades";
-import { BulletRewriter } from "../../../../components/resume/BulletRewriter";
-import { ToneReport } from "../../../../components/analysis/ToneReport";
-import { InterviewQuestions } from "../../../../components/analysis/InterviewQuestions";
-import { SkillAudit } from "../../../../components/analysis/SkillAudit";
-import { DetailedAudit } from "../../../../components/analysis/DetailedAudit";
-import { RecruiterHeatmap } from "../../../../components/analysis/RecruiterHeatmap";
-import { GlobalEmployability } from "../../../../components/analysis/GlobalEmployability";
-import { TopActions } from "../../../../components/analysis/TopActions";
-import { CareerRoadmap } from "../../../../components/analysis/CareerRoadmap";
-import { ATSReadinessReportCard } from "../../../../components/analysis/ATSReadinessReportCard";
-import { JDMatcher } from "../../../../components/analysis/JDMatcher";
 
-const POLL_INTERVAL = 2500; // ms
+/**
+ * Rebuilt for the unified Career Intelligence Engine's output schema
+ * (ai_engine/career_intelligence_engine.py) — candidate_profile,
+ * evidence_graph, universal_ats, job_match, career_positioning,
+ * target_role, career_readiness, skill_gaps, career_path, career_roadmap,
+ * bullet_rewrites, interview_prediction, persona_analysis,
+ * priority_actions. Replaces the old page, which read a completely
+ * different flat schema (ats/sections/bullets/personas/...) from the
+ * previous fragmented 11-analyzer pipeline.
+ */
+
+const POLL_INTERVAL = 2500;
 
 type AnalysisStatus = "pending" | "processing" | "done" | "failed";
 
@@ -32,14 +34,19 @@ interface Analysis {
 }
 
 const PROCESSING_STEPS = [
-  "Parsing resume structure...",
-  "Running ATS compatibility check...",
-  "Analyzing through recruiter eyes...",
-  "Checking tone and confidence...",
-  "Predicting interview questions...",
-  "Generating bullet improvements...",
-  "Computing overall score...",
+  "Building your candidate career profile...",
+  "Cross-checking skills against real evidence...",
+  "Scoring ATS readiness...",
+  "Analyzing through ATS, recruiter, and hiring manager eyes...",
+  "Mapping your realistic career pathway...",
+  "Prioritizing the highest-impact actions...",
 ];
+
+const EVIDENCE_META: Record<string, { color: string; bg: string; Icon: any; label: string }> = {
+  EVIDENCED:            { color: "var(--teal-700)",  bg: "var(--teal-50)",  Icon: ShieldCheck, label: "Evidenced" },
+  PARTIALLY_EVIDENCED:  { color: "var(--amber-700)", bg: "var(--amber-50)", Icon: ShieldAlert, label: "Partially evidenced" },
+  UNSUPPORTED:          { color: "var(--coral-700)", bg: "var(--coral-50)", Icon: ShieldX,     label: "Unsupported" },
+};
 
 export default function ResultPage() {
   const { id } = useParams<{ id: string }>();
@@ -47,10 +54,8 @@ export default function ResultPage() {
   const [stepIdx, setStepIdx] = useState(0);
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Poll for results
   useEffect(() => {
     let timer: NodeJS.Timeout;
-
     const poll = async () => {
       try {
         const { data } = await apiClient.get(`/analysis/${id}`);
@@ -62,12 +67,10 @@ export default function ResultPage() {
         timer = setTimeout(poll, POLL_INTERVAL * 2);
       }
     };
-
     poll();
     return () => clearTimeout(timer);
   }, [id]);
 
-  // Animate processing step text
   useEffect(() => {
     if (analysis?.status !== "done") {
       const t = setInterval(() => setStepIdx((i) => (i + 1) % PROCESSING_STEPS.length), 2200);
@@ -78,33 +81,30 @@ export default function ResultPage() {
   if (!analysis || analysis.status === "pending" || analysis.status === "processing") {
     return <ProcessingScreen step={PROCESSING_STEPS[stepIdx]} />;
   }
-
   if (analysis.status === "failed") {
     return <FailedScreen error={analysis.error_msg} />;
   }
 
   const r = analysis.results_json!;
-  const overall = r.overall_score ?? {};
+  const cr = r.career_readiness ?? {};
+  const overallScore = cr.overall_career_readiness ?? 0;
 
   const TABS = [
-    { id: "overview",   label: "Overview" },
-    { id: "audit",      label: "13-Point Audit" },
-    { id: "skills",     label: "Skill Audit" },
-    { id: "bullets",    label: "Bullet Rewriter" },
-    { id: "personas",   label: "Heatmap & Personas" },
-    { id: "career",     label: "Career & Salary" },
-    { id: "global",     label: "Global Employability" },
-    { id: "actions",    label: "Top 10 Actions" },
-    { id: "interview",  label: "Interview Prep" },
+    { id: "overview",  label: "Overview" },
+    { id: "evidence",  label: "Skill Evidence" },
+    { id: "personas",  label: "Personas" },
+    { id: "career",    label: "Career Path" },
+    { id: "roadmap",   label: "Roadmap" },
+    { id: "bullets",   label: "Bullet Rewrites" },
+    { id: "interview", label: "Interview Prep" },
+    { id: "actions",   label: "Top Actions" },
   ];
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--gray-50)" }}>
-
-      {/* ── Top bar ── */}
       <div style={{ background: "#fff", borderBottom: "1px solid var(--gray-200)", padding: "0 24px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 24, height: 64 }}>
-          <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 20, color: "var(--teal-700)" }}>ResumeAI</span>
+          <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 20, color: "var(--teal-700)" }}>SkillSync</span>
           <span style={{ color: "var(--gray-300)" }}>›</span>
           <span style={{ fontSize: 14, color: "var(--gray-500)" }}>Career Intelligence Report</span>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
@@ -116,27 +116,24 @@ export default function ResultPage() {
         </div>
       </div>
 
-      {/* ── Score hero ── */}
+      {/* Score hero */}
       <div style={{ background: "var(--teal-700)", color: "#fff", padding: "40px 24px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 40, flexWrap: "wrap" }}>
-          <ScoreRing score={overall.score ?? 0} grade={overall.grade ?? "—"} size={120} />
+          <ScoreRing score={overallScore} grade={scoreToGrade(overallScore)} size={120} />
           <div>
             <h1 style={{ fontSize: 28, margin: "0 0 8px", color: "#fff" }}>
-              {overall.score >= 80 ? "Strong resume" : overall.score >= 65 ? "Good start — room to improve" : "Needs significant work"}
+              {overallScore >= 80 ? "Strong career readiness" : overallScore >= 60 ? "Good foundation — room to grow" : "Significant gaps to close"}
             </h1>
-            <p style={{ margin: "0 0 16px", opacity: 0.8, fontSize: 15 }}>
-              Your resume scored {overall.score}/100 overall.{" "}
-              {overall.score < 70 ? "Fix the issues below to pass ATS filters." : "A few tweaks will make it exceptional."}
-            </p>
+            <p style={{ margin: "0 0 16px", opacity: 0.85, fontSize: 15, maxWidth: 640 }}>{cr.explanation || "Overall career readiness combines ATS readiness, skill evidence, and experience depth."}</p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               {[
-                { label: "ATS",     val: overall.breakdown?.ats ?? 0 },
-                { label: "Content", val: overall.breakdown?.content ?? 0 },
-                { label: "Tone",    val: overall.breakdown?.tone ?? 0 },
-                { label: "Audit",   val: overall.breakdown?.audit ?? 0 },
+                { label: "ATS Readiness",       val: cr.resume_ats_readiness },
+                { label: "Job Match",           val: cr.job_match },
+                { label: "Skill Readiness",     val: cr.skill_readiness },
+                { label: "Experience Readiness",val: cr.experience_readiness },
               ].map((b) => (
-                <div key={b.label} style={{ background: "rgba(255,255,255,0.15)", borderRadius: 8, padding: "8px 16px", minWidth: 80, textAlign: "center" }}>
-                  <div style={{ fontSize: 22, fontWeight: 700 }}>{b.val || "—"}</div>
+                <div key={b.label} style={{ background: "rgba(255,255,255,0.15)", borderRadius: 8, padding: "8px 16px", minWidth: 100, textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 700 }}>{b.val ?? "—"}</div>
                   <div style={{ fontSize: 11, opacity: 0.75 }}>{b.label}</div>
                 </div>
               ))}
@@ -145,177 +142,349 @@ export default function ResultPage() {
         </div>
       </div>
 
-      {/* ── Tab nav ── */}
+      {/* Tabs */}
       <div style={{ background: "#fff", borderBottom: "1px solid var(--gray-200)", padding: "0 24px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", gap: 0, overflowX: "auto" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", overflowX: "auto" }}>
           {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                padding: "14px 20px", background: "none", border: "none", cursor: "pointer",
-                fontSize: 14, fontWeight: activeTab === tab.id ? 600 : 400,
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              style={{ padding: "14px 20px", background: "none", border: "none", cursor: "pointer", fontSize: 14,
+                fontWeight: activeTab === tab.id ? 600 : 400,
                 color: activeTab === tab.id ? "var(--teal-700)" : "var(--gray-500)",
                 borderBottom: activeTab === tab.id ? "2px solid var(--teal-700)" : "2px solid transparent",
-                whiteSpace: "nowrap", transition: "all 0.15s",
-              }}
-            >
+                whiteSpace: "nowrap" }}>
               {tab.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* ── Tab content ── */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
         {activeTab === "overview"  && <OverviewTab r={r} />}
-        {activeTab === "audit"     && <DetailedAudit data={r.audit} />}
-        {activeTab === "skills"    && <SkillAudit data={r.skills} />}
-        {activeTab === "bullets"   && <BulletRewriter data={r.bullets} />}
+        {activeTab === "evidence"  && <EvidenceTab r={r} />}
         {activeTab === "personas"  && (
-          <div>
-            <RecruiterHeatmap r={r} />
-            <div style={{ marginTop: 32 }}>
-              <PersonaView data={r.personas} r={r} />
-            </div>
-          </div>
+          <PersonaView
+            data={{
+              ats_bot: {
+                score: r.persona_analysis?.ats?.score,
+                issues: r.persona_analysis?.ats?.concerns,
+                passed_checks: r.persona_analysis?.ats?.strengths,
+              },
+              hr_recruiter: {
+                score: r.persona_analysis?.hr_recruiter?.score,
+                red_flags: r.persona_analysis?.hr_recruiter?.concerns,
+                green_flags: r.persona_analysis?.hr_recruiter?.strengths,
+              },
+              hiring_manager: {
+                score: r.persona_analysis?.hiring_manager?.score,
+                credibility_gaps: r.persona_analysis?.hiring_manager?.concerns,
+                strengths: r.persona_analysis?.hiring_manager?.strengths,
+              },
+            }}
+            r={{ ats: { score: r.universal_ats?.universal_ats_score } }}
+          />
         )}
-        {activeTab === "career"    && <CareerRoadmap r={r} />}
-        {activeTab === "global"    && <GlobalEmployability data={r.global_employability} />}
-        {activeTab === "actions"   && <TopActions r={r} />}
-        {activeTab === "interview" && <InterviewQuestions data={r.interview} />}
+        {activeTab === "career"    && <CareerTab r={r} />}
+        {activeTab === "roadmap"   && <RoadmapTab r={r} />}
+        {activeTab === "bullets"   && <BulletsTab r={r} />}
+        {activeTab === "interview" && <InterviewTab r={r} />}
+        {activeTab === "actions"   && <ActionsTab r={r} />}
       </div>
+    </div>
+  );
+}
+
+function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+  return (
+    <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24, marginBottom: 20 }}>
+      <h3 style={{ margin: "0 0 4px", fontSize: 18, fontFamily: "Syne, sans-serif" }}>{title}</h3>
+      {subtitle && <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--gray-500)" }}>{subtitle}</p>}
+      {children}
     </div>
   );
 }
 
 function OverviewTab({ r }: { r: any }) {
-  const ats = r.ats || {};
-  const score = ats.score ?? 0;
-  const isPass = ats.pass ?? (score >= 70);
-  const densityPct = Math.round((ats.keyword_density ?? 0) * 100);
+  const ats = r.universal_ats ?? {};
+  const jm = r.job_match ?? {};
+  const profile = r.candidate_profile ?? {};
 
   return (
     <div>
-      <ATSReadinessReportCard r={r} />
-      <JDMatcher r={r} />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-        <div style={{ gridColumn: "1 / -1" }}>
-          <SectionGrades data={r.sections} />
+      <Card title="Universal ATS Readiness" subtitle="How reliably a typical ATS can parse and understand this resume">
+        <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 16 }}>
+          <div style={{ fontSize: 40, fontWeight: 800, color: "var(--teal-700)", fontFamily: "Syne" }}>{ats.universal_ats_score ?? "—"}<span style={{ fontSize: 16, color: "var(--gray-400)" }}>/100</span></div>
+          <p style={{ margin: 0, fontSize: 14, color: "var(--gray-600)", flex: 1 }}>{ats.explanation}</p>
         </div>
-
-        {r.ats && (
-          <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
-            {/* Header & Score Banner */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid var(--gray-100)" }}>
-              <div>
-                <h3 style={{ margin: "0 0 4px", fontSize: 18, fontFamily: "Syne, sans-serif" }}>ATS Compatibility Audit</h3>
-                <p style={{ margin: 0, fontSize: 13, color: "var(--gray-500)" }}>
-                  Keyword density & formatting score vs Applicant Tracking Systems
-                </p>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: isPass ? "var(--teal-700)" : "var(--coral-700)", fontFamily: "Syne" }}>
-                    {score}<span style={{ fontSize: 14, color: "var(--gray-400)", fontWeight: 500 }}>/100</span>
-                  </div>
-                </div>
-                <div style={{
-                  padding: "6px 14px", borderRadius: 20,
-                  background: isPass ? "var(--teal-50)" : "var(--coral-50)",
-                  color: isPass ? "var(--teal-700)" : "var(--coral-700)",
-                  fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", gap: 6,
-                  border: `1px solid ${isPass ? "var(--teal-500)30" : "var(--coral-500)30"}`
-                }}>
-                  {isPass ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
-                  {isPass ? "PASS (ATS Ready)" : "NEEDS WORK"}
-                </div>
-              </div>
-            </div>
-
-            {/* Keyword Density Bar */}
-            <div style={{ marginBottom: 20, background: "var(--gray-50)", padding: 14, borderRadius: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 13, fontWeight: 600 }}>
-                <span style={{ color: "var(--gray-700)" }}>Keyword Density Match</span>
-                <span style={{ color: "var(--teal-700)" }}>{densityPct}%</span>
-              </div>
-              <div style={{ height: 8, background: "var(--gray-200)", borderRadius: 4, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${Math.min(100, Math.max(5, densityPct))}%`, background: isPass ? "var(--teal-500)" : "var(--coral-500)", borderRadius: 4, transition: "width 0.4s" }} />
-              </div>
-            </div>
-
-            {/* Format Issues */}
-            <div style={{ marginBottom: 20 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: "var(--gray-400)", textTransform: "uppercase", marginBottom: 10 }}>FORMAT & STRUCTURE AUDIT</p>
-              {ats.format_issues?.length > 0 && ats.format_issues[0] !== "None detected" ? (
-                ats.format_issues.map((issue: string, i: number) => (
-                  <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, fontSize: 14, color: "var(--coral-700)", alignItems: "flex-start", background: "var(--coral-50)40", padding: "8px 12px", borderRadius: 8 }}>
-                    <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 2, color: "var(--coral-600)" }} />
-                    <span>{issue}</span>
-                  </div>
-                ))
-              ) : (
-                <div style={{ display: "flex", gap: 8, fontSize: 14, color: "var(--teal-700)", background: "var(--teal-50)", padding: "8px 12px", borderRadius: 8, alignItems: "center" }}>
-                  <CheckCircle size={15} /> All header contact links & structural sections present cleanly.
-                </div>
-              )}
-            </div>
-
-            {/* Found Keywords */}
-            {ats.found_keywords?.length > 0 && ats.found_keywords[0] !== "None" && (
-              <div style={{ marginBottom: 20 }}>
-                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: "var(--gray-400)", textTransform: "uppercase", marginBottom: 10 }}>FOUND KEYWORDS ({ats.found_keywords.length})</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {ats.found_keywords.slice(0, 15).map((kw: string, i: number) => (
-                    <span key={i} style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: "var(--teal-50)", color: "var(--teal-800)", border: "1px solid var(--teal-500)30", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                      <CheckCircle size={11} color="var(--teal-600)" /> {kw}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Missing Keywords */}
-            {ats.missing_keywords?.length > 0 && ats.missing_keywords[0] !== "None" && (
-              <div>
-                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: "var(--gray-400)", textTransform: "uppercase", marginBottom: 10 }}>RECOMMENDED / MISSING KEYWORDS ({ats.missing_keywords.length})</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {ats.missing_keywords.slice(0, 12).map((kw: string, i: number) => (
-                    <span key={i} style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: "var(--coral-50)", color: "var(--coral-800)", border: "1px solid var(--coral-500)30", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                      <AlertCircle size={11} color="var(--coral-600)" /> {kw}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {r.ats?.improvements?.length > 0 && (
-          <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
-            <h3 style={{ margin: "0 0 16px", fontSize: 18, fontFamily: "Syne, sans-serif" }}>Top ATS Improvements</h3>
-            {r.ats.improvements.map((tip: string, i: number) => (
-              <div key={i} style={{ display: "flex", gap: 12, marginBottom: 14, fontSize: 14, color: "var(--gray-700)", alignItems: "flex-start", background: "var(--gray-50)", padding: 12, borderRadius: 10 }}>
-                <div style={{ width: 24, height: 24, borderRadius: "50%", background: "var(--teal-100)", color: "var(--teal-800)", fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  {i + 1}
-                </div>
-                <div style={{ lineHeight: 1.5, flex: 1 }}>{tip}</div>
+        {ats.issues?.length > 0 && (
+          <div>
+            {ats.issues.map((issue: string, i: number) => (
+              <div key={i} style={{ display: "flex", gap: 8, fontSize: 13, color: "var(--coral-700)", background: "var(--coral-50)", padding: "8px 12px", borderRadius: 8, marginBottom: 6 }}>
+                <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} /> {issue}
               </div>
             ))}
           </div>
         )}
+      </Card>
+
+      {jm.job_match_score !== null && jm.job_match_score !== undefined && (
+        <Card title="Job Match" subtitle="Separate from ATS readiness — how well this resume matches the target job description">
+          <div style={{ fontSize: 32, fontWeight: 800, color: "var(--teal-700)", fontFamily: "Syne", marginBottom: 12 }}>{jm.job_match_score}/100</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <KeywordGroup label="Matched" items={jm.matched} color="var(--teal-700)" bg="var(--teal-50)" />
+            <KeywordGroup label="Missing" items={jm.missing} color="var(--coral-700)" bg="var(--coral-50)" />
+          </div>
+        </Card>
+      )}
+
+      <Card title="Candidate Career Profile" subtitle={`Career level: ${profile.career_level?.level ?? "Unknown"} (${profile.career_level?.confidence ?? "—"} confidence)`}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
+          <ProfileStat label="Experience entries" value={profile.experience?.length ?? 0} />
+          <ProfileStat label="Projects" value={profile.projects?.length ?? 0} />
+          <ProfileStat label="Skills listed" value={
+            Object.values(profile.skills ?? {}).reduce((sum: number, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0) as number
+          } />
+          <ProfileStat label="Certifications" value={profile.certifications?.length ?? 0} />
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function KeywordGroup({ label, items, color, bg }: { label: string; items?: string[]; color: string; bg: string }) {
+  return (
+    <div>
+      <p style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", color: "var(--gray-400)", marginBottom: 8 }}>{label} ({items?.length ?? 0})</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {(items ?? []).map((kw, i) => (
+          <span key={i} style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: bg, color }}>{kw}</span>
+        ))}
       </div>
     </div>
   );
 }
 
+function ProfileStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div style={{ background: "var(--gray-50)", borderRadius: 12, padding: "14px 16px", textAlign: "center" }}>
+      <div style={{ fontSize: 22, fontWeight: 800, fontFamily: "Syne", color: "var(--gray-900)" }}>{value}</div>
+      <div style={{ fontSize: 12, color: "var(--gray-500)" }}>{label}</div>
+    </div>
+  );
+}
+
+function EvidenceTab({ r }: { r: any }) {
+  const graph = r.evidence_graph ?? [];
+  return (
+    <Card title="Skill Evidence Graph" subtitle="Every skill checked against real supporting evidence in your experience and projects — not just whether it's listed">
+      {graph.length === 0 ? (
+        <p style={{ color: "var(--gray-500)", fontSize: 14 }}>No skills found to evaluate.</p>
+      ) : (
+        <div>
+          {graph.map((e: any, i: number) => {
+            const meta = EVIDENCE_META[e.status] ?? EVIDENCE_META.UNSUPPORTED;
+            const Icon = meta.Icon;
+            return (
+              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: i < graph.length - 1 ? "1px solid var(--gray-100)" : "none" }}>
+                <span style={{ fontWeight: 600, fontSize: 14 }}>{e.skill}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, fontSize: 12, fontWeight: 700, color: meta.color, background: meta.bg }}>
+                  <Icon size={13} /> {meta.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function CareerTab({ r }: { r: any }) {
+  const positioning = r.career_positioning ?? {};
+  const target = r.target_role ?? {};
+  const path = r.career_path?.steps ?? [];
+
+  return (
+    <div>
+      <Card title="Career Positioning" subtitle={positioning.market_positioning}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+          <TagList label="Strongest skills" items={positioning.strongest_skills} color="var(--teal-700)" bg="var(--teal-50)" />
+          <TagList label="Weak areas" items={positioning.weak_areas} color="var(--coral-700)" bg="var(--coral-50)" />
+        </div>
+      </Card>
+
+      {positioning.best_fit_roles?.length > 0 && (
+        <Card title="Best-Fit Roles">
+          {positioning.best_fit_roles.map((role: any, i: number) => (
+            <div key={i} style={{ padding: "14px 0", borderBottom: i < positioning.best_fit_roles.length - 1 ? "1px solid var(--gray-100)" : "none" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontWeight: 700 }}>{role.role}</span>
+                <span style={{ color: "var(--teal-700)", fontWeight: 700 }}>{role.match_score}/100</span>
+              </div>
+              <p style={{ margin: "0 0 6px", fontSize: 13, color: "var(--gray-600)" }}>{role.why_it_fits}</p>
+              {role.missing_requirements?.length > 0 && (
+                <p style={{ margin: 0, fontSize: 12, color: "var(--coral-700)" }}>Missing: {role.missing_requirements.join(", ")}</p>
+              )}
+            </div>
+          ))}
+        </Card>
+      )}
+
+      {(target.strengths?.length > 0 || target.gaps?.length > 0) && (
+        <Card title="Target Role Analysis" subtitle={`Readiness: ${target.readiness ?? "—"}`}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            <TagList label="Strengths" items={target.strengths} color="var(--teal-700)" bg="var(--teal-50)" />
+            <TagList label="Gaps" items={target.gaps} color="var(--coral-700)" bg="var(--coral-50)" />
+          </div>
+        </Card>
+      )}
+
+      {path.length > 0 && (
+        <Card title="Career Pathway">
+          {path.map((step: any, i: number) => (
+            <div key={i} style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--teal-100)", color: "var(--teal-800)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>{i + 1}</div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>{step.stage}: {step.role}</div>
+                <p style={{ margin: "4px 0", fontSize: 13, color: "var(--gray-600)" }}>{step.why_this_step}</p>
+                {step.whats_missing && step.whats_missing !== "N/A" && (
+                  <p style={{ margin: "0 0 4px", fontSize: 12, color: "var(--coral-700)" }}>Missing: {step.whats_missing}</p>
+                )}
+                {step.what_to_do && step.what_to_do !== "N/A" && (
+                  <p style={{ margin: 0, fontSize: 12, color: "var(--gray-500)" }}>Next: {step.what_to_do}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function TagList({ label, items, color, bg }: { label: string; items?: string[]; color: string; bg: string }) {
+  return (
+    <div>
+      <p style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", color: "var(--gray-400)", marginBottom: 8 }}>{label}</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {(items ?? []).length === 0 ? <span style={{ fontSize: 13, color: "var(--gray-400)" }}>None identified</span> :
+          items!.map((it, i) => <span key={i} style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: bg, color }}>{it}</span>)}
+      </div>
+    </div>
+  );
+}
+
+function RoadmapTab({ r }: { r: any }) {
+  const roadmap = r.career_roadmap ?? {};
+  const stages = [
+    { key: "0_30_days", label: "0–30 Days" }, { key: "31_60_days", label: "31–60 Days" },
+    { key: "61_90_days", label: "61–90 Days" }, { key: "3_6_months", label: "3–6 Months" },
+    { key: "6_12_months", label: "6–12 Months" }, { key: "1_3_years", label: "1–3 Years" },
+  ];
+
+  return (
+    <Card title="Career Roadmap" subtitle="Actionable steps mapped to a realistic timeline">
+      {stages.map(({ key, label }) => {
+        const stage = roadmap[key] ?? {};
+        const hasContent = Object.values(stage).some((v: any) => Array.isArray(v) ? v.length > 0 : !!v);
+        if (!hasContent) return null;
+        return (
+          <div key={key} style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <Map size={15} color="var(--teal-700)" />
+              <span style={{ fontWeight: 700, fontSize: 14 }}>{label}</span>
+            </div>
+            {stage.skills_to_learn?.length > 0 && <RoadmapLine label="Learn" items={stage.skills_to_learn} />}
+            {stage.projects_to_build?.length > 0 && <RoadmapLine label="Build" items={stage.projects_to_build} />}
+            {stage.resume_changes?.length > 0 && <RoadmapLine label="Resume" items={stage.resume_changes} />}
+            {stage.interview_prep?.length > 0 && <RoadmapLine label="Interview prep" items={stage.interview_prep} />}
+          </div>
+        );
+      })}
+    </Card>
+  );
+}
+
+function RoadmapLine({ label, items }: { label: string; items: string[] }) {
+  return (
+    <div style={{ fontSize: 13, color: "var(--gray-600)", marginBottom: 4, paddingLeft: 23 }}>
+      <strong>{label}:</strong> {items.join(", ")}
+    </div>
+  );
+}
+
+function BulletsTab({ r }: { r: any }) {
+  const rewrites = r.bullet_rewrites ?? [];
+  return (
+    <Card title="Bullet Rewrites" subtitle="Weak bullets rewritten — metrics are never invented; add real numbers where marked">
+      {rewrites.length === 0 ? (
+        <p style={{ color: "var(--gray-500)", fontSize: 14 }}>No weak bullets identified.</p>
+      ) : rewrites.map((b: any, i: number) => (
+        <div key={i} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: i < rewrites.length - 1 ? "1px solid var(--gray-100)" : "none" }}>
+          <p style={{ margin: "0 0 6px", fontSize: 13, color: "var(--coral-700)" }}><strong>Before:</strong> {b.current_bullet}</p>
+          <p style={{ margin: "0 0 6px", fontSize: 13, color: "var(--teal-700)" }}><strong>After:</strong> {b.improved_version}</p>
+          <p style={{ margin: 0, fontSize: 12, color: "var(--gray-500)" }}>{b.why_better}</p>
+        </div>
+      ))}
+    </Card>
+  );
+}
+
+function InterviewTab({ r }: { r: any }) {
+  const questions = r.interview_prediction?.questions ?? [];
+  return (
+    <Card title="Predicted Interview Questions" subtitle="Generated from claims on your resume that lack full supporting evidence">
+      {questions.length === 0 ? (
+        <p style={{ color: "var(--gray-500)", fontSize: 14 }}>No high-risk areas identified.</p>
+      ) : questions.map((q: any, i: number) => (
+        <div key={i} style={{ display: "flex", gap: 10, marginBottom: 14, alignItems: "flex-start" }}>
+          <MessageSquareQuote size={16} color="var(--teal-700)" style={{ flexShrink: 0, marginTop: 2 }} />
+          <div>
+            <p style={{ margin: "0 0 4px", fontWeight: 600, fontSize: 14 }}>{q.question}</p>
+            <p style={{ margin: 0, fontSize: 12, color: "var(--gray-500)" }}>{q.why_this_question}</p>
+          </div>
+          {q.high_risk && <span style={{ fontSize: 10, fontWeight: 700, color: "var(--coral-700)", background: "var(--coral-50)", padding: "2px 8px", borderRadius: 20, flexShrink: 0 }}>HIGH RISK</span>}
+        </div>
+      ))}
+    </Card>
+  );
+}
+
+function ActionsTab({ r }: { r: any }) {
+  const actions = r.priority_actions ?? [];
+  return (
+    <Card title="Top Priority Actions" subtitle="The highest-impact changes to make first">
+      {actions.length === 0 ? (
+        <p style={{ color: "var(--gray-500)", fontSize: 14 }}>No priority actions identified — resume looks solid.</p>
+      ) : actions.map((a: any, i: number) => (
+        <div key={i} style={{ display: "flex", gap: 14, marginBottom: 18, paddingBottom: 18, borderBottom: i < actions.length - 1 ? "1px solid var(--gray-100)" : "none" }}>
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--teal-100)", color: "var(--teal-800)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, flexShrink: 0 }}>{i + 1}</div>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <span style={{ fontWeight: 700, fontSize: 14 }}>{a.problem}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--coral-700)", background: "var(--coral-50)", padding: "2px 8px", borderRadius: 20 }}>{a.priority}</span>
+            </div>
+            <p style={{ margin: "0 0 4px", fontSize: 13, color: "var(--gray-500)" }}>{a.evidence}</p>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--gray-700)" }}>{a.what_to_do}</p>
+          </div>
+        </div>
+      ))}
+    </Card>
+  );
+}
+
+function scoreToGrade(s: number) {
+  if (s >= 90) return "A+"; if (s >= 85) return "A"; if (s >= 80) return "A-";
+  if (s >= 75) return "B+"; if (s >= 70) return "B"; if (s >= 65) return "B-";
+  if (s >= 60) return "C+"; if (s >= 55) return "C"; return "D";
+}
+
 function ProcessingScreen({ step }: { step: string }) {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "var(--gray-50)", padding: 24 }}>
-      <div style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--teal-50)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 24, animation: "pulse-ring 1.5s infinite" }}>
+      <div style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--teal-50)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 24 }}>
         <Loader2 size={28} color="var(--teal-700)" style={{ animation: "spin 1s linear infinite" }} />
       </div>
-      <h2 style={{ fontSize: 24, marginBottom: 8 }}>Analyzing your resume</h2>
+      <h2 style={{ fontSize: 24, marginBottom: 8 }}>Building your career intelligence report</h2>
       <p style={{ color: "var(--gray-500)", fontSize: 15, marginBottom: 8 }}>{step}</p>
       <p style={{ color: "var(--gray-400)", fontSize: 13 }}>This takes about 20 seconds</p>
     </div>
