@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sparkles, ChevronDown } from "lucide-react";
+
+const DEMO_AUTH_KEY = "skillsync-demo-auth";
 
 // Primary links shown directly in the bar. Everything else lives in the
 // "More" dropdown so every route in frontend/src/app is actually reachable
@@ -27,6 +29,25 @@ const MORE_LINKS = [
 
 export function Navbar() {
   const [showMore, setShowMore] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setIsSignedIn(window.localStorage.getItem(DEMO_AUTH_KEY) === "true");
+  }, []);
+
+  const handleMockSignIn = () => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(DEMO_AUTH_KEY, "true");
+    setIsSignedIn(true);
+    window.location.assign("/dashboard");
+  };
+
+  const handleSignOut = () => {
+    if (typeof window === "undefined") return;
+    window.localStorage.removeItem(DEMO_AUTH_KEY);
+    setIsSignedIn(false);
+  };
 
   return (
     <nav
@@ -151,7 +172,6 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Local/mock mode: auth is intentionally disabled until real credentials are configured. */}
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <Link
             href="/settings"
@@ -168,24 +188,61 @@ export function Navbar() {
             Settings
           </Link>
 
-          <button
-            type="button"
-            style={{
-              padding: "8px 16px",
-              borderRadius: 10,
-              border: "1px solid var(--gray-300, #CBD5E1)",
-              background: "#ffffff",
-              color: "var(--gray-700, #334155)",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Sign in
-          </button>
+          {isSignedIn ? (
+            <>
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "var(--gray-700, #334155)",
+                  padding: "7px 10px",
+                }}
+              >
+                Demo User
+              </span>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: 10,
+                  border: "1px solid var(--gray-300, #CBD5E1)",
+                  background: "#ffffff",
+                  color: "var(--gray-700, #334155)",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={handleMockSignIn}
+              style={{
+                padding: "8px 16px",
+                borderRadius: 10,
+                border: "1px solid var(--gray-300, #CBD5E1)",
+                background: "#ffffff",
+                color: "var(--gray-700, #334155)",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Sign in
+            </button>
+          )}
 
           <button
             type="button"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.location.assign("/dashboard");
+              }
+            }}
             style={{
               display: "flex",
               alignItems: "center",
