@@ -2,15 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import {
-  SignInButton,
-  SignUpButton,
-  UserButton,
-  SignedIn,
-  SignedOut,
-} from "@clerk/nextjs";
 import { Sparkles, ChevronDown } from "lucide-react";
-import { isClerkConfigured } from "@/lib/clerk";
 
 // Primary links shown directly in the bar. Everything else lives in the
 // "More" dropdown so every route in frontend/src/app is actually reachable
@@ -159,85 +151,58 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Auth — real Clerk components, no mocked state. Falls back to a
-            disabled-looking placeholder if Clerk env vars aren't set yet,
-            instead of crashing (SignedIn/SignedOut require a ClerkProvider,
-            which layout.tsx only renders when isClerkConfigured() is true). */}
+        {/* Local/mock mode: auth is intentionally disabled until real credentials are configured. */}
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          {isClerkConfigured() ? (
-            <>
-              <SignedIn>
-                <Link
-                  href="/settings"
-                  style={{
-                    padding: "7px 12px",
-                    borderRadius: 8,
-                    border: "1px solid var(--gray-200, #E2E8F0)",
-                    color: "var(--gray-700, #334155)",
-                    textDecoration: "none",
-                    fontSize: 13,
-                    fontWeight: 600,
-                  }}
-                >
-                  Settings
-                </Link>
-                <UserButton afterSignOutUrl="/" />
-              </SignedIn>
+          <Link
+            href="/settings"
+            style={{
+              padding: "7px 12px",
+              borderRadius: 8,
+              border: "1px solid var(--gray-200, #E2E8F0)",
+              color: "var(--gray-700, #334155)",
+              textDecoration: "none",
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            Settings
+          </Link>
 
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <button
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: 10,
-                      border: "1px solid var(--gray-300, #CBD5E1)",
-                      background: "#ffffff",
-                      color: "var(--gray-700, #334155)",
-                      fontSize: 14,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
-                  >
-                    Sign in
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <button
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      padding: "8px 18px",
-                      borderRadius: 10,
-                      background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
-                      color: "#ffffff",
-                      border: "none",
-                      fontSize: 14,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      boxShadow: "0 3px 10px rgba(15, 110, 86, 0.25)",
-                    }}
-                  >
-                    <Sparkles size={15} /> Get Started Free
-                  </button>
-                </SignUpButton>
-              </SignedOut>
-            </>
-          ) : (
-            <span
-              title="Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY to enable sign-in"
-              style={{
-                padding: "8px 14px",
-                borderRadius: 10,
-                border: "1px dashed var(--gray-300, #CBD5E1)",
-                color: "var(--gray-400, #94A3B8)",
-                fontSize: 13,
-                fontWeight: 600,
-              }}
-            >
-              Sign-in not configured
-            </span>
-          )}
+          <button
+            type="button"
+            style={{
+              padding: "8px 16px",
+              borderRadius: 10,
+              border: "1px solid var(--gray-300, #CBD5E1)",
+              background: "#ffffff",
+              color: "var(--gray-700, #334155)",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Sign in
+          </button>
+
+          <button
+            type="button"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "8px 18px",
+              borderRadius: 10,
+              background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
+              color: "#ffffff",
+              border: "none",
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: "pointer",
+              boxShadow: "0 3px 10px rgba(15, 110, 86, 0.25)",
+            }}
+          >
+            <Sparkles size={15} /> Get Started Free
+          </button>
         </div>
       </div>
     </nav>
