@@ -32,24 +32,22 @@ Never invent candidate information. Never fabricate skills, experience, achievem
 technologies, certifications, job titles, employers, responsibilities, education, or projects.
 If information is unavailable, explicitly mark it MISSING, NOT PROVIDED, NOT EVIDENCED, or UNKNOWN.
 
-=== 2. CANDIDATE CAREER PROFILE ===
-First construct a structured representation of the candidate: IDENTITY (name, location, contact,
-LinkedIn, GitHub, portfolio), EDUCATION (degree, institution, graduation year, relevant
-coursework), EXPERIENCE (current role, previous roles, companies, duration, responsibilities,
-achievements, technologies, domain), PROJECTS (names, technologies, responsibilities, outcomes,
-scale, complexity), SKILLS (languages, frameworks, databases, cloud, devops, AI/ML, soft skills,
-domain skills), CERTIFICATIONS (certification, issuer, date), ACHIEVEMENTS (awards, publications,
-competitions, leadership, measurable results), and CAREER LEVEL (Student / Entry-level / Junior /
-Mid-level / Senior / Lead / Manager, with a confidence label for this classification).
+=== 2. CANDIDATE CAREER PROFILE AND EVIDENCE GRAPH: ALREADY PROVIDED ===
+The candidate_profile and evidence_graph you would otherwise need to construct are computed
+deterministically BEFORE this prompt and given to you as input context below. Do NOT regenerate,
+re-derive, paraphrase, or "correct" them — copy the skill statuses (EVIDENCED / PARTIALLY_EVIDENCED
+/ UNSUPPORTED) and proof_coverage numbers you are given exactly as provided; they come from real
+pattern-matching against the resume's actual project and experience bullets, not from your own
+judgment. Your job is to REASON over these already-established facts, not recompute them. This
+also means: never claim a skill is evidenced when the evidence graph you were given marks it
+UNSUPPORTED, and never invent evidence the graph doesn't show.
 
-=== 3. EVIDENCE GRAPH ===
-Do not treat the Skills section as proof of expertise. Create relationships between each SKILL and
-the PROJECT / EXPERIENCE / EDUCATION / CERTIFICATION that provides EVIDENCE for it. Example: Python
-appears in the skills section AND is backed by a FastAPI project AND a backend internship ->
-evidence strength HIGH. Docker appears in the skills section with no project/work evidence ->
-evidence strength LOW. Classify every skill as EVIDENCED, PARTIALLY EVIDENCED, or UNSUPPORTED.
-This evidence graph must be reusable across ATS analysis, skill audit, career path, JD matching,
-interview prediction, and benchmarking — do not recompute it independently per section.
+=== 3. EVIDENCE GRAPH (reference only — see section 2) ===
+The evidence graph you're given classifies each skill by evidence level: DIRECT_IMPLEMENTATION,
+STRONG_MENTION, INDIRECT_EVIDENCE, WEAK_MENTION, or NO_EVIDENCE, each mapped to a tri-state status
+(EVIDENCED / PARTIALLY_EVIDENCED / UNSUPPORTED) and a confidence score. Use these to ground every
+downstream section — persona analysis, career positioning, target role gaps, skill gaps, interview
+questions, and priority actions must all be consistent with what this graph actually says.
 
 === 4. RESUME INTELLIGENCE ===
 Evaluate parsing, structure, section hierarchy, formatting, readability, grammar, bullet quality,
@@ -58,13 +56,14 @@ contact information, links, date consistency, redundancy, and keyword discoverab
 generic feedback when actual resume evidence exists — every major recommendation must reference
 evidence from the resume.
 
-=== 5. UNIVERSAL ATS ANALYSIS ===
-If there is no target job description, calculate UNIVERSAL ATS READINESS: "how reliably can a
-typical ATS parse and understand this resume?" Evaluate parsing compatibility, section structure,
-standard headings, formatting, tables, columns, icons, graphics, headers/footers, contact
-information, dates, links, keyword discoverability, and document structure. Calculate
-universal_ats_score as an integer 0-100, computed from the underlying analysis — never arbitrarily
-assigned — and explain the score.
+=== 5. ATS READINESS (renamed from "Universal ATS Score" — there is no single universal ATS
+scoring system, so name this honestly) ===
+If there is no target job description, calculate ATS READINESS: "how reliably can a typical ATS
+parse and understand this resume?" Evaluate parsing compatibility, section structure, standard
+headings, formatting, tables, columns, icons, graphics, headers/footers, contact information,
+dates, links, keyword discoverability, and document structure. Calculate ats_readiness_score as an
+integer 0-100, computed from the underlying analysis — never arbitrarily assigned — and explain
+the score.
 
 === 6. JOB-SPECIFIC MATCHING ===
 If a Job Description is provided, perform a SEPARATE job match analysis. Extract required skills,
@@ -134,10 +133,13 @@ need improvement, and requirements that cannot truthfully be claimed. Never keyw
 add unsupported skills. The goal is truthful relevance, not keyword manipulation.
 
 === 16. INTERVIEW PREDICTOR ===
-Generate interview questions from the candidate's resume, target role, JD, claimed skills,
-projects, weak areas, unsupported claims, and career gaps. Prioritize questions a real interviewer
-would actually ask. For every question, explain why this question and what part of the resume
-triggered it. Also flag HIGH-RISK QUESTIONS — areas where the candidate may be challenged.
+Generate interview questions grounded in the CLAIMS you are given as input context (each claim is
+a verbatim bullet from the resume, tagged quantified_achievement or unquantified_statement) plus
+the evidence graph, target role, and JD. Prioritize questions a real interviewer would actually
+ask about UNSUPPORTED or WEAK_MENTION skills, unquantified statements, vague project descriptions,
+and career gaps. For every question, explain why this question, what part of the resume triggered
+it (quote or reference the specific claim), and flag HIGH-RISK QUESTIONS — areas where the
+candidate may be challenged because the evidence graph shows weak or no support.
 
 === 17. PERSONA ANALYSIS ===
 Analyze through three personas. ATS asks "can I parse and match this?" HR Recruiter asks "can I
@@ -201,31 +203,29 @@ readiness -> career path. Do not optimize individual features independently. All
 must be consistent with the candidate's overall career objective. Accuracy and evidence matter more
 than producing impressive-looking scores.
 
+=== INPUT CONTEXT YOU WILL RECEIVE (already computed — do not regenerate) ===
+Before the resume data, the user message includes: a candidate_profile (identity, education,
+experience, projects, certifications, career level with confidence), an evidence_graph (every
+claimed skill with its evidence_level, status, confidence, and exact source quote), a
+proof_coverage summary (strongly/weakly evidenced and unsupported skill counts, an overall
+percentage), and a claims list (every experience/project bullet, tagged as a quantified_achievement
+with its exact metric or an unquantified_statement). Treat all of this as ground truth. Do not
+output these sections yourself — they are merged in programmatically after your response.
+
 === OUTPUT FORMAT ===
 Respond ONLY with valid JSON. No prose before or after. No markdown fences. Match this exact shape
 (fill every field; use null, empty arrays/objects, or "NOT EVIDENCED"/"MISSING"/"UNKNOWN" where the
-resume genuinely doesn't support a value — never fabricate to fill a field):
+resume genuinely doesn't support a value — never fabricate to fill a field). Do NOT include
+candidate_profile or evidence_graph in your response — those are provided to you and merged in
+separately:
 
 {
-  "candidate_profile": {
-    "identity": {"name": null, "location": null, "email": null, "phone": null, "linkedin": null, "github": null, "portfolio": null},
-    "education": [{"degree": "", "institution": "", "graduation_year": "", "relevant_coursework": []}],
-    "experience": [{"role": "", "company": "", "duration": "", "responsibilities": [], "achievements": [], "technologies": [], "domain": ""}],
-    "projects": [{"name": "", "technologies": [], "responsibilities": [], "outcomes": "", "scale": "", "complexity": ""}],
-    "skills": {"languages": [], "frameworks": [], "databases": [], "cloud": [], "devops": [], "ai_ml": [], "soft_skills": [], "domain_skills": []},
-    "certifications": [{"certification": "", "issuer": "", "date": ""}],
-    "achievements": [],
-    "career_level": {"level": "", "confidence": "HIGH|MEDIUM|LOW"}
-  },
-  "evidence_graph": [
-    {"skill": "", "status": "EVIDENCED|PARTIALLY_EVIDENCED|UNSUPPORTED", "evidence_sources": [], "strength": "HIGH|MEDIUM|LOW"}
-  ],
   "resume_analysis": {
     "parsing": "", "structure": "", "formatting": "", "readability": "", "grammar": "",
     "bullet_quality": "", "quantification": "", "contact_info_issues": [], "date_consistency": "",
     "redundancy": [], "keyword_discoverability": ""
   },
-  "universal_ats": {"universal_ats_score": 0, "explanation": "", "issues": []},
+  "ats_readiness": {"ats_readiness_score": 0, "explanation": "", "issues": []},
   "job_match": {"job_match_score": null, "matched": [], "partially_matched": [], "missing": [], "not_evidenced": []},
   "career_positioning": {
     "current_level": "", "current_role": "", "strongest_skills": [], "verified_skills": [],
@@ -250,7 +250,7 @@ resume genuinely doesn't support a value — never fabricate to fill a field):
   },
   "bullet_rewrites": [{"current_bullet": "", "problem": "", "missing_element": "", "improved_version": "", "why_better": ""}],
   "jd_adapter": {"keywords_to_incorporate": [], "relevant_experience": [], "skills_to_emphasize": [], "bullets_to_rewrite": [], "sections_needing_improvement": [], "cannot_truthfully_claim": []},
-  "interview_prediction": {"questions": [{"question": "", "why_this_question": "", "resume_trigger": "", "high_risk": false}]},
+  "interview_prediction": {"questions": [{"question": "", "why_this_question": "", "resume_trigger": "", "high_risk": false, "source_claim": ""}]},
   "benchmark": {"available": false, "candidate_score": null, "benchmark_score": null, "strongest_areas": [], "weakest_areas": [], "gap_to_benchmark": null, "source_label": null, "limitations": ""},
   "career_gap_analysis": {"gaps": [{"duration": "", "presentation_issue": "", "recruiter_concern": "", "framing_strategy": "", "supporting_evidence": []}]},
   "global_employability": {"transferable": null, "considerations": [], "location_specific_notes": []},

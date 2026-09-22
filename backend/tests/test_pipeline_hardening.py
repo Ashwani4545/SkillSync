@@ -56,43 +56,64 @@ def test_fallback_dict_is_preserved_on_failure():
     assert result["score"] == 0
     assert result["note"] == "fallback"
 
-
 # ── Career Intelligence Engine: missing-key resilience ──────────────────
+# candidate_profile/evidence_graph/proof_coverage/claims are NEVER at risk
+# here — they're computed deterministically before the LLM is even called
+# (see ai_engine/candidate_profile.py, ai_engine/evidence_engine.py), so
+# they can't be missing due to a bad LLM response. Only the LLM's own
+# reasoning sections (LLM_SECTION_KEYS) can be incomplete.
 
-def test_missing_top_level_keys_are_filled_with_empty_defaults(monkeypatch, sample_resume_json):
-    """
-    If the model's response is valid JSON but incomplete (missing some of
-    the 21 required top-level keys), run_career_intelligence must fill
-    those in rather than leave them absent — so frontend code reading
-    result["priority_actions"] etc. never hits a KeyError.
-    """
+def test_missing_llm_section_keys_are_filled_with_empty_defaults(monkeypatch, sample_resume_json):
     import ai_engine.career_intelligence_engine as engine_module
+    import os
 
     def _incomplete_response(*args, **kwargs):
         import json
-        return json.dumps({"candidate_profile": {"identity": {"name": "Test"}}})
+        return json.dumps({"ats_readiness": {"ats_readiness_score": 70}})
 
     monkeypatch.setattr(engine_module, "_generate_mock_response", _incomplete_response)
-
-    import os
     os.environ["USE_MOCK_LLM"] = "true"
+
     result = engine_module.run_career_intelligence(sample_resume_json)
 
-    for key in engine_module.REQUIRED_TOP_LEVEL_KEYS:
+    for key in engine_module.LLM_SECTION_KEYS:
         assert key in result
-    assert any("evidence_graph" in w for w in result["warnings"])
+    # candidate_profile/evidence_graph are unaffected by the LLM response at all
+    assert result["candidate_profile"]["experience"] == sample_resume_json["experience"]
+    assert len(result["evidence_graph"]) == len(set(s.lower() for s in sample_resume_json["skills"]))
+    assert any("warnings" in str(w) or "missing" in str(w).lower() for w in result.get("warnings", []))
+
+
+def test_candidate_profile_survives_even_a_totally_broken_llm_call(monkeypatch, sample_resume_json):
+    """This is the actual fix for the '0 experience entries' bug: even a
+    complete LLM failure must not zero out candidate_profile/evidence_graph,
+    because they never depended on the LLM succeeding in the first place."""
+    import ai_engine.career_intelligence_engine as engine_module
+    import os
+
+    def _garbage_response(*args, **kwargs):
+        return "this is not json at all and has no braces"
+
+    monkeypatch.setattr(engine_module, "_generate_mock_response", _garbage_response)
+    os.environ["USE_MOCK_LLM"] = "true"
+
+    result = engine_module.run_career_intelligence(sample_resume_json)
+
+    assert len(result["candidate_profile"]["experience"]) == len(sample_resume_json["experience"])
+    assert len(result["evidence_graph"]) > 0
 
 
 def test_real_api_failure_propagates(monkeypatch, sample_resume_json):
     """
-    Unlike the old per-analyzer isolation, a failed call here has nothing
-    partial to salvage — the whole analysis correctly fails, matching how
-    workers/analyze_task.py's except block marks the Analysis row "failed".
+    A failed call here has nothing partial to salvage from the LLM's own
+    sections — but candidate_profile/evidence_graph were already computed
+    before the call, so this only means the reasoning sections are lost,
+    not the whole analysis. workers/analyze_task.py still marks the
+    Analysis row "failed" in this case since run_career_intelligence raises.
     """
     import ai_engine.career_intelligence_engine as engine_module
     import os
 
-    monkeypatch.setattr(os.environ, "get", os.environ.get)  # no-op, keeps real env access
     os.environ["USE_MOCK_LLM"] = "false"
 
     def _broken_call_claude_raw(*args, **kwargs):

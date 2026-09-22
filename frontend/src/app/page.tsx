@@ -62,8 +62,8 @@ export default function LandingPage() {
           <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "16px 32px", borderRadius: 14, background: "linear-gradient(135deg, #0F6E56, #1D9E75)", color: "#fff", textDecoration: "none", fontSize: 16, fontWeight: 700, boxShadow: "0 8px 20px rgba(15, 110, 86, 0.3)" }}>
             Analyze my resume free <ArrowRight size={18} />
           </Link>
-          <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "16px 28px", borderRadius: 14, background: "#fff", border: "1px solid #CBD5E1", color: "#334155", textDecoration: "none", fontSize: 16, fontWeight: 600, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-            See a live demo
+          <Link href="/build" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "16px 28px", borderRadius: 14, background: "#fff", border: "1px solid #CBD5E1", color: "#334155", textDecoration: "none", fontSize: 16, fontWeight: 600, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+            Build my resume
           </Link>
         </div>
         <p style={{ marginTop: 20, fontSize: 13, color: "#64748B", fontWeight: 500 }}>No credit card required · 3 free analyses per month</p>

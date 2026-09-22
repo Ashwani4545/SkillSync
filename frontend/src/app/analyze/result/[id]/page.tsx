@@ -142,6 +142,27 @@ export default function ResultPage() {
         </div>
       </div>
 
+      {/* Warnings — surfaced prominently, not buried in a tab. Candidate
+          profile/evidence graph are always correct (computed before any
+          LLM call), but if the LLM's reasoning sections came back
+          incomplete or failed validation, the user needs to know that
+          rather than trust a confident-looking but partial report. */}
+      {r.warnings?.length > 0 && (
+        <div style={{ maxWidth: 1100, margin: "16px auto 0", padding: "0 24px" }}>
+          <div style={{ background: "var(--amber-50)", border: "1px solid var(--amber-200, #FDE8C8)", borderRadius: "var(--radius-md)", padding: "12px 16px", display: "flex", gap: 10, alignItems: "flex-start" }}>
+            <AlertCircle size={16} color="var(--amber-700)" style={{ flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--amber-700)", marginBottom: 4 }}>
+                Analysis confidence reduced
+              </div>
+              {r.warnings.map((w: string, i: number) => (
+                <div key={i} style={{ fontSize: 12.5, color: "var(--gray-600)" }}>{w}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div style={{ background: "#fff", borderBottom: "1px solid var(--gray-200)", padding: "0 24px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", overflowX: "auto" }}>
@@ -204,15 +225,31 @@ function Card({ title, subtitle, children }: { title: string; subtitle?: string;
 }
 
 function OverviewTab({ r }: { r: any }) {
-  const ats = r.universal_ats ?? {};
+  const ats = r.ats_readiness ?? {};
   const jm = r.job_match ?? {};
   const profile = r.candidate_profile ?? {};
+  const proof = r.proof_coverage ?? {};
 
   return (
     <div>
-      <Card title="Universal ATS Readiness" subtitle="How reliably a typical ATS can parse and understand this resume">
+      {proof.total_skills > 0 && (
+        <Card title="Resume Trust & Evidence Report" subtitle="How many of your claimed skills actually have supporting evidence, not just a keyword count">
+          <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+            <div style={{ fontSize: 40, fontWeight: 800, color: proof.proof_coverage_pct >= 70 ? "var(--teal-700)" : proof.proof_coverage_pct >= 40 ? "var(--amber-700)" : "var(--coral-700)", fontFamily: "Syne" }}>
+              {proof.proof_coverage_pct}%<span style={{ fontSize: 14, color: "var(--gray-400)", fontWeight: 500 }}> proof coverage</span>
+            </div>
+            <div style={{ display: "flex", gap: 16 }}>
+              <MiniStat label="Strongly evidenced" value={proof.strongly_evidenced} color="var(--teal-700)" />
+              <MiniStat label="Weakly evidenced" value={proof.weakly_evidenced} color="var(--amber-700)" />
+              <MiniStat label="Unsupported" value={proof.unsupported} color="var(--coral-700)" />
+            </div>
+          </div>
+        </Card>
+      )}
+
+      <Card title="ATS Readiness" subtitle="How reliably a typical ATS can parse and understand this resume — not a claim about any specific ATS product">
         <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 16 }}>
-          <div style={{ fontSize: 40, fontWeight: 800, color: "var(--teal-700)", fontFamily: "Syne" }}>{ats.universal_ats_score ?? "—"}<span style={{ fontSize: 16, color: "var(--gray-400)" }}>/100</span></div>
+          <div style={{ fontSize: 40, fontWeight: 800, color: "var(--teal-700)", fontFamily: "Syne" }}>{ats.ats_readiness_score ?? "—"}<span style={{ fontSize: 16, color: "var(--gray-400)" }}>/100</span></div>
           <p style={{ margin: 0, fontSize: 14, color: "var(--gray-600)", flex: 1 }}>{ats.explanation}</p>
         </div>
         {ats.issues?.length > 0 && (
@@ -226,7 +263,11 @@ function OverviewTab({ r }: { r: any }) {
         )}
       </Card>
 
-      {jm.job_match_score !== null && jm.job_match_score !== undefined && (
+      {(jm.job_match_score === null || jm.job_match_score === undefined) ? (
+        <Card title="Job Match">
+          <p style={{ margin: 0, fontSize: 14, color: "var(--gray-500)" }}>Add a job description to calculate role match.</p>
+        </Card>
+      ) : (
         <Card title="Job Match" subtitle="Separate from ATS readiness — how well this resume matches the target job description">
           <div style={{ fontSize: 32, fontWeight: 800, color: "var(--teal-700)", fontFamily: "Syne", marginBottom: 12 }}>{jm.job_match_score}/100</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
@@ -240,11 +281,12 @@ function OverviewTab({ r }: { r: any }) {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
           <ProfileStat label="Experience entries" value={profile.experience?.length ?? 0} />
           <ProfileStat label="Projects" value={profile.projects?.length ?? 0} />
-          <ProfileStat label="Skills listed" value={
-            Object.values(profile.skills ?? {}).reduce((sum: number, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0) as number
-          } />
+          <ProfileStat label="Skills listed" value={r.evidence_graph?.length ?? 0} />
           <ProfileStat label="Certifications" value={profile.certifications?.length ?? 0} />
         </div>
+        {profile.career_level_basis && (
+          <p style={{ margin: "12px 0 0", fontSize: 12, color: "var(--gray-400)" }}>{profile.career_level_basis}</p>
+        )}
       </Card>
     </div>
   );
@@ -272,10 +314,21 @@ function ProfileStat({ label, value }: { label: string; value: number }) {
   );
 }
 
+function MiniStat({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontSize: 20, fontWeight: 800, color, fontFamily: "Syne" }}>{value}</div>
+      <div style={{ fontSize: 11, color: "var(--gray-400)" }}>{label}</div>
+    </div>
+  );
+}
+
 function EvidenceTab({ r }: { r: any }) {
   const graph = r.evidence_graph ?? [];
+  const [expanded, setExpanded] = useState<string | null>(null);
+
   return (
-    <Card title="Skill Evidence Graph" subtitle="Every skill checked against real supporting evidence in your experience and projects — not just whether it's listed">
+    <Card title="Skill Evidence Graph" subtitle="Every skill checked against real supporting text in your experience and projects — not just whether it's listed. Click a skill to see the exact evidence.">
       {graph.length === 0 ? (
         <p style={{ color: "var(--gray-500)", fontSize: 14 }}>No skills found to evaluate.</p>
       ) : (
@@ -283,12 +336,39 @@ function EvidenceTab({ r }: { r: any }) {
           {graph.map((e: any, i: number) => {
             const meta = EVIDENCE_META[e.status] ?? EVIDENCE_META.UNSUPPORTED;
             const Icon = meta.Icon;
+            const isOpen = expanded === e.canonical_name;
+            const source = e.evidence?.[0];
             return (
-              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: i < graph.length - 1 ? "1px solid var(--gray-100)" : "none" }}>
-                <span style={{ fontWeight: 600, fontSize: 14 }}>{e.skill}</span>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, fontSize: 12, fontWeight: 700, color: meta.color, background: meta.bg }}>
-                  <Icon size={13} /> {meta.label}
-                </span>
+              <div key={i} style={{ borderBottom: i < graph.length - 1 ? "1px solid var(--gray-100)" : "none" }}>
+                <button
+                  onClick={() => setExpanded(isOpen ? null : e.canonical_name)}
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
+                >
+                  <span>
+                    <span style={{ fontWeight: 600, fontSize: 14 }}>{e.canonical_name}</span>
+                    {e.category && <span style={{ marginLeft: 8, fontSize: 11, color: "var(--gray-400)" }}>{e.category}</span>}
+                  </span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, fontSize: 12, fontWeight: 700, color: meta.color, background: meta.bg }}>
+                    <Icon size={13} /> {meta.label}
+                  </span>
+                </button>
+                {isOpen && (
+                  <div style={{ padding: "0 0 14px", fontSize: 13 }}>
+                    {source ? (
+                      <div style={{ background: "var(--gray-50)", borderRadius: 8, padding: "10px 14px" }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gray-400)", textTransform: "uppercase", marginBottom: 4 }}>
+                          Found in: {source.source_name} ({source.source_type.replace("_", " ")})
+                        </div>
+                        <div style={{ color: "var(--gray-700)", fontStyle: "italic" }}>"{source.text}"</div>
+                      </div>
+                    ) : (
+                      <div style={{ background: "var(--coral-50)", borderRadius: 8, padding: "10px 14px", color: "var(--coral-700)" }}>
+                        No supporting project or experience evidence detected. Add genuine project evidence if applicable.
+                      </div>
+                    )}
+                    <div style={{ marginTop: 6, fontSize: 12, color: "var(--gray-400)" }}>Confidence: {Math.round(e.confidence * 100)}%</div>
+                  </div>
+                )}
               </div>
             );
           })}

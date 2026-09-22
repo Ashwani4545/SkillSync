@@ -59,7 +59,7 @@ def get_shared_result(token: str, db: Session = Depends(get_db)):
 
     return {
         "career_readiness": result.results_json.get("career_readiness") if result.results_json else None,
-        "universal_ats": result.results_json.get("universal_ats") if result.results_json else None,
+        "ats_readiness": result.results_json.get("ats_readiness") if result.results_json else None,
         "completed_at": result.completed_at,
     }
 

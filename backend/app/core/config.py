@@ -13,11 +13,11 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"
 
     # AI
-    ANTHROPIC_API_KEY: str = ""
+    ANTHROPIC_API_KEY: str
     OPENAI_API_KEY: str = ""
 
     # Auth (Clerk)
-    CLERK_SECRET_KEY: str = ""
+    CLERK_SECRET_KEY: str
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: str = ""
 
     # AWS

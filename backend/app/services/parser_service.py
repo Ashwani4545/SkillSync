@@ -306,6 +306,17 @@ def _parse_education(lines: list[str]) -> list[dict]:
 def _parse_skills(lines: list[str]) -> list[str]:
     skills = []
     for line in lines:
+        # Strip a leading category label like "Programming & Database:" or
+        # "Data Science & ML:" before splitting on delimiters — without
+        # this, "Programming & Database: Python" was stored as a single
+        # 32-character "skill" instead of the skill "Python". Only strips
+        # when there's a short-ish label before the colon (avoids eating a
+        # line like "Reduced latency: cut response time by 40%" that just
+        # happens to contain a colon).
+        category_match = re.match(r"^([A-Za-z][A-Za-z &/]{1,40}):\s*(.+)$", line)
+        if category_match and len(category_match.group(1).split()) <= 5:
+            line = category_match.group(2)
+
         # Split on common delimiters
         parts = re.split(r"[,|•·/\t]+", line)
         for part in parts:

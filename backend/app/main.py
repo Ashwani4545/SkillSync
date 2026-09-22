@@ -9,7 +9,7 @@ except ImportError:
 from app.routers import (
     resume, analysis, jd, career, benchmark, billing,
     health, compare, gap, share, github, recruiter,
-    api_keys, bias, language, admin, whitelabel, two_factor
+    api_keys, bias, language, admin, whitelabel, two_factor, builder
 )
 from app.db import base  # noqa
 from app.core.config import settings
@@ -53,6 +53,7 @@ app.add_middleware(
 # ── Phase 1 — Foundation ──────────────────────────────────────────────────────
 app.include_router(health.router,      prefix="/api/v1",              tags=["health"])
 app.include_router(resume.router,      prefix="/api/v1/resume",       tags=["resume"])
+app.include_router(builder.router,     prefix="/api/v1/builder",      tags=["resume-builder"])
 app.include_router(analysis.router,    prefix="/api/v1/analysis",     tags=["analysis"])
 app.include_router(billing.router,     prefix="/api/v1/billing",      tags=["billing"])
 

@@ -245,8 +245,8 @@ You will also need API keys for:
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/yourusername/resume-analyzer.git
-cd resume-analyzer
+git clone https://github.com/Ashwani4545/SkillSync.git
+cd SkillSync
 ```
 
 **2. Copy environment files**

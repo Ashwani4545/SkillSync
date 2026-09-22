@@ -69,7 +69,10 @@ class Resume(Base):
     raw_text    = Column(Text, nullable=True)
     parsed_json = Column(JSON, nullable=True)           # structured sections
     file_size   = Column(Integer, nullable=True)        # bytes
+    source      = Column(String(20), nullable=False, default="uploaded")  # "uploaded" | "builder"
+    template    = Column(String(50), nullable=True)      # builder resumes only, e.g. "minimal", "modern"
     created_at  = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at  = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     user      = relationship("User", back_populates="resumes")
     analyses  = relationship("Analysis", back_populates="resume", cascade="all, delete-orphan")

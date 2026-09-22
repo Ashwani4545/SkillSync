@@ -1566,14 +1566,7 @@ def call_claude(
     # ANTHROPIC_API_KEY set in ENVIRONMENT=development still calls Claude.
     # Set USE_MOCK_LLM=true to force the heuristic mock (e.g. to save API
     # credits while iterating on non-AI code).
-    if (
-        os.environ.get("USE_MOCK_LLM", "").lower() == "true"
-        or os.environ.get("ANTHROPIC_API_KEY", "").startswith("sk-ant-...")
-        or (
-            not os.environ.get("ANTHROPIC_API_KEY")
-            and os.environ.get("ENVIRONMENT", "development") == "development"
-        )
-    ):
+    if os.environ.get("USE_MOCK_LLM", "").lower() == "true" or os.environ.get("ANTHROPIC_API_KEY", "").startswith("sk-ant-..."):
         return _generate_smart_mock_response(system, user)
 
     return call_claude_raw(
