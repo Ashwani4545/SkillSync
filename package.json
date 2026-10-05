@@ -1,10 +1,7 @@
 {
-  "name": "skillsync-monorepo",
+  "name": "skillsync",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "frontend"
-  ],
   "scripts": {
     "dev": "npm --prefix frontend run dev",
     "build": "npm --prefix frontend run build",
