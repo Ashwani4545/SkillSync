@@ -85,7 +85,7 @@ export function RecruiterHeatmap({ r }: { r: any }) {
       {activeView === "attention" ? (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           {/* Visual Heatmap Breakdown */}
-          <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
+          <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24 }}>
             <h3 style={{ margin: "0 0 16px", fontSize: 16, display: "flex", alignItems: "center", gap: 8 }}>
               <Flame size={18} color="var(--coral-600)" /> Gaze Duration & Focus Hotspots
             </h3>
@@ -128,7 +128,7 @@ export function RecruiterHeatmap({ r }: { r: any }) {
           </div>
         </div>
       ) : (
-        <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
+        <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24 }}>
           <h3 style={{ margin: "0 0 16px", fontSize: 18, fontFamily: "Syne, sans-serif" }}>7-Second Skimming Breakdown</h3>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
             <div style={{ background: "var(--gray-50)", padding: 18, borderRadius: 12, textAlign: "center" }}>

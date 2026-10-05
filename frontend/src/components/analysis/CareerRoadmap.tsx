@@ -68,7 +68,7 @@ export function CareerRoadmap({ r }: { r: any }) {
       {activeSubTab === "career" && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           {/* Current Level */}
-          <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
+          <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24 }}>
             <h3 style={{ margin: "0 0 16px", fontSize: 16, color: "var(--teal-700)" }}>Current Level Assessment</h3>
             <div style={{ background: "var(--teal-50)", padding: 18, borderRadius: 12, marginBottom: 16 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "var(--teal-800)", textTransform: "uppercase", marginBottom: 4 }}>INFERRED POSITION</div>
@@ -84,7 +84,7 @@ export function CareerRoadmap({ r }: { r: any }) {
           </div>
 
           {/* Next Target Roles */}
-          <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
+          <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24 }}>
             <h3 style={{ margin: "0 0 16px", fontSize: 16 }}>Next Target Role (12-18 Months)</h3>
             {nextRoles.map((role: any, i: number) => (
               <div key={i} style={{ background: "var(--gray-50)", padding: 16, borderRadius: 12, marginBottom: 12 }}>
@@ -106,7 +106,7 @@ export function CareerRoadmap({ r }: { r: any }) {
       )}
 
       {activeSubTab === "salary" && (
-        <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
+        <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24 }}>
           <h3 style={{ margin: "0 0 16px", fontSize: 18, fontFamily: "Syne, sans-serif" }}>2025 Market Salary Benchmarks</h3>
           
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
@@ -142,7 +142,7 @@ export function CareerRoadmap({ r }: { r: any }) {
 
       {activeSubTab === "learning" && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 20 }}>
+          <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 20 }}>
             <h4 style={{ margin: "0 0 10px", fontSize: 15, color: "var(--teal-700)" }}>30-Day Quick Wins Plan</h4>
             <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, color: "var(--gray-700)", lineHeight: 1.6 }}>
               <li>Update CV experience bullets with quantified metrics (%, $, user scale)</li>
@@ -151,7 +151,7 @@ export function CareerRoadmap({ r }: { r: any }) {
             </ul>
           </div>
 
-          <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 20 }}>
+          <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 20 }}>
             <h4 style={{ margin: "0 0 10px", fontSize: 15, color: "var(--blue-700)" }}>90-Day Skill Building Plan</h4>
             <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, color: "var(--gray-700)", lineHeight: 1.6 }}>
               <li>Build & deploy 1 end-to-end technical project utilizing modern cloud stack</li>

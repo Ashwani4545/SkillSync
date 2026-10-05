@@ -19,7 +19,7 @@ export function SectionGrades({ data }: { data: any }) {
   }));
 
   return (
-    <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
+    <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24 }}>
       <h3 style={{ margin: "0 0 20px", fontSize: 18 }}>Section grades</h3>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
         {sections.map((s) => (

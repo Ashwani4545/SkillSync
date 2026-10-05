@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { TrendingUp, Loader2, ChevronDown, ChevronUp, ArrowRight, Star, AlertTriangle, CheckCircle } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 const POLL_MS = 2500;
 
@@ -44,26 +45,26 @@ export default function CareerPathPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--gray-50)" }}>
-      <Header />
+    <div style={{ minHeight: "100vh", background: "radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.12) 0%, transparent 60%), #0A0F1E", color: "#ffffff" }}>
+      <PageHeader title="Career Path" badge="CAREER" badgeColor="#C084FC" />
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "40px 24px" }}>
         <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 30, marginBottom: 6 }}>Career Path Predictor</h1>
-          <p style={{ color: "var(--gray-500)", fontSize: 15 }}>
+          <h1 style={{ fontSize: 30, fontWeight: 800, marginBottom: 8, fontFamily: "Syne, sans-serif", color: "#ffffff" }}>Career Path Predictor</h1>
+          <p style={{ color: "#94A3B8", fontSize: 15 }}>
             AI analyzes your resume to predict your next 2 realistic roles, identify skill gaps, and map your path to your 3–5 year goal.
           </p>
         </div>
 
         {(status === "idle" || status === "error") && (
           <>
-            <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24, marginBottom: 20 }}>
-              <label style={{ fontSize: 12, fontWeight: 700, color: "var(--gray-400)", display: "block", marginBottom: 12 }}>SELECT RESUME</label>
+            <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24, marginBottom: 20 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.05em", display: "block", marginBottom: 12 }}>SELECT RESUME</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {resumes.length === 0
-                  ? <p style={{ fontSize: 14, color: "var(--gray-400)" }}>No resumes yet. <a href="/analyze/upload" style={{ color: "var(--teal-700)" }}>Upload one →</a></p>
+                  ? <p style={{ fontSize: 14, color: "#94A3B8" }}>No resumes yet. <a href="/analyze/upload" style={{ color: "#2DD4BF" }}>Upload one →</a></p>
                   : resumes.map(r => (
                     <button key={r.id} onClick={() => setResumeId(r.id)}
-                      style={{ padding: "9px 16px", borderRadius: "var(--radius-md)", border: `1.5px solid ${resumeId === r.id ? "var(--teal-500)" : "var(--gray-200)"}`, background: resumeId === r.id ? "var(--teal-50)" : "#fff", cursor: "pointer", fontSize: 13, fontWeight: resumeId === r.id ? 600 : 400, color: resumeId === r.id ? "var(--teal-700)" : "var(--gray-700)" }}>
+                      style={{ padding: "10px 18px", borderRadius: 12, border: `1.5px solid ${resumeId === r.id ? "#A855F7" : "rgba(255, 255, 255, 0.1)"}`, background: resumeId === r.id ? "rgba(168, 85, 247, 0.15)" : "rgba(255, 255, 255, 0.03)", cursor: "pointer", fontSize: 13, fontWeight: resumeId === r.id ? 600 : 400, color: resumeId === r.id ? "#D8B4FE" : "#E2E8F0", transition: "all 0.2s ease" }}>
                       {r.filename}
                     </button>
                   ))
@@ -71,10 +72,10 @@ export default function CareerPathPage() {
               </div>
             </div>
 
-            {error && <div style={{ padding: "12px 16px", background: "var(--coral-50)", borderRadius: "var(--radius-md)", color: "var(--coral-700)", fontSize: 14, marginBottom: 16 }}>{error}</div>}
+            {error && <div style={{ padding: "14px 18px", background: "rgba(239, 68, 68, 0.15)", borderRadius: 12, border: "1px solid rgba(239, 68, 68, 0.3)", color: "#FCA5A5", fontSize: 14, marginBottom: 16 }}>{error}</div>}
 
             <button onClick={handlePredict} disabled={!resumeId}
-              style={{ padding: "14px 32px", borderRadius: "var(--radius-md)", border: "none", background: !resumeId ? "var(--gray-200)" : "var(--teal-700)", color: !resumeId ? "var(--gray-400)" : "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+              style={{ padding: "14px 32px", borderRadius: 14, border: "none", background: !resumeId ? "rgba(255, 255, 255, 0.08)" : "linear-gradient(135deg, #9333EA 0%, #6B21A8 100%)", color: !resumeId ? "#64748B" : "#fff", fontSize: 15, fontWeight: 700, cursor: !resumeId ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: resumeId ? "0 0 20px rgba(147, 51, 234, 0.35)" : "none", transition: "all 0.2s ease" }}>
               <TrendingUp size={18} /> Predict my career path
             </button>
           </>
@@ -82,11 +83,11 @@ export default function CareerPathPage() {
 
         {(status === "loading" || status === "polling") && (
           <div style={{ textAlign: "center", padding: "80px 24px" }}>
-            <div style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--teal-50)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
-              <Loader2 size={26} color="var(--teal-700)" style={{ animation: "spin 1s linear infinite" }} />
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(168, 85, 247, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", border: "1px solid rgba(168, 85, 247, 0.3)" }}>
+              <Loader2 size={28} color="#C084FC" style={{ animation: "spin 1s linear infinite" }} />
             </div>
-            <h2 style={{ fontSize: 22, marginBottom: 8 }}>Mapping your career trajectory</h2>
-            <p style={{ color: "var(--gray-500)" }}>Analyzing your experience, skills, and industry patterns...</p>
+            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8, fontFamily: "Syne, sans-serif" }}>Mapping your career trajectory</h2>
+            <p style={{ color: "#94A3B8" }}>Analyzing your experience, skills, and industry patterns...</p>
           </div>
         )}
 
@@ -108,15 +109,15 @@ function CareerResults({ result, openRole, setOpenRole, onReset }: any) {
   return (
     <div>
       {/* Current level card */}
-      <div style={{ background: "var(--teal-700)", borderRadius: "var(--radius-xl)", padding: "28px 32px", marginBottom: 24, color: "#fff" }}>
-        <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.7, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>Current level — {current.confidence} confidence</div>
-        <div style={{ fontSize: 28, fontWeight: 800, fontFamily: "Syne", marginBottom: 6 }}>{current.title || "Unknown"}</div>
-        <div style={{ fontSize: 14, opacity: 0.8, display: "flex", gap: 16, flexWrap: "wrap" }}>
+      <div style={{ background: "linear-gradient(135deg, rgba(147, 51, 234, 0.2) 0%, rgba(59, 130, 246, 0.15) 100%)", borderRadius: 20, padding: "28px 32px", marginBottom: 24, border: "1px solid rgba(168, 85, 247, 0.3)", backdropFilter: "blur(12px)" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#C084FC", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>Current level — {current.confidence} confidence</div>
+        <div style={{ fontSize: 28, fontWeight: 800, fontFamily: "Syne, sans-serif", marginBottom: 6, color: "#FFFFFF" }}>{current.title || "Unknown"}</div>
+        <div style={{ fontSize: 14, color: "#94A3B8", display: "flex", gap: 16, flexWrap: "wrap" }}>
           <span>~{current.years_experience} years experience</span>
           <span style={{ textTransform: "capitalize" }}>Seniority: {current.seniority}</span>
         </div>
         {result.unique_advantage && (
-          <div style={{ marginTop: 14, padding: "10px 14px", background: "rgba(255,255,255,0.12)", borderRadius: "var(--radius-md)", fontSize: 14, fontStyle: "italic", opacity: 0.9 }}>
+          <div style={{ marginTop: 14, padding: "12px 16px", background: "rgba(255,255,255,0.06)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.1)", fontSize: 14, fontStyle: "italic", color: "#F1F5F9" }}>
             ✦ {result.unique_advantage}
           </div>
         )}
@@ -124,65 +125,65 @@ function CareerResults({ result, openRole, setOpenRole, onReset }: any) {
 
       {/* Trajectory flow */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-        <div style={{ padding: "8px 16px", borderRadius: 20, background: "var(--teal-50)", color: "var(--teal-700)", fontSize: 13, fontWeight: 700 }}>Now</div>
-        <ArrowRight size={16} color="var(--gray-300)" />
+        <div style={{ padding: "8px 18px", borderRadius: 20, background: "rgba(45, 212, 191, 0.15)", color: "#2DD4BF", fontSize: 13, fontWeight: 700, border: "1px solid rgba(45, 212, 191, 0.3)" }}>Now</div>
+        <ArrowRight size={16} color="#64748B" />
         {nextRoles.slice(0, 2).map((r: any, i: number) => (
-          <>
-            <div key={i} style={{ padding: "8px 16px", borderRadius: 20, background: "var(--blue-50)", color: "var(--blue-700)", fontSize: 13, fontWeight: 700 }}>{r.timeline}</div>
-            {i === 0 && <ArrowRight size={16} color="var(--gray-300)" />}
-          </>
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ padding: "8px 18px", borderRadius: 20, background: "rgba(96, 165, 250, 0.15)", color: "#60A5FA", fontSize: 13, fontWeight: 700, border: "1px solid rgba(96, 165, 250, 0.3)" }}>{r.timeline}</div>
+            {i === 0 && <ArrowRight size={16} color="#64748B" />}
+          </div>
         ))}
         {stretch && (
           <>
-            <ArrowRight size={16} color="var(--gray-300)" />
-            <div style={{ padding: "8px 16px", borderRadius: 20, background: "var(--purple-50)", color: "var(--purple-700)", fontSize: 13, fontWeight: 700 }}>3–5 years</div>
+            <ArrowRight size={16} color="#64748B" />
+            <div style={{ padding: "8px 18px", borderRadius: 20, background: "rgba(192, 132, 252, 0.15)", color: "#C084FC", fontSize: 13, fontWeight: 700, border: "1px solid rgba(192, 132, 252, 0.3)" }}>3–5 years</div>
           </>
         )}
       </div>
 
       {/* Next roles */}
-      <h2 style={{ fontSize: 18, marginBottom: 16 }}>Your next 2 realistic roles</h2>
+      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, fontFamily: "Syne, sans-serif" }}>Your next 2 realistic roles</h2>
       {nextRoles.map((role: any, i: number) => (
-        <div key={i} style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", marginBottom: 16, overflow: "hidden" }}>
+        <div key={i} style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", marginBottom: 16, overflow: "hidden" }}>
           <button onClick={() => setOpenRole(openRole === i ? -1 : i)}
             style={{ width: "100%", padding: "20px 24px", display: "flex", alignItems: "center", gap: 16, background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--blue-50)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--blue-700)", fontFamily: "Syne", fontSize: 18, fontWeight: 800, flexShrink: 0 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(96, 165, 250, 0.15)", border: "1px solid rgba(96, 165, 250, 0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "#60A5FA", fontFamily: "Syne, sans-serif", fontSize: 18, fontWeight: 800, flexShrink: 0 }}>
               {i + 1}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 17, color: "var(--gray-900)", marginBottom: 4 }}>{role.title}</div>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 12, color: "var(--gray-400)" }}>⏱ {role.timeline}</span>
-                <span style={{ fontSize: 12, color: "var(--teal-700)", fontWeight: 600 }}>💰 {role.salary_range}</span>
-                <span style={{ fontSize: 12, padding: "1px 8px", borderRadius: 20, background: role.probability >= 70 ? "var(--teal-50)" : "var(--amber-50)", color: role.probability >= 70 ? "var(--teal-700)" : "var(--amber-700)", fontWeight: 700 }}>
+              <div style={{ fontWeight: 700, fontSize: 17, color: "#FFFFFF", marginBottom: 4 }}>{role.title}</div>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                <span style={{ fontSize: 12, color: "#94A3B8" }}>⏱ {role.timeline}</span>
+                <span style={{ fontSize: 12, color: "#2DD4BF", fontWeight: 600 }}>💰 {role.salary_range}</span>
+                <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 20, background: role.probability >= 70 ? "rgba(45, 212, 191, 0.15)" : "rgba(251, 191, 36, 0.15)", color: role.probability >= 70 ? "#2DD4BF" : "#FBBF24", fontWeight: 700, border: `1px solid ${role.probability >= 70 ? "rgba(45, 212, 191, 0.3)" : "rgba(251, 191, 36, 0.3)"}` }}>
                   {role.probability}% likely
                 </span>
               </div>
             </div>
-            {openRole === i ? <ChevronUp size={18} color="var(--gray-400)" /> : <ChevronDown size={18} color="var(--gray-400)" />}
+            {openRole === i ? <ChevronUp size={18} color="#94A3B8" /> : <ChevronDown size={18} color="#94A3B8" />}
           </button>
 
           {openRole === i && (
-            <div style={{ padding: "0 24px 24px", borderTop: "1px solid var(--gray-100)" }}>
-              <p style={{ fontSize: 14, color: "var(--gray-600)", lineHeight: 1.6, margin: "16px 0 20px" }}>{role.why_realistic}</p>
+            <div style={{ padding: "0 24px 24px", borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
+              <p style={{ fontSize: 14, color: "#CBD5E1", lineHeight: 1.6, margin: "16px 0 20px" }}>{role.why_realistic}</p>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
                 {/* Skill gaps */}
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--coral-700)", marginBottom: 10 }}>SKILL GAPS TO FILL</div>
+                <div style={{ background: "rgba(239, 68, 68, 0.06)", padding: "16px", borderRadius: 12, border: "1px solid rgba(239, 68, 68, 0.15)" }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#F87171", marginBottom: 10 }}>SKILL GAPS TO FILL</div>
                   {(role.required_skills ?? []).map((s: string, j: number) => (
-                    <div key={j} style={{ display: "flex", gap: 8, marginBottom: 7, fontSize: 13, color: "var(--gray-700)", alignItems: "flex-start" }}>
-                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--coral-500)", flexShrink: 0, marginTop: 5 }} />
+                    <div key={j} style={{ display: "flex", gap: 8, marginBottom: 7, fontSize: 13, color: "#FCA5A5", alignItems: "flex-start" }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#EF4444", flexShrink: 0, marginTop: 5 }} />
                       {s}
                     </div>
                   ))}
                 </div>
                 {/* Existing strengths */}
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--teal-700)", marginBottom: 10 }}>STRENGTHS YOU ALREADY HAVE</div>
+                <div style={{ background: "rgba(45, 212, 191, 0.06)", padding: "16px", borderRadius: 12, border: "1px solid rgba(45, 212, 191, 0.15)" }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#2DD4BF", marginBottom: 10 }}>STRENGTHS YOU ALREADY HAVE</div>
                   {(role.existing_strengths ?? []).map((s: string, j: number) => (
-                    <div key={j} style={{ display: "flex", gap: 8, marginBottom: 7, fontSize: 13, color: "var(--gray-700)", alignItems: "flex-start" }}>
-                      <CheckCircle size={13} color="var(--teal-500)" style={{ flexShrink: 0, marginTop: 2 }} />
+                    <div key={j} style={{ display: "flex", gap: 8, marginBottom: 7, fontSize: 13, color: "#5EEAD4", alignItems: "flex-start" }}>
+                      <CheckCircle size={13} color="#2DD4BF" style={{ flexShrink: 0, marginTop: 2 }} />
                       {s}
                     </div>
                   ))}
@@ -191,11 +192,11 @@ function CareerResults({ result, openRole, setOpenRole, onReset }: any) {
 
               {/* Action plan */}
               {role.action_plan?.length > 0 && (
-                <div style={{ background: "var(--teal-50)", borderRadius: "var(--radius-md)", padding: "16px 20px" }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--teal-700)", marginBottom: 12 }}>ACTION PLAN</div>
+                <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid rgba(255, 255, 255, 0.06)", borderRadius: 14, padding: "16px 20px" }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#2DD4BF", marginBottom: 12 }}>ACTION PLAN</div>
                   {role.action_plan.map((step: string, j: number) => (
-                    <div key={j} style={{ display: "flex", gap: 10, marginBottom: 10, fontSize: 14, color: "var(--gray-800)", alignItems: "flex-start" }}>
-                      <span style={{ width: 22, height: 22, borderRadius: "50%", background: "var(--teal-700)", color: "#fff", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{j + 1}</span>
+                    <div key={j} style={{ display: "flex", gap: 10, marginBottom: 10, fontSize: 14, color: "#E2E8F0", alignItems: "flex-start" }}>
+                      <span style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(135deg, #1D9E75, #0F6E56)", color: "#fff", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{j + 1}</span>
                       {step}
                     </div>
                   ))}
@@ -208,21 +209,21 @@ function CareerResults({ result, openRole, setOpenRole, onReset }: any) {
 
       {/* Stretch role */}
       {stretch && (
-        <div style={{ background: "var(--purple-50)", borderRadius: "var(--radius-lg)", border: "1px solid var(--purple-500)30", padding: 24, marginBottom: 24 }}>
+        <div style={{ background: "rgba(168, 85, 247, 0.1)", borderRadius: 18, border: "1px solid rgba(168, 85, 247, 0.25)", padding: 24, marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <Star size={20} color="var(--purple-700)" />
+            <Star size={20} color="#C084FC" />
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--purple-700)", marginBottom: 2 }}>3–5 YEAR STRETCH GOAL</div>
-              <div style={{ fontWeight: 700, fontSize: 18, color: "var(--gray-900)" }}>{stretch.title}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#C084FC", marginBottom: 2 }}>3–5 YEAR STRETCH GOAL</div>
+              <div style={{ fontWeight: 700, fontSize: 18, color: "#FFFFFF", fontFamily: "Syne, sans-serif" }}>{stretch.title}</div>
             </div>
           </div>
-          <p style={{ fontSize: 14, color: "var(--gray-600)", lineHeight: 1.6, marginBottom: 12 }}>{stretch.gap_summary}</p>
+          <p style={{ fontSize: 14, color: "#CBD5E1", lineHeight: 1.6, marginBottom: 12 }}>{stretch.gap_summary}</p>
           {stretch.key_milestones?.length > 0 && (
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--purple-700)", marginBottom: 8 }}>KEY MILESTONES</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#C084FC", marginBottom: 8 }}>KEY MILESTONES</div>
               {stretch.key_milestones.map((m: string, i: number) => (
-                <div key={i} style={{ display: "flex", gap: 8, marginBottom: 7, fontSize: 14, color: "var(--gray-700)" }}>
-                  <ArrowRight size={14} color="var(--purple-500)" style={{ flexShrink: 0, marginTop: 3 }} /> {m}
+                <div key={i} style={{ display: "flex", gap: 8, marginBottom: 7, fontSize: 14, color: "#E2E8F0" }}>
+                  <ArrowRight size={14} color="#C084FC" style={{ flexShrink: 0, marginTop: 3 }} /> {m}
                 </div>
               ))}
             </div>
@@ -232,33 +233,20 @@ function CareerResults({ result, openRole, setOpenRole, onReset }: any) {
 
       {/* Career risks */}
       {risks.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 20, marginBottom: 24 }}>
+        <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 20, marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <AlertTriangle size={16} color="var(--amber-700)" />
-            <h3 style={{ margin: 0, fontSize: 15, color: "var(--gray-900)" }}>Risks to watch</h3>
+            <AlertTriangle size={16} color="#FBBF24" />
+            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "#FFFFFF" }}>Risks to watch</h3>
           </div>
           {risks.map((r: string, i: number) => (
-            <div key={i} style={{ fontSize: 13, color: "var(--gray-600)", marginBottom: 8, paddingLeft: 10, borderLeft: "2px solid var(--amber-400)" }}>{r}</div>
+            <div key={i} style={{ fontSize: 13, color: "#94A3B8", marginBottom: 8, paddingLeft: 10, borderLeft: "2px solid #FBBF24" }}>{r}</div>
           ))}
         </div>
       )}
 
-      <button onClick={onReset} style={{ padding: "11px 24px", borderRadius: "var(--radius-md)", border: "1px solid var(--gray-200)", background: "#fff", color: "var(--gray-600)", fontSize: 14, cursor: "pointer" }}>
+      <button onClick={onReset} style={{ padding: "12px 24px", borderRadius: 12, border: "1px solid rgba(255, 255, 255, 0.12)", background: "rgba(255, 255, 255, 0.04)", color: "#E2E8F0", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s ease" }}>
         Predict for another resume
       </button>
-    </div>
-  );
-}
-
-function Header() {
-  return (
-    <div style={{ background: "#fff", borderBottom: "1px solid var(--gray-200)", padding: "0 24px" }}>
-      <div style={{ maxWidth: 960, margin: "0 auto", height: 60, display: "flex", alignItems: "center", gap: 12 }}>
-        <a href="/dashboard" style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 20, color: "var(--teal-700)", textDecoration: "none" }}>ResumeAI</a>
-        <span style={{ color: "var(--gray-300)" }}>›</span>
-        <span style={{ fontSize: 14, color: "var(--gray-500)" }}>Career Path</span>
-        <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "var(--purple-50)", color: "var(--purple-700)" }}>CAREER</span>
-      </div>
     </div>
   );
 }

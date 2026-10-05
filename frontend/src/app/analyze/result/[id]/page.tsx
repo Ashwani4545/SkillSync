@@ -8,6 +8,7 @@ import {
 import { apiClient } from "../../../../lib/api";
 import { ScoreRing } from "../../../../components/analysis/ScoreRing";
 import { PersonaView } from "../../../../components/analysis/PersonaView";
+import { Navbar } from "../../../../components/layout/Navbar";
 
 /**
  * Rebuilt for the unified Career Intelligence Engine's output schema
@@ -43,9 +44,9 @@ const PROCESSING_STEPS = [
 ];
 
 const EVIDENCE_META: Record<string, { color: string; bg: string; Icon: any; label: string }> = {
-  EVIDENCED:            { color: "var(--teal-700)",  bg: "var(--teal-50)",  Icon: ShieldCheck, label: "Evidenced" },
-  PARTIALLY_EVIDENCED:  { color: "var(--amber-700)", bg: "var(--amber-50)", Icon: ShieldAlert, label: "Partially evidenced" },
-  UNSUPPORTED:          { color: "var(--coral-700)", bg: "var(--coral-50)", Icon: ShieldX,     label: "Unsupported" },
+  EVIDENCED:            { color: "#2DD4BF", bg: "rgba(29, 158, 117, 0.2)",  Icon: ShieldCheck, label: "Evidenced" },
+  PARTIALLY_EVIDENCED:  { color: "#FBBF24", bg: "rgba(245, 158, 11, 0.2)", Icon: ShieldAlert, label: "Partially evidenced" },
+  UNSUPPORTED:          { color: "#F87171", bg: "rgba(248, 113, 113, 0.2)", Icon: ShieldX,     label: "Unsupported" },
 };
 
 export default function ResultPage() {
@@ -101,62 +102,63 @@ export default function ResultPage() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--gray-50)" }}>
-      <div style={{ background: "#fff", borderBottom: "1px solid var(--gray-200)", padding: "0 24px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 24, height: 64 }}>
-          <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 20, color: "var(--teal-700)" }}>SkillSync</span>
-          <span style={{ color: "var(--gray-300)" }}>›</span>
-          <span style={{ fontSize: 14, color: "var(--gray-500)" }}>Career Intelligence Report</span>
+    <div style={{ minHeight: "100vh", background: "radial-gradient(circle at 50% 0%, rgba(29, 158, 117, 0.12) 0%, transparent 60%), #0A0F1E", color: "#ffffff" }}>
+      <Navbar />
+
+      {/* Sub-bar */}
+      <div style={{ background: "rgba(10, 15, 30, 0.8)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", padding: "0 24px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 14, height: 56 }}>
+          <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 16, color: "#2DD4BF" }}>SkillSync</span>
+          <span style={{ color: "rgba(255, 255, 255, 0.2)" }}>/</span>
+          <span style={{ fontSize: 13, color: "rgba(255, 255, 255, 0.7)" }}>Career Intelligence Report</span>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
-            <CheckCircle size={16} color="var(--teal-500)" />
-            <span style={{ fontSize: 13, color: "var(--gray-500)" }}>
+            <CheckCircle size={15} color="#2DD4BF" />
+            <span style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.5)" }}>
               Completed {new Date(analysis.completed_at!).toLocaleTimeString()}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Score hero */}
-      <div style={{ background: "var(--teal-700)", color: "#fff", padding: "40px 24px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 40, flexWrap: "wrap" }}>
-          <ScoreRing score={overallScore} grade={scoreToGrade(overallScore)} size={120} />
-          <div>
-            <h1 style={{ fontSize: 28, margin: "0 0 8px", color: "#fff" }}>
-              {overallScore >= 80 ? "Strong career readiness" : overallScore >= 60 ? "Good foundation — room to grow" : "Significant gaps to close"}
-            </h1>
-            <p style={{ margin: "0 0 16px", opacity: 0.85, fontSize: 15, maxWidth: 640 }}>{cr.explanation || "Overall career readiness combines ATS readiness, skill evidence, and experience depth."}</p>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              {[
-                { label: "ATS Readiness",       val: cr.resume_ats_readiness },
-                { label: "Job Match",           val: cr.job_match },
-                { label: "Skill Readiness",     val: cr.skill_readiness },
-                { label: "Experience Readiness",val: cr.experience_readiness },
-              ].map((b) => (
-                <div key={b.label} style={{ background: "rgba(255,255,255,0.15)", borderRadius: 8, padding: "8px 16px", minWidth: 100, textAlign: "center" }}>
-                  <div style={{ fontSize: 22, fontWeight: 700 }}>{b.val ?? "—"}</div>
-                  <div style={{ fontSize: 11, opacity: 0.75 }}>{b.label}</div>
-                </div>
-              ))}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 0" }}>
+        {/* Score hero */}
+        <div style={{ background: "linear-gradient(135deg, rgba(6, 64, 53, 0.85) 0%, rgba(15, 110, 86, 0.7) 100%)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(45, 212, 191, 0.25)", borderRadius: 20, color: "#fff", padding: "36px 32px", boxShadow: "0 12px 40px rgba(0,0,0,0.4)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 40, flexWrap: "wrap" }}>
+            <ScoreRing score={overallScore} grade={scoreToGrade(overallScore)} size={120} />
+            <div style={{ flex: 1, minWidth: 280 }}>
+              <h1 style={{ fontSize: 28, margin: "0 0 8px", color: "#fff", fontFamily: "Syne, sans-serif" }}>
+                {overallScore >= 80 ? "Strong Career Readiness" : overallScore >= 60 ? "Good Foundation — Room to Grow" : "Significant Gaps to Close"}
+              </h1>
+              <p style={{ margin: "0 0 18px", color: "rgba(255,255,255,0.8)", fontSize: 14, maxWidth: 640, lineHeight: 1.6 }}>{cr.explanation || "Overall career readiness combines ATS readiness, skill evidence, and experience depth."}</p>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                {[
+                  { label: "ATS Readiness",       val: cr.resume_ats_readiness },
+                  { label: "Job Match",           val: cr.job_match },
+                  { label: "Skill Readiness",     val: cr.skill_readiness },
+                  { label: "Experience Readiness",val: cr.experience_readiness },
+                ].map((b) => (
+                  <div key={b.label} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, padding: "8px 16px", minWidth: 100, textAlign: "center" }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "Syne, sans-serif" }}>{b.val ?? "—"}</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>{b.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Warnings — surfaced prominently, not buried in a tab. Candidate
-          profile/evidence graph are always correct (computed before any
-          LLM call), but if the LLM's reasoning sections came back
-          incomplete or failed validation, the user needs to know that
-          rather than trust a confident-looking but partial report. */}
+      {/* Warnings */}
       {r.warnings?.length > 0 && (
         <div style={{ maxWidth: 1100, margin: "16px auto 0", padding: "0 24px" }}>
-          <div style={{ background: "var(--amber-50)", border: "1px solid var(--amber-200, #FDE8C8)", borderRadius: "var(--radius-md)", padding: "12px 16px", display: "flex", gap: 10, alignItems: "flex-start" }}>
-            <AlertCircle size={16} color="var(--amber-700)" style={{ flexShrink: 0, marginTop: 2 }} />
+          <div style={{ background: "rgba(245, 158, 11, 0.12)", border: "1px solid rgba(245, 158, 11, 0.3)", borderRadius: 12, padding: "14px 18px", display: "flex", gap: 12, alignItems: "flex-start" }}>
+            <AlertCircle size={16} color="#FBBF24" style={{ flexShrink: 0, marginTop: 2 }} />
             <div>
-              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--amber-700)", marginBottom: 4 }}>
+              <div style={{ fontWeight: 700, fontSize: 13, color: "#FBBF24", marginBottom: 4 }}>
                 Analysis confidence reduced
               </div>
               {r.warnings.map((w: string, i: number) => (
-                <div key={i} style={{ fontSize: 12.5, color: "var(--gray-600)" }}>{w}</div>
+                <div key={i} style={{ fontSize: 12.5, color: "rgba(255, 255, 255, 0.7)" }}>{w}</div>
               ))}
             </div>
           </div>
@@ -164,15 +166,16 @@ export default function ResultPage() {
       )}
 
       {/* Tabs */}
-      <div style={{ background: "#fff", borderBottom: "1px solid var(--gray-200)", padding: "0 24px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", overflowX: "auto" }}>
+      <div style={{ background: "rgba(10, 15, 30, 0.6)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", marginTop: 24, padding: "0 24px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", overflowX: "auto", gap: 4 }}>
           {TABS.map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              style={{ padding: "14px 20px", background: "none", border: "none", cursor: "pointer", fontSize: 14,
-                fontWeight: activeTab === tab.id ? 600 : 400,
-                color: activeTab === tab.id ? "var(--teal-700)" : "var(--gray-500)",
-                borderBottom: activeTab === tab.id ? "2px solid var(--teal-700)" : "2px solid transparent",
-                whiteSpace: "nowrap" }}>
+              style={{ padding: "14px 18px", background: "none", border: "none", cursor: "pointer", fontSize: 13,
+                fontWeight: activeTab === tab.id ? 700 : 500,
+                color: activeTab === tab.id ? "#2DD4BF" : "rgba(255, 255, 255, 0.55)",
+                borderBottom: activeTab === tab.id ? "2px solid #2DD4BF" : "2px solid transparent",
+                whiteSpace: "nowrap",
+                transition: "all 0.2s" }}>
               {tab.label}
             </button>
           ))}
@@ -216,9 +219,9 @@ export default function ResultPage() {
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24, marginBottom: 20 }}>
-      <h3 style={{ margin: "0 0 4px", fontSize: 18, fontFamily: "Syne, sans-serif" }}>{title}</h3>
-      {subtitle && <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--gray-500)" }}>{subtitle}</p>}
+    <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: "18px", border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24, marginBottom: 20 }}>
+      <h3 style={{ margin: "0 0 4px", fontSize: 18, fontFamily: "Syne, sans-serif", color: "#ffffff" }}>{title}</h3>
+      {subtitle && <p style={{ margin: "0 0 16px", fontSize: 13, color: "rgba(255, 255, 255, 0.55)" }}>{subtitle}</p>}
       {children}
     </div>
   );
@@ -307,9 +310,9 @@ function KeywordGroup({ label, items, color, bg }: { label: string; items?: stri
 
 function ProfileStat({ label, value }: { label: string; value: number }) {
   return (
-    <div style={{ background: "var(--gray-50)", borderRadius: 12, padding: "14px 16px", textAlign: "center" }}>
-      <div style={{ fontSize: 22, fontWeight: 800, fontFamily: "Syne", color: "var(--gray-900)" }}>{value}</div>
-      <div style={{ fontSize: 12, color: "var(--gray-500)" }}>{label}</div>
+    <div style={{ background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: 12, padding: "14px 16px", textAlign: "center" }}>
+      <div style={{ fontSize: 22, fontWeight: 800, fontFamily: "Syne", color: "#ffffff" }}>{value}</div>
+      <div style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.55)" }}>{label}</div>
     </div>
   );
 }
@@ -560,24 +563,24 @@ function scoreToGrade(s: number) {
 
 function ProcessingScreen({ step }: { step: string }) {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "var(--gray-50)", padding: 24 }}>
-      <div style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--teal-50)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 24 }}>
-        <Loader2 size={28} color="var(--teal-700)" style={{ animation: "spin 1s linear infinite" }} />
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "radial-gradient(circle at 50% 40%, rgba(29, 158, 117, 0.15) 0%, transparent 60%), #0A0F1E", color: "#ffffff", padding: 24, textAlign: "center" }}>
+      <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(29, 158, 117, 0.15)", border: "1px solid rgba(45, 212, 191, 0.3)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 24, boxShadow: "0 0 30px rgba(29, 158, 117, 0.3)" }}>
+        <Loader2 size={32} color="#2DD4BF" style={{ animation: "spin 1s linear infinite" }} />
       </div>
-      <h2 style={{ fontSize: 24, marginBottom: 8 }}>Building your career intelligence report</h2>
-      <p style={{ color: "var(--gray-500)", fontSize: 15, marginBottom: 8 }}>{step}</p>
-      <p style={{ color: "var(--gray-400)", fontSize: 13 }}>This takes about 20 seconds</p>
+      <h2 style={{ fontSize: 26, marginBottom: 10, fontFamily: "Syne, sans-serif", color: "#ffffff" }}>Building your career intelligence report</h2>
+      <p style={{ color: "rgba(255, 255, 255, 0.75)", fontSize: 16, marginBottom: 8, maxWidth: 480 }}>{step}</p>
+      <p style={{ color: "rgba(255, 255, 255, 0.4)", fontSize: 13 }}>This takes about 20 seconds</p>
     </div>
   );
 }
 
 function FailedScreen({ error }: { error: string | null }) {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <AlertCircle size={48} color="var(--coral-500)" style={{ marginBottom: 20 }} />
-      <h2 style={{ fontSize: 24, marginBottom: 8 }}>Analysis failed</h2>
-      <p style={{ color: "var(--gray-500)", marginBottom: 24 }}>{error || "Something went wrong. Please try again."}</p>
-      <a href="/analyze/upload" style={{ padding: "12px 24px", background: "var(--teal-700)", color: "#fff", borderRadius: "var(--radius-md)", textDecoration: "none", fontWeight: 600 }}>Try again</a>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "radial-gradient(circle at 50% 40%, rgba(248, 113, 113, 0.15) 0%, transparent 60%), #0A0F1E", color: "#ffffff", padding: 24, textAlign: "center" }}>
+      <AlertCircle size={52} color="#F87171" style={{ marginBottom: 20 }} />
+      <h2 style={{ fontSize: 26, marginBottom: 10, fontFamily: "Syne, sans-serif", color: "#ffffff" }}>Analysis failed</h2>
+      <p style={{ color: "rgba(255, 255, 255, 0.6)", marginBottom: 24, maxWidth: 440 }}>{error || "Something went wrong. Please try again."}</p>
+      <a href="/analyze/upload" style={{ padding: "12px 28px", background: "linear-gradient(135deg, #1D9E75 0%, #0F6E56 100%)", color: "#fff", borderRadius: "12px", textDecoration: "none", fontWeight: 700, boxShadow: "0 0 20px rgba(29, 158, 117, 0.3)" }}>Try again</a>
     </div>
   );
 }

@@ -102,7 +102,7 @@ export function TopActions({ r }: { r: any }) {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {actions.map((act) => (
-          <div key={act.rank} style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 20, display: "flex", gap: 16, alignItems: "flex-start" }}>
+          <div key={act.rank} style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 20, display: "flex", gap: 16, alignItems: "flex-start" }}>
             <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--teal-50)", color: "var(--teal-700)", fontSize: 16, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               #{act.rank}
             </div>

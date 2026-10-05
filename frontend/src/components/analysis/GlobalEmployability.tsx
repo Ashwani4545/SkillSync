@@ -33,18 +33,18 @@ export function GlobalEmployability({ data }: { data: any }) {
             onClick={() => setSelectedCountry(r.country)}
             style={{
               padding: 12, borderRadius: 12, border: `2px solid ${selectedCountry === r.country ? "var(--teal-600)" : "var(--gray-200)"}`,
-              background: selectedCountry === r.country ? "var(--teal-50)" : "#fff", cursor: "pointer", textAlign: "center",
+              background: selectedCountry === r.country ? "rgba(45, 212, 191, 0.15)" : "rgba(255, 255, 255, 0.03)", cursor: "pointer", textAlign: "center",
               transition: "all 0.15s"
             }}
           >
             <div style={{ fontSize: 18, fontWeight: 800, color: "var(--teal-800)", marginBottom: 4 }}>{r.code}</div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--gray-700)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.country}</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#CBD5E1", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.country}</div>
           </button>
         ))}
       </div>
 
       {/* Region Detail Card */}
-      <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24 }}>
+      <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--teal-50)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--teal-700)" }}>

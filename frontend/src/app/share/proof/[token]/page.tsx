@@ -26,11 +26,11 @@ type ProofScoreData = {
 
 const STATUS_META: Record<
   ProofSkill["status"],
-  { color: string; bg: string; Icon: typeof CheckCircle; label: string }
+  { color: string; bg: string; border: string; Icon: typeof CheckCircle; label: string }
 > = {
-  verified: { color: "#0F6E56", bg: "#E6F5F0", Icon: CheckCircle, label: "Verified" },
-  weak: { color: "#B45309", bg: "#FEF3E2", Icon: AlertTriangle, label: "Weak evidence" },
-  unverified: { color: "#B91C1C", bg: "#FDECEC", Icon: XCircle, label: "Unverified" },
+  verified: { color: "#2DD4BF", bg: "rgba(45, 212, 191, 0.15)", border: "rgba(45, 212, 191, 0.3)", Icon: CheckCircle, label: "Verified" },
+  weak: { color: "#FBBF24", bg: "rgba(251, 191, 36, 0.15)", border: "rgba(251, 191, 36, 0.3)", Icon: AlertTriangle, label: "Weak evidence" },
+  unverified: { color: "#F87171", bg: "rgba(248, 113, 113, 0.15)", border: "rgba(248, 113, 113, 0.3)", Icon: XCircle, label: "Unverified" },
 };
 
 export default function ProofScoreSharePage() {
@@ -59,7 +59,7 @@ export default function ProofScoreSharePage() {
   if (loading) {
     return (
       <Centered>
-        <p style={{ color: "#64748B" }}>Loading Proof Score…</p>
+        <p style={{ color: "#94A3B8" }}>Loading Proof Score…</p>
       </Centered>
     );
   }
@@ -67,30 +67,29 @@ export default function ProofScoreSharePage() {
   if (!data) {
     return (
       <Centered>
-        <p style={{ color: "#64748B" }}>This Proof Score link is invalid or has been made private.</p>
+        <p style={{ color: "#94A3B8" }}>This Proof Score link is invalid or has been made private.</p>
       </Centered>
     );
   }
 
-  const scoreColor =
-    data.overall_score >= 80 ? "#0F6E56" : data.overall_score >= 50 ? "#B45309" : "#B91C1C";
-
   return (
-    <div style={{ minHeight: "100vh", background: "#F8FAFC", padding: "40px 20px" }}>
+    <div style={{ minHeight: "100vh", background: "radial-gradient(circle at 50% 0%, rgba(45, 212, 191, 0.15) 0%, transparent 60%), #0A0F1E", color: "#ffffff", padding: "40px 20px" }}>
       <div style={{ maxWidth: 640, margin: "0 auto" }}>
         {/* Header card */}
         <div
           style={{
-            background: "#fff",
-            borderRadius: 20,
-            border: "1px solid #E2E8F0",
+            background: "rgba(255, 255, 255, 0.03)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            borderRadius: 24,
+            border: "1px solid rgba(255, 255, 255, 0.08)",
             overflow: "hidden",
             marginBottom: 20,
           }}
         >
           <div
             style={{
-              background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
+              background: "linear-gradient(135deg, #1D9E75 0%, #0F6E56 100%)",
               padding: "28px 32px",
               display: "flex",
               alignItems: "center",
@@ -101,7 +100,7 @@ export default function ProofScoreSharePage() {
               <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, color: "#fff" }}>
                 SkillSync Proof Score
               </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
                 <Github size={14} /> github.com/{data.github_username}
               </div>
             </div>
@@ -109,24 +108,24 @@ export default function ProofScoreSharePage() {
               <div style={{ fontSize: 52, fontWeight: 800, color: "#fff", fontFamily: "Syne, sans-serif", lineHeight: 1 }}>
                 {data.overall_score}
               </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>Proof Score</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>Proof Score</div>
             </div>
           </div>
 
           <div style={{ padding: "20px 32px", display: "flex", gap: 24 }}>
-            <Stat label="Verified" value={data.verified_count} color="#0F6E56" />
-            <Stat label="Weak" value={data.weak_count} color="#B45309" />
-            <Stat label="Unverified" value={data.unverified_count} color="#B91C1C" />
+            <Stat label="Verified" value={data.verified_count} color="#2DD4BF" />
+            <Stat label="Weak" value={data.weak_count} color="#FBBF24" />
+            <Stat label="Unverified" value={data.unverified_count} color="#F87171" />
           </div>
 
-          <p style={{ padding: "0 32px 20px", fontSize: 13, color: "#64748B" }}>
+          <p style={{ padding: "0 32px 20px", fontSize: 13, color: "#94A3B8" }}>
             Every skill below is checked against real commit history and language usage on GitHub —
             not just whether the word appears on the resume.
           </p>
         </div>
 
         {/* Per-skill breakdown */}
-        <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #E2E8F0", padding: 8, marginBottom: 20 }}>
+        <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 8, marginBottom: 20 }}>
           {data.skills.map((s) => {
             const meta = STATUS_META[s.status];
             const Icon = meta.Icon;
@@ -135,7 +134,7 @@ export default function ProofScoreSharePage() {
                 key={s.skill}
                 style={{
                   padding: "16px 20px",
-                  borderBottom: "1px solid #F1F5F9",
+                  borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
                   display: "flex",
                   flexDirection: "column",
                   gap: 6,
@@ -143,34 +142,35 @@ export default function ProofScoreSharePage() {
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontWeight: 700, fontSize: 14, color: "#0F172A" }}>{s.skill}</span>
+                    <span style={{ fontWeight: 700, fontSize: 14, color: "#FFFFFF" }}>{s.skill}</span>
                     <span
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 4,
-                        padding: "2px 8px",
+                        gap: 5,
+                        padding: "3px 10px",
                         borderRadius: 999,
                         fontSize: 11,
                         fontWeight: 700,
                         color: meta.color,
                         background: meta.bg,
+                        border: `1px solid ${meta.border}`,
                       }}
                     >
-                      <Icon size={11} /> {meta.label}
+                      <Icon size={12} /> {meta.label}
                     </span>
                   </div>
                   <span style={{ fontSize: 12, color: "#94A3B8" }}>{s.confidence}% confidence</span>
                 </div>
 
-                {s.reason && <p style={{ fontSize: 12.5, color: "#64748B", margin: 0 }}>{s.reason}</p>}
+                {s.reason && <p style={{ fontSize: 13, color: "#CBD5E1", margin: 0 }}>{s.reason}</p>}
 
                 {s.evidence_repo && s.evidence_url && (
                   <a
                     href={s.evidence_url}
                     target="_blank"
                     rel="noreferrer"
-                    style={{ fontSize: 12.5, color: "#0F6E56", textDecoration: "none", fontWeight: 600 }}
+                    style={{ fontSize: 13, color: "#2DD4BF", textDecoration: "none", fontWeight: 600 }}
                   >
                     → {s.evidence_repo}
                   </a>
@@ -180,12 +180,13 @@ export default function ProofScoreSharePage() {
                   <div
                     style={{
                       marginTop: 4,
-                      padding: "10px 12px",
-                      background: "#F8FAFC",
+                      padding: "10px 14px",
+                      background: "rgba(0, 0, 0, 0.25)",
                       borderRadius: 10,
-                      fontSize: 12.5,
-                      color: "#334155",
+                      fontSize: 13,
+                      color: "#E2E8F0",
                       fontStyle: "italic",
+                      border: "1px solid rgba(255, 255, 255, 0.06)",
                     }}
                   >
                     Suggested bullet, drafted from real commits: “{s.suggested_bullet}”
@@ -197,25 +198,26 @@ export default function ProofScoreSharePage() {
         </div>
 
         {/* Share row */}
-        <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0", padding: 16, display: "flex", justifyContent: "center" }}>
+        <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 16, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 16, display: "flex", justifyContent: "center" }}>
           <button
             onClick={handleCopy}
             style={{
               display: "flex",
               alignItems: "center",
               gap: 8,
-              padding: "10px 18px",
-              borderRadius: 10,
-              border: "1px solid #E2E8F0",
-              background: "#fff",
+              padding: "12px 24px",
+              borderRadius: 12,
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              background: "rgba(255, 255, 255, 0.05)",
               cursor: "pointer",
               fontSize: 13,
-              fontWeight: 600,
-              color: "#334155",
+              fontWeight: 700,
+              color: "#FFFFFF",
+              transition: "all 0.2s ease",
             }}
           >
-            {copied ? <CheckCircle size={15} /> : <Copy size={15} />}
-            {copied ? "Copied!" : "Copy link"}
+            {copied ? <CheckCircle size={15} color="#2DD4BF" /> : <Copy size={15} />}
+            {copied ? "Copied Link!" : "Copy Public Link"}
           </button>
         </div>
       </div>
@@ -226,7 +228,7 @@ export default function ProofScoreSharePage() {
 function Stat({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div>
-      <div style={{ fontSize: 22, fontWeight: 800, color, fontFamily: "Syne, sans-serif" }}>{value}</div>
+      <div style={{ fontSize: 24, fontWeight: 800, color, fontFamily: "Syne, sans-serif" }}>{value}</div>
       <div style={{ fontSize: 12, color: "#94A3B8", fontWeight: 600 }}>{label}</div>
     </div>
   );
@@ -234,7 +236,7 @@ function Stat({ label, value, color }: { label: string; value: number; color: st
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", background: "#0A0F1E", display: "flex", alignItems: "center", justifyContent: "center" }}>
       {children}
     </div>
   );

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Upload, ArrowRight, Loader2, Trophy, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 const POLL_MS = 2500;
 
@@ -50,12 +51,12 @@ export default function ComparePage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--gray-50)" }}>
-      <Header />
+    <div style={{ minHeight: "100vh", background: "radial-gradient(circle at 50% 0%, rgba(167, 139, 250, 0.12) 0%, transparent 60%), #0A0F1E", color: "#ffffff" }}>
+      <PageHeader title="A/B Tester" badge="PRO" badgeColor="#A78BFA" />
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "40px 24px" }}>
         <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 30, marginBottom: 6 }}>Resume A/B Tester</h1>
-          <p style={{ color: "var(--gray-500)", fontSize: 15 }}>
+          <h1 style={{ fontSize: 32, marginBottom: 8, fontFamily: "Syne, sans-serif", color: "#ffffff" }}>Resume A/B Tester</h1>
+          <p style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: 15, margin: 0 }}>
             Compare two versions of your resume head-to-head. AI picks the winner and explains exactly why.
           </p>
         </div>
@@ -63,33 +64,33 @@ export default function ComparePage() {
         {status === "idle" || status === "error" ? (
           <>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
-              <ResumeSelector label="Resume A" value={resumeA} onChange={setResumeA} resumes={resumes} color="var(--blue-700)" bg="var(--blue-50)" />
-              <ResumeSelector label="Resume B" value={resumeB} onChange={setResumeB} resumes={resumes} color="var(--purple-700)" bg="var(--purple-50)" />
+              <ResumeSelector label="Resume A" value={resumeA} onChange={setResumeA} resumes={resumes} color="#60A5FA" bg="rgba(56, 189, 248, 0.15)" />
+              <ResumeSelector label="Resume B" value={resumeB} onChange={setResumeB} resumes={resumes} color="#C084FC" bg="rgba(167, 139, 250, 0.15)" />
             </div>
 
-            <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 20, marginBottom: 20 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--gray-500)", display: "block", marginBottom: 8 }}>
-                JOB DESCRIPTION <span style={{ fontWeight: 400, color: "var(--gray-400)" }}>(optional — greatly improves relevance scoring)</span>
+            <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: "18px", border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24, marginBottom: 20 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: "rgba(255, 255, 255, 0.5)", display: "block", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                JOB DESCRIPTION <span style={{ fontWeight: 400, color: "rgba(255, 255, 255, 0.4)" }}>(optional — greatly improves relevance scoring)</span>
               </label>
               <textarea
                 value={jdText}
                 onChange={e => setJdText(e.target.value)}
                 placeholder="Paste the job description to compare both resumes against this specific role..."
                 rows={4}
-                style={{ width: "100%", padding: 12, borderRadius: "var(--radius-md)", border: "1px solid var(--gray-200)", fontSize: 14, fontFamily: "DM Sans, sans-serif", resize: "vertical", outline: "none" }}
+                style={{ width: "100%", padding: 14, borderRadius: "12px", border: "1px solid rgba(255, 255, 255, 0.12)", fontSize: 14, fontFamily: "DM Sans, sans-serif", resize: "vertical", outline: "none", background: "rgba(255, 255, 255, 0.05)", color: "#ffffff" }}
               />
             </div>
 
-            {error && <div style={{ padding: "12px 16px", background: "var(--coral-50)", borderRadius: "var(--radius-md)", color: "var(--coral-700)", fontSize: 14, marginBottom: 16 }}>{error}</div>}
+            {error && <div style={{ padding: "14px 18px", background: "rgba(248, 113, 113, 0.15)", borderLeft: "4px solid #F87171", borderRadius: "8px", color: "#FCA5A5", fontSize: 14, marginBottom: 20 }}>{error}</div>}
 
             <button
               onClick={handleCompare}
               disabled={!resumeA || !resumeB || resumeA === resumeB}
-              style={{ padding: "14px 32px", borderRadius: "var(--radius-md)", border: "none", background: (!resumeA || !resumeB || resumeA === resumeB) ? "var(--gray-200)" : "var(--teal-700)", color: (!resumeA || !resumeB || resumeA === resumeB) ? "var(--gray-400)" : "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+              style={{ padding: "14px 32px", borderRadius: "12px", border: "none", background: (!resumeA || !resumeB || resumeA === resumeB) ? "rgba(255, 255, 255, 0.08)" : "linear-gradient(135deg, #1D9E75 0%, #0F6E56 100%)", color: (!resumeA || !resumeB || resumeA === resumeB) ? "rgba(255, 255, 255, 0.3)" : "#fff", fontSize: 15, fontWeight: 700, cursor: (!resumeA || !resumeB || resumeA === resumeB) ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: (!resumeA || !resumeB || resumeA === resumeB) ? "none" : "0 0 20px rgba(29, 158, 117, 0.3)", transition: "all 0.2s" }}
             >
               <ArrowRight size={18} /> Compare resumes
             </button>
-            {resumeA === resumeB && resumeA && <p style={{ fontSize: 13, color: "var(--amber-700)", marginTop: 8 }}>Select two different resumes to compare.</p>}
+            {resumeA === resumeB && resumeA && <p style={{ fontSize: 13, color: "#FBBF24", marginTop: 8 }}>Select two different resumes to compare.</p>}
           </>
         ) : status === "loading" || status === "polling" ? (
           <ProcessingState />
@@ -181,8 +182,8 @@ function CompareResults({ result, resumeA, resumeB, onReset }: any) {
       </div>
 
       {/* Dimension breakdown */}
-      <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24, marginBottom: 20 }}>
-        <h3 style={{ margin: "0 0 20px", fontSize: 17 }}>Dimension breakdown</h3>
+      <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: "18px", border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24, marginBottom: 20 }}>
+        <h3 style={{ margin: "0 0 20px", fontSize: 17, fontFamily: "Syne, sans-serif", color: "#ffffff" }}>Dimension Breakdown</h3>
         {Object.entries(dimMeta).map(([key, label]) => {
           const d = dims[key];
           if (!d) return null;
@@ -191,18 +192,18 @@ function CompareResults({ result, resumeA, resumeB, onReset }: any) {
           return (
             <div key={key} style={{ marginBottom: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--gray-700)" }}>{label}</span>
-                <span style={{ fontSize: 12, color: "var(--gray-400)" }}>A: {d.A} · B: {d.B}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255, 255, 255, 0.85)" }}>{label}</span>
+                <span style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.45)" }}>A: {d.A} · B: {d.B}</span>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 40px 1fr", gap: 6, alignItems: "center" }}>
-                <div style={{ height: 8, background: "var(--gray-100)", borderRadius: 4, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${d.A}%`, background: aWins ? "var(--blue-500)" : "var(--gray-300)", borderRadius: 4 }} />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 40px 1fr", gap: 8, alignItems: "center" }}>
+                <div style={{ height: 8, background: "rgba(255, 255, 255, 0.06)", borderRadius: 4, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${d.A}%`, background: aWins ? "#38BDF8" : "rgba(255, 255, 255, 0.2)", borderRadius: 4 }} />
                 </div>
                 <div style={{ textAlign: "center" }}>
-                  {d.winner === "A" ? <TrendingUp size={14} color="var(--blue-500)" /> : d.winner === "B" ? <TrendingDown size={14} color="var(--purple-500)" /> : <Minus size={14} color="var(--gray-300)" />}
+                  {d.winner === "A" ? <TrendingUp size={14} color="#38BDF8" /> : d.winner === "B" ? <TrendingDown size={14} color="#C084FC" /> : <Minus size={14} color="rgba(255, 255, 255, 0.3)" />}
                 </div>
-                <div style={{ height: 8, background: "var(--gray-100)", borderRadius: 4, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${d.B}%`, background: bWins ? "var(--purple-500)" : "var(--gray-300)", borderRadius: 4 }} />
+                <div style={{ height: 8, background: "rgba(255, 255, 255, 0.06)", borderRadius: 4, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${d.B}%`, background: bWins ? "#C084FC" : "rgba(255, 255, 255, 0.2)", borderRadius: 4 }} />
                 </div>
               </div>
             </div>
@@ -212,45 +213,32 @@ function CompareResults({ result, resumeA, resumeB, onReset }: any) {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
         {result.winner_strengths?.length > 0 && (
-          <div style={{ background: "var(--teal-50)", borderRadius: "var(--radius-lg)", padding: 20 }}>
-            <h3 style={{ margin: "0 0 12px", fontSize: 14, color: "var(--teal-700)" }}>Why {result.winner === "tie" ? "neither" : `Resume ${result.winner}`} wins</h3>
+          <div style={{ background: "rgba(29, 158, 117, 0.12)", border: "1px solid rgba(29, 158, 117, 0.25)", borderRadius: "18px", padding: 20 }}>
+            <h3 style={{ margin: "0 0 12px", fontSize: 14, color: "#2DD4BF", fontFamily: "Syne, sans-serif" }}>Why {result.winner === "tie" ? "neither" : `Resume ${result.winner}`} wins</h3>
             {result.winner_strengths.map((s: string, i: number) => (
-              <div key={i} style={{ fontSize: 13, color: "var(--gray-700)", marginBottom: 7, paddingLeft: 10, borderLeft: "2px solid var(--teal-500)" }}>{s}</div>
+              <div key={i} style={{ fontSize: 13, color: "rgba(255, 255, 255, 0.8)", marginBottom: 7, paddingLeft: 10, borderLeft: "2px solid #2DD4BF" }}>{s}</div>
             ))}
           </div>
         )}
         {result.best_of_both?.length > 0 && (
-          <div style={{ background: "var(--blue-50)", borderRadius: "var(--radius-lg)", padding: 20 }}>
-            <h3 style={{ margin: "0 0 12px", fontSize: 14, color: "var(--blue-700)" }}>Best elements from the other version</h3>
+          <div style={{ background: "rgba(56, 189, 248, 0.12)", border: "1px solid rgba(56, 189, 248, 0.25)", borderRadius: "18px", padding: 20 }}>
+            <h3 style={{ margin: "0 0 12px", fontSize: 14, color: "#38BDF8", fontFamily: "Syne, sans-serif" }}>Best elements from the other version</h3>
             {result.best_of_both.map((s: string, i: number) => (
-              <div key={i} style={{ fontSize: 13, color: "var(--gray-700)", marginBottom: 7, paddingLeft: 10, borderLeft: "2px solid var(--blue-500)" }}>{s}</div>
+              <div key={i} style={{ fontSize: 13, color: "rgba(255, 255, 255, 0.8)", marginBottom: 7, paddingLeft: 10, borderLeft: "2px solid #38BDF8" }}>{s}</div>
             ))}
           </div>
         )}
       </div>
 
       {result.recommendation && (
-        <div style={{ padding: "16px 20px", background: "var(--amber-50)", borderRadius: "var(--radius-lg)", borderLeft: "4px solid var(--amber-500)", marginBottom: 24, fontSize: 14, color: "var(--gray-800)", lineHeight: 1.6 }}>
-          <strong>Recommendation:</strong> {result.recommendation}
+        <div style={{ padding: "16px 20px", background: "rgba(245, 158, 11, 0.12)", borderRadius: "16px", borderLeft: "4px solid #F59E0B", marginBottom: 24, fontSize: 14, color: "rgba(255, 255, 255, 0.9)", lineHeight: 1.6 }}>
+          <strong style={{ color: "#FBBF24" }}>Recommendation:</strong> {result.recommendation}
         </div>
       )}
 
-      <button onClick={onReset} style={{ padding: "11px 24px", borderRadius: "var(--radius-md)", border: "1px solid var(--gray-200)", background: "#fff", color: "var(--gray-600)", fontSize: 14, cursor: "pointer" }}>
+      <button onClick={onReset} style={{ padding: "12px 26px", borderRadius: "12px", border: "1px solid rgba(255, 255, 255, 0.12)", background: "rgba(255, 255, 255, 0.05)", color: "#ffffff", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
         Compare different resumes
       </button>
-    </div>
-  );
-}
-
-function Header() {
-  return (
-    <div style={{ background: "#fff", borderBottom: "1px solid var(--gray-200)", padding: "0 24px" }}>
-      <div style={{ maxWidth: 1000, margin: "0 auto", height: 60, display: "flex", alignItems: "center", gap: 12 }}>
-        <a href="/dashboard" style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 20, color: "var(--teal-700)", textDecoration: "none" }}>ResumeAI</a>
-        <span style={{ color: "var(--gray-300)" }}>›</span>
-        <span style={{ fontSize: 14, color: "var(--gray-500)" }}>A/B Tester</span>
-        <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "var(--blue-50)", color: "var(--blue-700)" }}>PRO</span>
-      </div>
     </div>
   );
 }

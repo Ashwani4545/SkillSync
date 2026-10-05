@@ -5,38 +5,55 @@
 @tailwind utilities;
 
 :root {
-  /* Brand palette */
-  --teal-50:  #E1F5EE;
-  --teal-100: #B8E6D5;
+  /* Brand palette - Dark theme optimized */
+  --teal-50:  rgba(29, 158, 117, 0.15);
+  --teal-100: rgba(29, 158, 117, 0.25);
   --teal-500: #1D9E75;
-  --teal-700: #0F6E56;
-  --teal-900: #064035;
+  --teal-700: #2DD4BF;
+  --teal-800: #14B8A6;
+  --teal-900: #0D9488;
 
-  --blue-50:  #E6F1FB;
-  --blue-500: #378ADD;
-  --blue-700: #185FA5;
+  --blue-50:  rgba(56, 189, 248, 0.15);
+  --blue-100: rgba(56, 189, 248, 0.25);
+  --blue-500: #38BDF8;
+  --blue-700: #60A5FA;
+  --blue-800: #3B82F6;
 
-  --purple-50:  #EEEDFE;
-  --purple-500: #7F77DD;
-  --purple-700: #534AB7;
+  --purple-50:  rgba(167, 139, 250, 0.15);
+  --purple-100: rgba(167, 139, 250, 0.25);
+  --purple-500: #A78BFA;
+  --purple-700: #C084FC;
+  --purple-800: #8B5CF6;
 
-  --amber-50:  #FAEEDA;
-  --amber-500: #EF9F27;
-  --amber-700: #854F0B;
+  --amber-50:  rgba(245, 158, 11, 0.15);
+  --amber-100: rgba(245, 158, 11, 0.25);
+  --amber-500: #F59E0B;
+  --amber-700: #FBBF24;
+  --amber-800: #D97706;
 
-  --coral-50:  #FAECE7;
-  --coral-500: #D85A30;
-  --coral-700: #712B13;
+  --coral-50:  rgba(248, 113, 113, 0.15);
+  --coral-100: rgba(248, 113, 113, 0.25);
+  --coral-500: #F87171;
+  --coral-700: #FCA5A5;
+  --coral-800: #EF4444;
 
-  /* Neutrals */
-  --gray-50:  #FAFAF8;
-  --gray-100: #F1EFE8;
-  --gray-200: #E2DFD6;
-  --gray-300: #C5C2B8;
-  --gray-400: #888780;
-  --gray-500: #5F5E5A;
-  --gray-700: #2C2C2A;
-  --gray-900: #18181A;
+  /* Neutrals for Dark Mode (matching #0A0F1E landing page) */
+  --gray-50:  #0A0F1E;
+  --gray-100: rgba(255, 255, 255, 0.04);
+  --gray-200: rgba(255, 255, 255, 0.08);
+  --gray-300: rgba(255, 255, 255, 0.15);
+  --gray-400: #94A3B8;
+  --gray-500: #CBD5E1;
+  --gray-600: #E2E8F0;
+  --gray-700: #F1F5F9;
+  --gray-800: #F8FAFC;
+  --gray-900: #FFFFFF;
+
+  /* Glass Card tokens */
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --card-bg-hover: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-border-hover: rgba(255, 255, 255, 0.18);
 
   /* Spacing */
   --radius-sm: 6px;
@@ -58,10 +75,11 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4 {
+h1, h2, h3, h4, h5, h6 {
   font-family: 'Syne', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.2;
+  color: #ffffff;
 }
 
 code, pre, .mono {
@@ -70,9 +88,48 @@ code, pre, .mono {
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--gray-100); }
-::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+::-webkit-scrollbar-track { background: #0A0F1E; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+
+/* Global dark glass card styling */
+.dark-glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  color: #ffffff;
+}
+
+/* Form input, select, textarea dark styles */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+  border-color: #1D9E75 !important;
+  box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.25) !important;
+  outline: none !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+
+select option {
+  background: #0D1527 !important;
+  color: #ffffff !important;
+}
 
 /* Animations */
 @keyframes fadeUp {
@@ -90,3 +147,4 @@ code, pre, .mono {
 .animate-delay-1 { animation-delay: 0.1s; }
 .animate-delay-2 { animation-delay: 0.2s; }
 .animate-delay-3 { animation-delay: 0.3s; }
+

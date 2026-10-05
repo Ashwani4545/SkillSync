@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Share2, Twitter, Linkedin, Copy, CheckCircle } from "lucide-react";
+import { Twitter, Linkedin, Copy, CheckCircle } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
 export default function SharePage() {
@@ -30,77 +30,76 @@ export default function SharePage() {
   const overall = data.overall_score ?? {};
   const score   = overall.score ?? 0;
   const grade   = overall.grade ?? "—";
-  const scoreColor = score >= 80 ? "var(--teal-700)" : score >= 65 ? "var(--amber-700)" : "var(--coral-700)";
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--gray-50)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    <div style={{ minHeight: "100vh", background: "radial-gradient(circle at 50% 0%, rgba(29, 158, 117, 0.15) 0%, transparent 60%), #0A0F1E", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ width: "100%", maxWidth: 480 }}>
         {/* Score card */}
-        <div style={{ background: "#fff", borderRadius: "var(--radius-xl)", border: "1px solid var(--gray-200)", overflow: "hidden", marginBottom: 16 }}>
+        <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 24, border: "1px solid rgba(255, 255, 255, 0.08)", overflow: "hidden", marginBottom: 20 }}>
           {/* Header band */}
-          <div style={{ background: "var(--teal-700)", padding: "24px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ background: "linear-gradient(135deg, #1D9E75 0%, #0F6E56 100%)", padding: "28px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <div style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 18, color: "#fff" }}>ResumeAI</div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>Resume Analysis Score</div>
+              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, color: "#fff" }}>SkillSync</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginTop: 2 }}>Resume Analysis Score</div>
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 56, fontWeight: 800, color: "#fff", fontFamily: "Syne", lineHeight: 1 }}>{score}</div>
-              <div style={{ fontSize: 14, color: "rgba(255,255,255,0.8)", fontWeight: 700 }}>Grade {grade}</div>
+              <div style={{ fontSize: 56, fontWeight: 800, color: "#fff", fontFamily: "Syne, sans-serif", lineHeight: 1 }}>{score}</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", fontWeight: 700, marginTop: 4 }}>Grade {grade}</div>
             </div>
           </div>
 
           {/* Breakdown */}
-          <div style={{ padding: "24px 28px" }}>
+          <div style={{ padding: "28px 32px" }}>
             {[
               { label: "ATS compatibility",   val: overall.breakdown?.ats     ?? 0 },
               { label: "Content quality",     val: overall.breakdown?.content ?? 0 },
               { label: "Tone & confidence",   val: overall.breakdown?.tone    ?? 0 },
             ].map((item) => (
-              <div key={item.label} style={{ marginBottom: 14 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 5 }}>
-                  <span style={{ color: "var(--gray-600)" }}>{item.label}</span>
-                  <span style={{ fontWeight: 700, color: "var(--gray-900)" }}>{item.val || "—"}</span>
+              <div key={item.label} style={{ marginBottom: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
+                  <span style={{ color: "#94A3B8" }}>{item.label}</span>
+                  <span style={{ fontWeight: 700, color: "#FFFFFF" }}>{item.val || "—"}</span>
                 </div>
-                <div style={{ height: 6, background: "var(--gray-100)", borderRadius: 3, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${item.val}%`, background: "var(--teal-500)", borderRadius: 3 }} />
+                <div style={{ height: 8, background: "rgba(255, 255, 255, 0.06)", borderRadius: 4, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${item.val}%`, background: "#2DD4BF", borderRadius: 4, boxShadow: "0 0 10px rgba(45, 212, 191, 0.4)" }} />
                 </div>
               </div>
             ))}
 
-            <p style={{ fontSize: 13, color: "var(--gray-400)", textAlign: "center", margin: "16px 0 0" }}>
-              Analyzed with <strong style={{ color: "var(--teal-700)" }}>ResumeAI</strong> · resumeai.app
+            <p style={{ fontSize: 13, color: "#64748B", textAlign: "center", margin: "20px 0 0" }}>
+              Verified analysis report by <strong style={{ color: "#2DD4BF" }}>SkillSync AI</strong>
             </p>
           </div>
         </div>
 
         {/* Share buttons */}
-        <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 20 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--gray-500)", marginBottom: 12 }}>SHARE THIS RESULT</div>
+        <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.05em", marginBottom: 12 }}>SHARE THIS RESULT</div>
           <div style={{ display: "flex", gap: 10 }}>
             <a
               href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`}
               target="_blank" rel="noreferrer"
-              style={{ flex: 1, padding: "10px", borderRadius: "var(--radius-md)", background: "#0A66C2", color: "#fff", textDecoration: "none", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              style={{ flex: 1, padding: "12px", borderRadius: 12, background: "#0A66C2", color: "#fff", textDecoration: "none", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
             >
               <Linkedin size={15} /> LinkedIn
             </a>
             <a
-              href={`https://twitter.com/intent/tweet?text=My resume scored ${score}/100 on ResumeAI! Check yours 👇&url=${encodeURIComponent(pageUrl)}`}
+              href={`https://twitter.com/intent/tweet?text=My resume scored ${score}/100 on SkillSync! Check yours 👇&url=${encodeURIComponent(pageUrl)}`}
               target="_blank" rel="noreferrer"
-              style={{ flex: 1, padding: "10px", borderRadius: "var(--radius-md)", background: "#1DA1F2", color: "#fff", textDecoration: "none", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              style={{ flex: 1, padding: "12px", borderRadius: 12, background: "#1DA1F2", color: "#fff", textDecoration: "none", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
             >
               <Twitter size={15} /> Twitter
             </a>
             <button onClick={handleCopy}
-              style={{ flex: 1, padding: "10px", borderRadius: "var(--radius-md)", border: "1px solid var(--gray-200)", background: "#fff", color: "var(--gray-600)", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              style={{ flex: 1, padding: "12px", borderRadius: 12, border: "1px solid rgba(255, 255, 255, 0.12)", background: "rgba(255, 255, 255, 0.05)", color: "#FFFFFF", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.2s ease" }}
             >
-              {copied ? <><CheckCircle size={14} color="var(--teal-500)" /> Copied!</> : <><Copy size={14} /> Copy link</>}
+              {copied ? <><CheckCircle size={14} color="#2DD4BF" /> Copied!</> : <><Copy size={14} /> Copy link</>}
             </button>
           </div>
         </div>
 
-        <div style={{ textAlign: "center", marginTop: 16 }}>
-          <a href="/" style={{ fontSize: 13, color: "var(--teal-700)", fontWeight: 600, textDecoration: "none" }}>
+        <div style={{ textAlign: "center", marginTop: 20 }}>
+          <a href="/" style={{ fontSize: 14, color: "#2DD4BF", fontWeight: 700, textDecoration: "none" }}>
             → Analyze your own resume free
           </a>
         </div>
@@ -110,14 +109,15 @@ export default function SharePage() {
 }
 
 function LoadingState() {
-  return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--gray-400)" }}>Loading...</div>;
+  return <div style={{ minHeight: "100vh", background: "#0A0F1E", display: "flex", alignItems: "center", justifyContent: "center", color: "#94A3B8" }}>Loading...</div>;
 }
+
 function NotFound() {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--gray-400)" }}>
-      <h2 style={{ fontSize: 22, marginBottom: 8, color: "var(--gray-700)" }}>Result not found</h2>
-      <p>This share link may have expired or been removed.</p>
-      <a href="/" style={{ marginTop: 16, color: "var(--teal-700)", fontWeight: 600, textDecoration: "none" }}>Go to ResumeAI →</a>
+    <div style={{ minHeight: "100vh", background: "#0A0F1E", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#94A3B8" }}>
+      <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8, color: "#FFFFFF", fontFamily: "Syne, sans-serif" }}>Result not found</h2>
+      <p style={{ color: "#64748B" }}>This share link may have expired or been removed.</p>
+      <a href="/" style={{ marginTop: 16, color: "#2DD4BF", fontWeight: 700, textDecoration: "none" }}>Go to SkillSync →</a>
     </div>
   );
 }

@@ -25,7 +25,7 @@ export function ToneReport({ data }: { data: any }) {
       <p style={{ color: "var(--gray-500)", fontSize: 14, marginBottom: 24 }}>Passive language and hedging phrases weaken your resume. Here's where to fix them.</p>
 
       {/* Score meter */}
-      <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24, marginBottom: 20 }}>
+      <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24, marginBottom: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <span style={{ fontWeight: 600 }}>Confidence score</span>
           <span style={{ fontSize: 32, fontWeight: 800, color: barColor, fontFamily: "Syne" }}>{score}<span style={{ fontSize: 18 }}>/100</span></span>
@@ -40,7 +40,7 @@ export function ToneReport({ data }: { data: any }) {
 
       {/* Passive phrases */}
       {toneData.passive_phrases?.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24, marginBottom: 20 }}>
+        <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24, marginBottom: 20 }}>
           <h3 style={{ margin: "0 0 16px", fontSize: 16 }}>Weak phrases to fix</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {toneData.passive_phrases.map((p: any, i: number) => (
@@ -127,7 +127,7 @@ export function InterviewQuestions({ data }: { data: any }) {
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {questions?.map((q: any, i: number) => (
-          <div key={i} style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", overflow: "hidden" }}>
+          <div key={i} style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", overflow: "hidden" }}>
             <button
               onClick={() => setOpen(open === i ? null : i)}
               style={{ width: "100%", padding: "16px 20px", display: "flex", alignItems: "flex-start", gap: 12, background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
@@ -193,7 +193,7 @@ export function SkillAudit({ data }: { data: any }) {
 
       {/* Evidenced skills */}
       {skillData.evidenced_skills?.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 20, marginBottom: 16 }}>
+        <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 20, marginBottom: 16 }}>
           <h3 style={{ margin: "0 0 12px", fontSize: 15, color: "var(--teal-700)" }}>✓ Evidenced skills</h3>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {skillData.evidenced_skills.map((s: any, i: number) => (
@@ -205,7 +205,7 @@ export function SkillAudit({ data }: { data: any }) {
 
       {/* Unsupported skills */}
       {skillData.unsupported_skills?.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 20, marginBottom: 16 }}>
+        <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 20, marginBottom: 16 }}>
           <h3 style={{ margin: "0 0 12px", fontSize: 15, color: "var(--coral-700)" }}>⚠ Unsupported skills</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {skillData.unsupported_skills.map((s: any, i: number) => (

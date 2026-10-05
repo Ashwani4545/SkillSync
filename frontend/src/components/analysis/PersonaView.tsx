@@ -133,7 +133,7 @@ export function PersonaView({ data, r }: { data?: any; r?: any }) {
       </div>
 
       {/* Persona detail */}
-      <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: `1px solid var(--gray-200)`, padding: 28 }}>
+      <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 28 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
           <div style={{ width: 44, height: 44, borderRadius: 12, background: persona.bg, display: "flex", alignItems: "center", justifyContent: "center", color: persona.color }}>{persona.icon}</div>
           <div>

@@ -119,7 +119,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
       <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 24, alignItems: "start" }}>
         
         {/* Left Checkpoint Selector List */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, background: "#fff", padding: 12, borderRadius: "16px", border: "1px solid var(--gray-200)" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", padding: 12, borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)" }}>
           {CHECKPOINTS.map((cp) => {
             const status = getSectionStatus(cp.id);
             const isSelected = active === cp.id;
@@ -146,7 +146,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
         </div>
 
         {/* Right Details Panel */}
-        <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid var(--gray-200)", padding: 28, minHeight: 450, display: "flex", flexDirection: "column" }}>
+        <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 28, minHeight: 450, display: "flex", flexDirection: "column" }}>
           
           {/* Section Header */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--gray-100)", paddingBottom: 20, marginBottom: 20 }}>
@@ -550,7 +550,7 @@ export function DetailedAudit({ data }: { data: AuditData }) {
 
 function EmptyState() {
   return (
-    <div style={{ padding: 48, textAlign: "center", color: "var(--gray-400)", background: "#fff", border: "1px dashed var(--gray-200)", borderRadius: 12 }}>
+    <div style={{ padding: 48, textAlign: "center", color: "#94A3B8", background: "rgba(255, 255, 255, 0.02)", border: "1px dashed rgba(255, 255, 255, 0.1)", borderRadius: 16 }}>
       No audit data available. Start a new CV analysis.
     </div>
   );

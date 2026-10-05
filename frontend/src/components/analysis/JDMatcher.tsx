@@ -40,7 +40,7 @@ export function JDMatcher({ r }: { r: any }) {
   };
 
   return (
-    <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24, marginBottom: 24 }}>
+    <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24, marginBottom: 24 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
         <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--teal-50)", color: "var(--teal-700)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Target size={24} />
@@ -104,7 +104,7 @@ export function JDMatcher({ r }: { r: any }) {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             {/* Matched Keywords */}
-            <div style={{ background: "#fff", padding: 14, borderRadius: 10, border: "1px solid var(--gray-200)" }}>
+            <div style={{ background: "rgba(255, 255, 255, 0.03)", padding: 14, borderRadius: 12, border: "1px solid rgba(255, 255, 255, 0.08)" }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "var(--teal-700)", textTransform: "uppercase", marginBottom: 8, display: "flex", alignItems: "center", gap: 4 }}>
                 <CheckCircle size={14} /> MATCHED JD KEYWORDS ({matchResult.matched_keywords.length})
               </div>
@@ -118,7 +118,7 @@ export function JDMatcher({ r }: { r: any }) {
             </div>
 
             {/* Missing Keywords */}
-            <div style={{ background: "#fff", padding: 14, borderRadius: 10, border: "1px solid var(--gray-200)" }}>
+            <div style={{ background: "rgba(255, 255, 255, 0.03)", padding: 14, borderRadius: 12, border: "1px solid rgba(255, 255, 255, 0.08)" }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "var(--coral-700)", textTransform: "uppercase", marginBottom: 8, display: "flex", alignItems: "center", gap: 4 }}>
                 <AlertCircle size={14} /> CRITICAL MISSING KEYWORDS ({matchResult.missing_keywords.length})
               </div>

@@ -45,27 +45,60 @@ export default function DashboardPage() {
   const displayedResumes = showAllResumes ? resumes : resumes.slice(0, 3);
 
   return (
-    <div style={{ minHeight:"100vh", background:"var(--gray-50)" }}>
+    <div style={{ minHeight: "100vh", background: "radial-gradient(circle at 50% 0%, rgba(29, 158, 117, 0.12) 0%, transparent 50%), #0A0F1E", color: "#ffffff" }}>
       {/* Nav */}
       <Navbar />
 
-      <div style={{ maxWidth:1100, margin:"0 auto", padding:"40px 24px" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 24px" }}>
+        {/* Header section */}
+        <div style={{ marginBottom: 32 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "#2DD4BF", textTransform: "uppercase", background: "rgba(29, 158, 117, 0.15)", border: "1px solid rgba(29, 158, 117, 0.3)", padding: "4px 12px", borderRadius: 20 }}>Workspace</span>
+          <h1 style={{ fontSize: 32, fontWeight: 800, marginTop: 12, marginBottom: 8, fontFamily: "Syne, sans-serif", color: "#ffffff" }}>Command Center</h1>
+          <p style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: 15, margin: 0 }}>Access AI resume auditing, JD tailoring, career pathing, and benchmarking tools.</p>
+        </div>
+
         {/* Feature grid */}
-        <h2 style={{ fontSize:13, fontWeight:700, color:"var(--gray-400)", marginBottom:16, textTransform:"uppercase", letterSpacing:"0.06em" }}>Tools</h2>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(200px, 1fr))", gap:12, marginBottom:48 }}>
+        <h2 style={{ fontSize: 12, fontWeight: 700, color: "rgba(255, 255, 255, 0.4)", marginBottom: 16, textTransform: "uppercase", letterSpacing: "0.08em" }}>Tools & Capabilities</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 14, marginBottom: 48 }}>
           {FEATURE_CARDS.map((card, i) => {
-            const accessible  = canAccess(card.plan);
-            const badgeLabel  = PLAN_LABELS[card.plan];
+            const accessible = canAccess(card.plan);
+            const badgeLabel = PLAN_LABELS[card.plan];
             return (
-              <div key={i} style={{ position:"relative" }}>
+              <div key={i} style={{ position: "relative" }}>
                 <Link href={accessible ? card.href : "/billing"}
-                  style={{ display:"block", background:"#fff", borderRadius:"var(--radius-lg)", border:`1px solid ${accessible?"var(--gray-200)":"var(--gray-100)"}`, padding:18, textDecoration:"none", opacity:accessible?1:0.55, transition:"box-shadow .15s" }}>
-                  <div style={{ width:42, height:42, borderRadius:10, background:card.bg, display:"flex", alignItems:"center", justifyContent:"center", color:card.color, marginBottom:12 }}>{card.icon}</div>
-                  <div style={{ fontWeight:700, fontSize:14, color:"var(--gray-900)", marginBottom:3 }}>{card.title}</div>
-                  <div style={{ fontSize:12, color:"var(--gray-500)", lineHeight:1.5 }}>{card.desc}</div>
+                  style={{
+                    display: "block",
+                    background: "rgba(255, 255, 255, 0.03)",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
+                    borderRadius: "16px",
+                    border: `1px solid ${accessible ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0.04)"}`,
+                    padding: 20,
+                    textDecoration: "none",
+                    opacity: accessible ? 1 : 0.45,
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (accessible) {
+                      e.currentTarget.style.borderColor = "rgba(45, 212, 191, 0.4)";
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (accessible) {
+                      e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)";
+                      e.currentTarget.style.transform = "none";
+                      e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)";
+                    }
+                  }}
+                >
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: card.bg, display: "flex", alignItems: "center", justifyContent: "center", color: card.color, marginBottom: 14, border: "1px solid rgba(255, 255, 255, 0.08)" }}>{card.icon}</div>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: "#ffffff", marginBottom: 4, fontFamily: "Syne, sans-serif" }}>{card.title}</div>
+                  <div style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.6)", lineHeight: 1.5 }}>{card.desc}</div>
                 </Link>
                 {!accessible && badgeLabel && (
-                  <div style={{ position:"absolute", top:10, right:10, display:"flex", alignItems:"center", gap:3, fontSize:10, fontWeight:700, color:"var(--amber-700)", background:"var(--amber-50)", padding:"2px 7px", borderRadius:20, pointerEvents:"none" }}>
+                  <div style={{ position: "absolute", top: 12, right: 12, display: "flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: "#FBBF24", background: "rgba(245, 158, 11, 0.15)", border: "1px solid rgba(245, 158, 11, 0.3)", padding: "2px 8px", borderRadius: 20, pointerEvents: "none" }}>
                     <Lock size={9}/> {badgeLabel}
                   </div>
                 )}
@@ -75,58 +108,58 @@ export default function DashboardPage() {
         </div>
 
         {/* Resume history */}
-        <h2 style={{ fontSize:13, fontWeight:700, color:"var(--gray-400)", marginBottom:16, textTransform:"uppercase", letterSpacing:"0.06em" }}>Your resumes</h2>
+        <h2 style={{ fontSize: 12, fontWeight: 700, color: "rgba(255, 255, 255, 0.4)", marginBottom: 16, textTransform: "uppercase", letterSpacing: "0.08em" }}>Your Resumes</h2>
         {loading ? (
-          <div style={{ textAlign:"center", padding:48, color:"var(--gray-400)" }}>Loading...</div>
+          <div style={{ textAlign: "center", padding: 48, color: "rgba(255, 255, 255, 0.4)" }}>Loading resumes...</div>
         ) : resumes.length === 0 ? (
-          <div style={{ textAlign:"center", padding:64, background:"#fff", borderRadius:"var(--radius-xl)", border:"2px dashed var(--gray-200)" }}>
-            <FileText size={48} color="var(--gray-200)" style={{ margin:"0 auto 16px" }}/>
-            <h3 style={{ fontSize:18, marginBottom:8 }}>No resumes yet</h3>
-            <p style={{ color:"var(--gray-400)", marginBottom:24 }}>Upload your first resume to get started</p>
-            <Link href="/analyze/upload" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"12px 24px", borderRadius:"var(--radius-md)", background:"var(--teal-700)", color:"#fff", textDecoration:"none", fontWeight:600 }}>
+          <div style={{ textAlign: "center", padding: 64, background: "rgba(255, 255, 255, 0.02)", borderRadius: "20px", border: "2px dashed rgba(255, 255, 255, 0.12)", backdropFilter: "blur(10px)" }}>
+            <FileText size={48} color="rgba(255, 255, 255, 0.2)" style={{ margin: "0 auto 16px" }}/>
+            <h3 style={{ fontSize: 18, marginBottom: 8, color: "#ffffff" }}>No resumes yet</h3>
+            <p style={{ color: "rgba(255, 255, 255, 0.5)", marginBottom: 24, fontSize: 14 }}>Upload your first resume to unlock full AI career intelligence.</p>
+            <Link href="/analyze/upload" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 24px", borderRadius: "12px", background: "linear-gradient(135deg, #1D9E75 0%, #0F6E56 100%)", color: "#fff", textDecoration: "none", fontWeight: 700, boxShadow: "0 0 20px rgba(29, 158, 117, 0.3)" }}>
               <Plus size={16}/> Upload resume
             </Link>
           </div>
         ) : (
-          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {displayedResumes.map(r => (
-              <div key={r.id} style={{ background:"#fff", borderRadius:"var(--radius-lg)", border:"1px solid var(--gray-200)", padding:"16px 20px", display:"flex", alignItems:"center", gap:14 }}>
-                <div style={{ width:40, height:40, borderRadius:10, background:"var(--teal-50)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <FileText size={17} color="var(--teal-700)"/>
+              <div key={r.id} style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: "16px", border: "1px solid rgba(255, 255, 255, 0.08)", padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(29, 158, 117, 0.15)", border: "1px solid rgba(29, 158, 117, 0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <FileText size={18} color="#2DD4BF"/>
                 </div>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontWeight:600, color:"var(--gray-900)", marginBottom:2, fontSize:14 }}>{r.filename}</div>
-                  <div style={{ fontSize:12, color:"var(--gray-400)", display:"flex", alignItems:"center", gap:6 }}>
-                    <Clock size={11}/> {new Date(r.created_at).toLocaleDateString()}
-                    <span style={{ padding:"1px 7px", borderRadius:20, background:"var(--gray-100)", color:"var(--gray-500)", fontSize:10, fontWeight:700 }}>{r.file_type?.toUpperCase()}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, color: "#ffffff", marginBottom: 3, fontSize: 15 }}>{r.filename}</div>
+                  <div style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.45)", display: "flex", alignItems: "center", gap: 8 }}>
+                    <Clock size={12}/> {new Date(r.created_at).toLocaleDateString()}
+                    <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(255, 255, 255, 0.06)", border: "1px solid rgba(255, 255, 255, 0.1)", color: "rgba(255, 255, 255, 0.7)", fontSize: 10, fontWeight: 700 }}>{r.file_type?.toUpperCase()}</span>
                   </div>
                 </div>
-                <div style={{ display:"flex", gap:6 }}>
-                  <Link href={`/bias-scanner?resume_id=${r.id}`} style={{ padding:"6px 11px", borderRadius:"var(--radius-md)", background:"var(--teal-50)", color:"var(--teal-700)", textDecoration:"none", fontSize:11, fontWeight:600, display:"flex", alignItems:"center", gap:3 }}>
-                    <Shield size={11}/> Bias
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <Link href={`/bias-scanner?resume_id=${r.id}`} style={{ padding: "7px 12px", borderRadius: "10px", background: "rgba(29, 158, 117, 0.15)", border: "1px solid rgba(29, 158, 117, 0.3)", color: "#2DD4BF", textDecoration: "none", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
+                    <Shield size={12}/> Bias
                   </Link>
-                  <Link href={`/career-path?resume_id=${r.id}`} style={{ padding:"6px 11px", borderRadius:"var(--radius-md)", background:"var(--purple-50)", color:"var(--purple-700)", textDecoration:"none", fontSize:11, fontWeight:600, display:"flex", alignItems:"center", gap:3 }}>
-                    <TrendingUp size={11}/> Path
+                  <Link href={`/career-path?resume_id=${r.id}`} style={{ padding: "7px 12px", borderRadius: "10px", background: "rgba(167, 139, 250, 0.15)", border: "1px solid rgba(167, 139, 250, 0.3)", color: "#C084FC", textDecoration: "none", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
+                    <TrendingUp size={12}/> Path
                   </Link>
-                  <Link href={`/jd-adapter?resume_id=${r.id}`} style={{ padding:"6px 11px", borderRadius:"var(--radius-md)", background:"var(--blue-50)", color:"var(--blue-700)", textDecoration:"none", fontSize:11, fontWeight:600, display:"flex", alignItems:"center", gap:3 }}>
-                    <Wand2 size={11}/> JD
+                  <Link href={`/jd-adapter?resume_id=${r.id}`} style={{ padding: "7px 12px", borderRadius: "10px", background: "rgba(56, 189, 248, 0.15)", border: "1px solid rgba(56, 189, 248, 0.3)", color: "#38BDF8", textDecoration: "none", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
+                    <Wand2 size={12}/> JD
                   </Link>
-                  <Link href={`/analyze/upload`} style={{ padding:"6px 11px", borderRadius:"var(--radius-md)", background:"var(--gray-100)", color:"var(--gray-700)", textDecoration:"none", fontSize:11, fontWeight:600, display:"flex", alignItems:"center", gap:3 }}>
-                    <Target size={11}/> Analyze
+                  <Link href={`/analyze/upload`} style={{ padding: "7px 14px", borderRadius: "10px", background: "linear-gradient(135deg, #1D9E75 0%, #0F6E56 100%)", color: "#ffffff", textDecoration: "none", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                    <Target size={12}/> Analyze
                   </Link>
                 </div>
               </div>
             ))}
 
             {resumes.length > 3 && (
-              <div style={{ textAlign: "center", marginTop: 12 }}>
+              <div style={{ textAlign: "center", marginTop: 14 }}>
                 <button
                   onClick={() => setShowAllResumes(!showAllResumes)}
                   style={{
-                    padding: "10px 20px", borderRadius: 20, border: "1px solid var(--gray-300)",
-                    background: "#fff", color: "var(--gray-700)", fontSize: 13, fontWeight: 700,
+                    padding: "10px 22px", borderRadius: 30, border: "1px solid rgba(255, 255, 255, 0.15)",
+                    background: "rgba(255, 255, 255, 0.05)", color: "#ffffff", fontSize: 13, fontWeight: 700,
                     cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
-                    transition: "all 0.15s ease"
+                    transition: "all 0.2s ease"
                   }}
                 >
                   {showAllResumes ? (

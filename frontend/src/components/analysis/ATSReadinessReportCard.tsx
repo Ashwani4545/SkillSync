@@ -1,5 +1,5 @@
 "use client";
-import { CheckCircle, AlertTriangle, ShieldCheck, FileCheck, Sparkles, Target, ArrowUpRight } from "lucide-react";
+import { ShieldCheck, Sparkles } from "lucide-react";
 
 export function ATSReadinessReportCard({ r }: { r: any }) {
   const ats = r?.ats || {};
@@ -13,7 +13,6 @@ export function ATSReadinessReportCard({ r }: { r: any }) {
   const isPass = ats.pass ?? (baseScore >= 70);
 
   const formatIssues = (ats.format_issues || []).filter((x: string) => x !== "None detected");
-  const missingKws = (ats.missing_keywords || []).filter((x: string) => x !== "None");
 
   const categories = [
     { name: "File Compatibility", score: 100 - formatIssues.length * 5, status: formatIssues.length === 0 ? "Supported Text PDF/DOCX" : "Layout Risks Detected" },
@@ -39,64 +38,64 @@ export function ATSReadinessReportCard({ r }: { r: any }) {
   ];
 
   return (
-    <div style={{ background: "#fff", borderRadius: "var(--radius-lg)", border: "1px solid var(--gray-200)", padding: 24, marginBottom: 24 }}>
+    <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24, marginBottom: 24 }}>
       {/* Header Banner */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid var(--gray-100)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid rgba(255, 255, 255, 0.06)", flexWrap: "wrap", gap: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--teal-50)", color: "var(--teal-700)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(45, 212, 191, 0.15)", color: "#2DD4BF", border: "1px solid rgba(45, 212, 191, 0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <ShieldCheck size={24} />
           </div>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <h2 style={{ margin: 0, fontSize: 20, fontFamily: "Syne, sans-serif" }}>ATS Readiness Report Card</h2>
-              <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 12, background: "var(--teal-50)", color: "var(--teal-800)", border: "1px solid var(--teal-500)30" }}>
-                Universal ATS Mode (No Role Required)
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <h2 style={{ margin: 0, fontSize: 20, fontFamily: "Syne, sans-serif", color: "#FFFFFF", fontWeight: 700 }}>ATS Readiness Report Card</h2>
+              <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 12, background: "rgba(45, 212, 191, 0.12)", color: "#2DD4BF", border: "1px solid rgba(45, 212, 191, 0.3)" }}>
+                Universal ATS Mode
               </span>
             </div>
-            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--gray-500)" }}>General ATS Parseability & Structural Quality Audit</p>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "#94A3B8" }}>General ATS Parseability & Structural Quality Audit</p>
           </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: isPass ? "var(--teal-700)" : "var(--coral-700)", fontFamily: "Syne" }}>
-              {baseScore}<span style={{ fontSize: 14, color: "var(--gray-400)", fontWeight: 500 }}>/100</span>
+            <div style={{ fontSize: 28, fontWeight: 800, color: isPass ? "#2DD4BF" : "#F87171", fontFamily: "Syne, sans-serif" }}>
+              {baseScore}<span style={{ fontSize: 14, color: "#64748B", fontWeight: 500 }}>/100</span>
             </div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gray-500)", textTransform: "uppercase" }}>UNIVERSAL ATS READINESS</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>UNIVERSAL ATS READINESS</div>
           </div>
-          <div style={{ padding: "8px 16px", borderRadius: 20, background: isPass ? "var(--teal-50)" : "var(--coral-50)", color: isPass ? "var(--teal-700)" : "var(--coral-700)", fontWeight: 700, fontSize: 13, border: `1px solid ${isPass ? "var(--teal-500)30" : "var(--coral-500)30"}` }}>
+          <div style={{ padding: "8px 16px", borderRadius: 20, background: isPass ? "rgba(45, 212, 191, 0.15)" : "rgba(248, 113, 113, 0.15)", color: isPass ? "#2DD4BF" : "#F87171", fontWeight: 700, fontSize: 13, border: `1px solid ${isPass ? "rgba(45, 212, 191, 0.3)" : "rgba(248, 113, 113, 0.3)"}` }}>
             {isPass ? "✓ ATS APPROVED" : "⚠ ACTION REQUIRED"}
           </div>
         </div>
       </div>
 
       {/* Score Grid (12 Categories) */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12, marginBottom: 24 }}>
         {categories.map((c) => (
-          <div key={c.name} style={{ background: "var(--gray-50)", padding: 14, borderRadius: 10, border: "1px solid var(--gray-200)80" }}>
+          <div key={c.name} style={{ background: "rgba(255, 255, 255, 0.02)", padding: 14, borderRadius: 12, border: "1px solid rgba(255, 255, 255, 0.06)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--gray-800)" }}>{c.name}</span>
-              <span style={{ fontSize: 14, fontWeight: 800, color: c.score >= 80 ? "var(--teal-700)" : c.score >= 65 ? "var(--amber-700)" : "var(--coral-700)" }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#E2E8F0" }}>{c.name}</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: c.score >= 80 ? "#2DD4BF" : c.score >= 65 ? "#FBBF24" : "#F87171", fontFamily: "Syne, sans-serif" }}>
                 {c.score}/100
               </span>
             </div>
-            <div style={{ fontSize: 12, color: "var(--gray-500)" }}>{c.status}</div>
+            <div style={{ fontSize: 12, color: "#94A3B8" }}>{c.status}</div>
           </div>
         ))}
       </div>
 
       {/* Top 5 High-Impact Actions */}
-      <div style={{ background: "var(--teal-50)", borderRadius: 12, padding: 18, border: "1px solid var(--teal-200)" }}>
-        <h3 style={{ margin: "0 0 12px", fontSize: 15, color: "var(--teal-900)", display: "flex", alignItems: "center", gap: 6 }}>
-          <Sparkles size={16} color="var(--teal-700)" /> Top 5 High-Impact Actions for Maximum Interview Rate
+      <div style={{ background: "rgba(45, 212, 191, 0.08)", borderRadius: 16, padding: 20, border: "1px solid rgba(45, 212, 191, 0.25)" }}>
+        <h3 style={{ margin: "0 0 14px", fontSize: 15, color: "#5EEAD4", display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}>
+          <Sparkles size={16} color="#2DD4BF" /> Top 5 High-Impact Actions for Maximum Interview Rate
         </h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {top5Actions.map((action, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--teal-900)", alignItems: "flex-start" }}>
-              <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--teal-700)", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+            <div key={i} style={{ display: "flex", gap: 10, fontSize: 13.5, color: "#E2E8F0", alignItems: "flex-start" }}>
+              <span style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(135deg, #1D9E75, #0F6E56)", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
                 {i + 1}
               </span>
-              <span>{action}</span>
+              <span style={{ lineHeight: 1.5 }}>{action}</span>
             </div>
           ))}
         </div>
