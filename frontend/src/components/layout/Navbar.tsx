@@ -154,13 +154,15 @@ export function Navbar() {
     <>
       <nav
         style={{
-          background: "#ffffff",
-          borderBottom: "1px solid var(--gray-200, #E2E8F0)",
+          background: "rgba(10, 15, 30, 0.85)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
           padding: "0 24px",
           position: "sticky",
           top: 0,
           zIndex: 100,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+          boxShadow: "0 1px 0 rgba(255,255,255,0.04)",
         }}
       >
         <div
@@ -197,7 +199,7 @@ export function Navbar() {
                 fontFamily: "Syne, sans-serif",
                 fontWeight: 800,
                 fontSize: 22,
-                color: "var(--teal-700, #0F6E56)",
+                color: "#1D9E75",
                 letterSpacing: "-0.02em",
               }}
             >
@@ -211,7 +213,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                style={{ color: "var(--gray-600, #475569)", textDecoration: "none", fontSize: 14, fontWeight: 600 }}
+                style={{ color: "rgba(255,255,255,0.65)", textDecoration: "none", fontSize: 14, fontWeight: 600 }}
               >
                 {link.label}
               </Link>
@@ -227,7 +229,7 @@ export function Navbar() {
                   background: "none",
                   border: "none",
                   cursor: "pointer",
-                  color: "var(--gray-600, #475569)",
+                  color: "rgba(255,255,255,0.65)",
                   fontSize: 14,
                   fontWeight: 600,
                   padding: 0,
@@ -243,10 +245,11 @@ export function Navbar() {
                     left: 0,
                     top: 30,
                     width: 200,
-                    background: "#ffffff",
+                    background: "rgba(10, 15, 30, 0.95)",
+                    backdropFilter: "blur(20px)",
                     borderRadius: 12,
-                    boxShadow: "0 12px 30px rgba(0,0,0,0.12)",
-                    border: "1px solid #E2E8F0",
+                    boxShadow: "0 12px 30px rgba(0,0,0,0.5)",
+                    border: "1px solid rgba(255,255,255,0.1)",
                     padding: 6,
                     zIndex: 200,
                   }}
@@ -262,7 +265,7 @@ export function Navbar() {
                         padding: "8px 10px",
                         borderRadius: 8,
                         fontSize: 13,
-                        color: "#334155",
+                        color: "rgba(255,255,255,0.7)",
                         textDecoration: "none",
                       }}
                     >
@@ -444,9 +447,9 @@ export function Navbar() {
                   gap: 6,
                   padding: "8px 16px",
                   borderRadius: 10,
-                  border: "1px solid var(--gray-300, #CBD5E1)",
-                  background: "#ffffff",
-                  color: "var(--gray-700, #334155)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  background: "rgba(255,255,255,0.07)",
+                  color: "rgba(255,255,255,0.8)",
                   fontSize: 14,
                   fontWeight: 600,
                   cursor: "pointer",
