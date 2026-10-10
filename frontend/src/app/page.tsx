@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Navbar } from "../components/layout/Navbar";
+import { useTheme } from "../components/providers/ThemeProvider";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -132,9 +133,9 @@ const ROADMAP = [
 
 type Reader = typeof READERS[0];
 
-function ScoreBar({ value, color }: { value: number; color: string }) {
+function ScoreBar({ value, color, isDark = true }: { value: number; color: string; isDark?: boolean }) {
   return (
-    <div style={{ height: 6, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
+    <div style={{ height: 6, background: isDark ? "rgba(255,255,255,0.08)" : "#E2E8F0", borderRadius: 3, overflow: "hidden" }}>
       <div
         style={{
           height: "100%",
@@ -369,13 +370,17 @@ function FeatureIcon({ name }: { name: string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   return (
     <div
       style={{
-        background: "#0A0F1E",
+        background: isDark ? "#0A0F1E" : "#F8FAFC",
         minHeight: "100vh",
-        color: "#fff",
+        color: isDark ? "#fff" : "#0F172A",
         fontFamily: "'DM Sans', system-ui, sans-serif",
+        transition: "background 0.25s ease, color 0.25s ease",
       }}
     >
       <Navbar />
@@ -386,8 +391,9 @@ export default function LandingPage() {
           position: "relative",
           overflow: "hidden",
           padding: "100px 24px 80px",
-          background:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(15,110,86,0.18) 0%, rgba(10,15,30,0) 70%)",
+          background: isDark
+            ? "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(15,110,86,0.18) 0%, rgba(10,15,30,0) 70%)"
+            : "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(15,110,86,0.10) 0%, rgba(248,250,252,0) 70%)",
         }}
       >
         <div
@@ -397,7 +403,9 @@ export default function LandingPage() {
             left: "10%",
             width: 300,
             height: 300,
-            background: "radial-gradient(circle, rgba(15,110,86,0.12) 0%, transparent 70%)",
+            background: isDark
+              ? "radial-gradient(circle, rgba(15,110,86,0.12) 0%, transparent 70%)"
+              : "radial-gradient(circle, rgba(15,110,86,0.06) 0%, transparent 70%)",
             borderRadius: "50%",
             pointerEvents: "none",
           }}
@@ -409,7 +417,9 @@ export default function LandingPage() {
             right: "8%",
             width: 260,
             height: 260,
-            background: "radial-gradient(circle, rgba(55,138,221,0.10) 0%, transparent 70%)",
+            background: isDark
+              ? "radial-gradient(circle, rgba(55,138,221,0.10) 0%, transparent 70%)"
+              : "radial-gradient(circle, rgba(55,138,221,0.06) 0%, transparent 70%)",
             borderRadius: "50%",
             pointerEvents: "none",
           }}
@@ -422,8 +432,8 @@ export default function LandingPage() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 8,
-                background: "rgba(15, 110, 86, 0.15)",
-                border: "1px solid rgba(29, 158, 117, 0.3)",
+                background: isDark ? "rgba(15, 110, 86, 0.15)" : "#E1F5EE",
+                border: isDark ? "1px solid rgba(29, 158, 117, 0.3)" : "1px solid #A3E0C8",
                 color: "#1D9E75",
                 fontSize: 12,
                 fontWeight: 800,
@@ -445,10 +455,11 @@ export default function LandingPage() {
               letterSpacing: "-0.035em",
               marginBottom: 20,
               fontFamily: "'Syne', sans-serif",
+              color: isDark ? "#fff" : "#0F172A",
             }}
           >
             Three readers.{" "}
-            <span style={{ color: "rgba(255,255,255,0.4)" }}>One resume.</span>
+            <span style={{ color: isDark ? "rgba(255,255,255,0.4)" : "#64748B" }}>One resume.</span>
             <br />
             <span
               style={{
@@ -465,7 +476,7 @@ export default function LandingPage() {
             style={{
               textAlign: "center",
               fontSize: 19,
-              color: "rgba(255,255,255,0.55)",
+              color: isDark ? "rgba(255,255,255,0.55)" : "#475569",
               maxWidth: 580,
               margin: "0 auto 52px",
               lineHeight: 1.7,
@@ -488,14 +499,14 @@ export default function LandingPage() {
               <p
                 style={{
                   fontSize: 15,
-                  color: "rgba(255,255,255,0.5)",
+                  color: isDark ? "rgba(255,255,255,0.5)" : "#475569",
                   lineHeight: 1.7,
                   marginBottom: 20,
                   borderLeft: "2px solid rgba(29, 158, 117, 0.4)",
                   paddingLeft: 16,
                 }}
               >
-                <strong style={{ color: "rgba(255,255,255,0.75)" }}>Each page in the stack</strong>{" "}
+                <strong style={{ color: isDark ? "rgba(255,255,255,0.75)" : "#1E293B" }}>Each page in the stack</strong>{" "}
                 is how one reviewer sees the same resume. Choose one to pull it forward. Fix what
                 they&apos;re stopping on.
               </p>
@@ -510,8 +521,9 @@ export default function LandingPage() {
                       gap: 12,
                       padding: "10px 16px",
                       borderRadius: 12,
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.07)",
+                      background: isDark ? "rgba(255,255,255,0.04)" : "#FFFFFF",
+                      border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #E2E8F0",
+                      boxShadow: isDark ? "none" : "0 2px 8px rgba(0,0,0,0.02)",
                     }}
                   >
                     <div
@@ -528,14 +540,14 @@ export default function LandingPage() {
                       style={{
                         fontSize: 14,
                         fontWeight: 700,
-                        color: "rgba(255,255,255,0.8)",
+                        color: isDark ? "rgba(255,255,255,0.8)" : "#1E293B",
                         minWidth: 110,
                       }}
                     >
                       {r.label}
                     </span>
                     <div style={{ flex: 1 }}>
-                      <ScoreBar value={r.score} color={r.accent} />
+                      <ScoreBar value={r.score} color={r.accent} isDark={isDark} />
                     </div>
                     <span
                       style={{
@@ -579,18 +591,19 @@ export default function LandingPage() {
                     gap: 8,
                     padding: "15px 24px",
                     borderRadius: 14,
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    color: "rgba(255,255,255,0.8)",
+                    background: isDark ? "rgba(255,255,255,0.06)" : "#FFFFFF",
+                    border: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid #CBD5E1",
+                    color: isDark ? "rgba(255,255,255,0.8)" : "#1E293B",
                     textDecoration: "none",
                     fontSize: 15,
                     fontWeight: 600,
+                    boxShadow: isDark ? "none" : "0 2px 8px rgba(0,0,0,0.02)",
                   }}
                 >
                   Build my resume
                 </Link>
               </div>
-              <p style={{ marginTop: 14, fontSize: 12, color: "rgba(255,255,255,0.3)", fontWeight: 500 }}>
+              <p style={{ marginTop: 14, fontSize: 12, color: isDark ? "rgba(255,255,255,0.3)" : "#94A3B8", fontWeight: 500 }}>
                 No credit card required · 3 free analyses per month
               </p>
             </div>
@@ -604,10 +617,10 @@ export default function LandingPage() {
       {/* ── "0 tools" callout ── */}
       <section
         style={{
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderTop: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #E2E8F0",
+          borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #E2E8F0",
           padding: "48px 24px",
-          background: "rgba(255,255,255,0.02)",
+          background: isDark ? "rgba(255,255,255,0.02)" : "#FFFFFF",
         }}
       >
         <div
@@ -639,14 +652,14 @@ export default function LandingPage() {
               style={{
                 fontSize: 18,
                 fontWeight: 700,
-                color: "#fff",
+                color: isDark ? "#fff" : "#0F172A",
                 margin: "0 0 6px",
                 fontFamily: "'Syne', sans-serif",
               }}
             >
               Resume tools that actually explain why you&apos;re filtered out.
             </p>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", margin: 0, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 14, color: isDark ? "rgba(255,255,255,0.4)" : "#64748B", margin: 0, lineHeight: 1.6 }}>
               Every other tool tells you <em>what&apos;s missing.</em> SkillSync tells you{" "}
               <em>why you&apos;re being filtered out</em> — and exactly how to fix it.
             </p>
@@ -674,7 +687,7 @@ export default function LandingPage() {
               fontSize: "clamp(28px, 4vw, 48px)",
               fontWeight: 900,
               fontFamily: "'Syne', sans-serif",
-              color: "#fff",
+              color: isDark ? "#fff" : "#0F172A",
               letterSpacing: "-0.03em",
               lineHeight: 1.15,
               marginBottom: 16,
@@ -682,11 +695,11 @@ export default function LandingPage() {
           >
             Most tools say what is missing.
             <br />
-            <span style={{ color: "rgba(255,255,255,0.35)" }}>
+            <span style={{ color: isDark ? "rgba(255,255,255,0.35)" : "#64748B" }}>
               SkillSync says why you get filtered out.
             </span>
           </h2>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.45)", maxWidth: 520, margin: "0 auto" }}>
+          <p style={{ fontSize: 16, color: isDark ? "rgba(255,255,255,0.45)" : "#64748B", maxWidth: 520, margin: "0 auto" }}>
             Nine features built around that one question.
           </p>
         </div>
@@ -702,12 +715,13 @@ export default function LandingPage() {
             <div
               key={i}
               style={{
-                background: "rgba(255,255,255,0.03)",
+                background: isDark ? "rgba(255,255,255,0.03)" : "#FFFFFF",
                 borderRadius: 18,
-                border: "1px solid rgba(255,255,255,0.07)",
+                border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #E2E8F0",
                 padding: "26px 28px",
                 position: "relative",
                 overflow: "hidden",
+                boxShadow: isDark ? "none" : "0 4px 16px rgba(0,0,0,0.03)",
               }}
             >
               <div
@@ -764,13 +778,13 @@ export default function LandingPage() {
                   fontSize: 16,
                   fontWeight: 800,
                   marginBottom: 10,
-                  color: "#fff",
+                  color: isDark ? "#fff" : "#0F172A",
                   fontFamily: "'Syne', sans-serif",
                 }}
               >
                 {f.title}
               </h3>
-              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", lineHeight: 1.7, margin: 0 }}>
+              <p style={{ fontSize: 13, color: isDark ? "rgba(255,255,255,0.5)" : "#64748B", lineHeight: 1.7, margin: 0 }}>
                 {f.desc}
               </p>
             </div>
@@ -782,9 +796,9 @@ export default function LandingPage() {
       <section
         style={{
           padding: "100px 24px",
-          background: "rgba(255,255,255,0.02)",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: isDark ? "rgba(255,255,255,0.02)" : "#F1F5F9",
+          borderTop: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #E2E8F0",
+          borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #E2E8F0",
         }}
       >
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
@@ -806,14 +820,14 @@ export default function LandingPage() {
                 fontSize: "clamp(28px, 4vw, 44px)",
                 fontWeight: 900,
                 fontFamily: "'Syne', sans-serif",
-                color: "#fff",
+                color: isDark ? "#fff" : "#0F172A",
                 letterSpacing: "-0.03em",
                 marginBottom: 14,
               }}
             >
               What other resume tools do,
               <br />
-              <span style={{ color: "rgba(255,255,255,0.35)" }}>
+              <span style={{ color: isDark ? "rgba(255,255,255,0.35)" : "#64748B" }}>
                 and what SkillSync does differently.
               </span>
             </h2>
@@ -822,7 +836,9 @@ export default function LandingPage() {
           <div
             style={{
               borderRadius: 20,
-              border: "1px solid rgba(255,255,255,0.08)",
+              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid #CBD5E1",
+              background: isDark ? "transparent" : "#FFFFFF",
+              boxShadow: isDark ? "none" : "0 4px 20px rgba(0,0,0,0.04)",
               overflow: "hidden",
             }}
           >
@@ -830,9 +846,9 @@ export default function LandingPage() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "150px 1fr 1fr",
-                background: "rgba(255,255,255,0.05)",
+                background: isDark ? "rgba(255,255,255,0.05)" : "#F8FAFC",
                 padding: "14px 24px",
-                borderBottom: "1px solid rgba(255,255,255,0.07)",
+                borderBottom: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #E2E8F0",
                 gap: 16,
               }}
             >
@@ -840,7 +856,7 @@ export default function LandingPage() {
                 style={{
                   fontSize: 11,
                   fontWeight: 800,
-                  color: "rgba(255,255,255,0.3)",
+                  color: isDark ? "rgba(255,255,255,0.3)" : "#94A3B8",
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                 }}
@@ -851,7 +867,7 @@ export default function LandingPage() {
                 style={{
                   fontSize: 11,
                   fontWeight: 800,
-                  color: "rgba(255,255,255,0.3)",
+                  color: isDark ? "rgba(255,255,255,0.3)" : "#94A3B8",
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                 }}
@@ -879,8 +895,17 @@ export default function LandingPage() {
                   gridTemplateColumns: "150px 1fr 1fr",
                   padding: "18px 24px",
                   borderBottom:
-                    i < COMPARISONS.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
-                  background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)",
+                    i < COMPARISONS.length - 1
+                      ? isDark
+                        ? "1px solid rgba(255,255,255,0.05)"
+                        : "1px solid #F1F5F9"
+                      : "none",
+                  background:
+                    i % 2 === 0
+                      ? "transparent"
+                      : isDark
+                      ? "rgba(255,255,255,0.015)"
+                      : "#F8FAFC",
                   alignItems: "center",
                   gap: 16,
                 }}
@@ -889,8 +914,8 @@ export default function LandingPage() {
                   style={{
                     fontSize: 13,
                     fontWeight: 800,
-                    color: "rgba(255,255,255,0.7)",
-                    background: "rgba(255,255,255,0.05)",
+                    color: isDark ? "rgba(255,255,255,0.7)" : "#334155",
+                    background: isDark ? "rgba(255,255,255,0.05)" : "#E2E8F0",
                     padding: "4px 10px",
                     borderRadius: 8,
                     display: "inline-block",
@@ -898,13 +923,13 @@ export default function LandingPage() {
                 >
                   {row.tool}
                 </span>
-                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>
+                <span style={{ fontSize: 13, color: isDark ? "rgba(255,255,255,0.4)" : "#64748B", lineHeight: 1.5 }}>
                   {row.them}
                 </span>
                 <span
                   style={{
                     fontSize: 13,
-                    color: "rgba(255,255,255,0.75)",
+                    color: isDark ? "rgba(255,255,255,0.75)" : "#0F172A",
                     lineHeight: 1.5,
                     fontWeight: 600,
                     display: "flex",
@@ -945,14 +970,14 @@ export default function LandingPage() {
               fontSize: "clamp(28px, 4vw, 44px)",
               fontWeight: 900,
               fontFamily: "'Syne', sans-serif",
-              color: "#fff",
+              color: isDark ? "#fff" : "#0F172A",
               letterSpacing: "-0.03em",
               marginBottom: 14,
             }}
           >
             Four phases over roughly seven months.
           </h2>
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.4)", maxWidth: 440, margin: "0 auto" }}>
+          <p style={{ fontSize: 15, color: isDark ? "rgba(255,255,255,0.4)" : "#64748B", maxWidth: 440, margin: "0 auto" }}>
             Phase 1 is complete and tested end-to-end. Phase 2 is actively in progress.
           </p>
         </div>
@@ -967,10 +992,10 @@ export default function LandingPage() {
           {ROADMAP.map((phase, i) => {
             type StatusKey = "done" | "active" | "upcoming" | "future";
             const STATUS_MAP: Record<StatusKey, { dot: string; label: string; labelBg: string; labelColor: string }> = {
-              done: { dot: "#1D9E75", label: "Complete", labelBg: "rgba(29, 158, 117, 0.15)", labelColor: "#1D9E75" },
-              active: { dot: "#378ADD", label: "In progress", labelBg: "rgba(55, 138, 221, 0.15)", labelColor: "#378ADD" },
-              upcoming: { dot: "#7F77DD", label: "Upcoming", labelBg: "rgba(127, 119, 221, 0.15)", labelColor: "#7F77DD" },
-              future: { dot: "rgba(255,255,255,0.2)", label: "Planned", labelBg: "rgba(255,255,255,0.05)", labelColor: "rgba(255,255,255,0.4)" },
+              done: { dot: "#1D9E75", label: "Complete", labelBg: isDark ? "rgba(29, 158, 117, 0.15)" : "#E1F5EE", labelColor: "#1D9E75" },
+              active: { dot: "#378ADD", label: "In progress", labelBg: isDark ? "rgba(55, 138, 221, 0.15)" : "#E0F2FE", labelColor: "#0284C7" },
+              upcoming: { dot: "#7F77DD", label: "Upcoming", labelBg: isDark ? "rgba(127, 119, 221, 0.15)" : "#EDE9FE", labelColor: "#7C3AED" },
+              future: { dot: isDark ? "rgba(255,255,255,0.2)" : "#94A3B8", label: "Planned", labelBg: isDark ? "rgba(255,255,255,0.05)" : "#F1F5F9", labelColor: isDark ? "rgba(255,255,255,0.4)" : "#64748B" },
             };
             const sc = STATUS_MAP[phase.status as StatusKey];
 
@@ -978,12 +1003,15 @@ export default function LandingPage() {
               <div
                 key={i}
                 style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: `1px solid ${phase.status === "active" ? "rgba(55, 138, 221, 0.25)" : "rgba(255,255,255,0.07)"}`,
+                  background: isDark ? "rgba(255,255,255,0.03)" : "#FFFFFF",
+                  border: isDark
+                    ? `1px solid ${phase.status === "active" ? "rgba(55, 138, 221, 0.25)" : "rgba(255,255,255,0.07)"}`
+                    : `1px solid ${phase.status === "active" ? "#93C5FD" : "#E2E8F0"}`,
                   borderRadius: 18,
                   padding: "24px 26px",
                   position: "relative",
                   overflow: "hidden",
+                  boxShadow: isDark ? "none" : "0 4px 16px rgba(0,0,0,0.03)",
                 }}
               >
                 {phase.status === "active" && (
@@ -1012,7 +1040,7 @@ export default function LandingPage() {
                       fontSize: 10,
                       fontWeight: 800,
                       letterSpacing: "0.1em",
-                      color: "rgba(255,255,255,0.3)",
+                      color: isDark ? "rgba(255,255,255,0.3)" : "#94A3B8",
                       textTransform: "uppercase",
                     }}
                   >
@@ -1052,7 +1080,7 @@ export default function LandingPage() {
                   style={{
                     fontSize: 18,
                     fontWeight: 800,
-                    color: "#fff",
+                    color: isDark ? "#fff" : "#0F172A",
                     fontFamily: "'Syne', sans-serif",
                     marginBottom: 4,
                   }}
@@ -1062,7 +1090,7 @@ export default function LandingPage() {
                 <p
                   style={{
                     fontSize: 12,
-                    color: "rgba(255,255,255,0.3)",
+                    color: isDark ? "rgba(255,255,255,0.3)" : "#64748B",
                     marginBottom: 18,
                     fontWeight: 600,
                   }}
@@ -1094,8 +1122,8 @@ export default function LandingPage() {
                           fontSize: 13,
                           lineHeight: 1.5,
                           color: isDone
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(255,255,255,0.35)",
+                            ? isDark ? "rgba(255,255,255,0.7)" : "#1E293B"
+                            : isDark ? "rgba(255,255,255,0.35)" : "#94A3B8",
                         }}
                       >
                         <span
@@ -1104,11 +1132,11 @@ export default function LandingPage() {
                             height: 16,
                             borderRadius: "50%",
                             background: isDone
-                              ? "rgba(29, 158, 117, 0.2)"
-                              : "rgba(255,255,255,0.06)",
+                              ? isDark ? "rgba(29, 158, 117, 0.2)" : "#E1F5EE"
+                              : isDark ? "rgba(255,255,255,0.06)" : "#F1F5F9",
                             border: isDone
                               ? "1px solid rgba(29, 158, 117, 0.4)"
-                              : "1px solid rgba(255,255,255,0.1)",
+                              : isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #CBD5E1",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -1133,9 +1161,10 @@ export default function LandingPage() {
       <section
         style={{
           padding: "80px 24px",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          background:
-            "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(29,158,117,0.08) 0%, transparent 70%)",
+          borderTop: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #E2E8F0",
+          background: isDark
+            ? "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(29,158,117,0.08) 0%, transparent 70%)"
+            : "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(29,158,117,0.04) 0%, transparent 70%)",
         }}
       >
         <div style={{ maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
@@ -1144,14 +1173,15 @@ export default function LandingPage() {
               display: "inline-flex",
               alignItems: "center",
               gap: 8,
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              background: isDark ? "rgba(255,255,255,0.04)" : "#FFFFFF",
+              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid #E2E8F0",
               borderRadius: 12,
               padding: "8px 18px",
               fontSize: 12,
-              color: "rgba(255,255,255,0.35)",
+              color: isDark ? "rgba(255,255,255,0.35)" : "#64748B",
               fontWeight: 600,
               marginBottom: 28,
+              boxShadow: isDark ? "none" : "0 2px 6px rgba(0,0,0,0.02)",
             }}
           >
             <Gauge size={13} />
@@ -1164,7 +1194,7 @@ export default function LandingPage() {
               fontSize: "clamp(28px, 4vw, 48px)",
               fontWeight: 900,
               fontFamily: "'Syne', sans-serif",
-              color: "#fff",
+              color: isDark ? "#fff" : "#0F172A",
               letterSpacing: "-0.03em",
               marginBottom: 20,
               lineHeight: 1.15,
@@ -1185,7 +1215,7 @@ export default function LandingPage() {
           <p
             style={{
               fontSize: 16,
-              color: "rgba(255,255,255,0.4)",
+              color: isDark ? "rgba(255,255,255,0.4)" : "#475569",
               lineHeight: 1.7,
               marginBottom: 36,
             }}
@@ -1222,12 +1252,13 @@ export default function LandingPage() {
                 gap: 8,
                 padding: "16px 24px",
                 borderRadius: 14,
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                color: "rgba(255,255,255,0.7)",
+                background: isDark ? "rgba(255,255,255,0.05)" : "#FFFFFF",
+                border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #CBD5E1",
+                color: isDark ? "rgba(255,255,255,0.7)" : "#1E293B",
                 textDecoration: "none",
                 fontSize: 15,
                 fontWeight: 600,
+                boxShadow: isDark ? "none" : "0 2px 6px rgba(0,0,0,0.02)",
               }}
             >
               Upload a resume <ChevronRight size={16} />
@@ -1239,7 +1270,8 @@ export default function LandingPage() {
       {/* ── Footer ── */}
       <footer
         style={{
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderTop: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #E2E8F0",
+          background: isDark ? "transparent" : "#FFFFFF",
           padding: "40px 24px",
           display: "flex",
           alignItems: "center",
@@ -1278,7 +1310,7 @@ export default function LandingPage() {
             SkillSync
           </span>
         </div>
-        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.25)", margin: 0 }}>
+        <p style={{ fontSize: 13, color: isDark ? "rgba(255,255,255,0.25)" : "#94A3B8", margin: 0 }}>
           &copy; {new Date().getFullYear()} SkillSync &middot; Built to help real people get real jobs.
         </p>
         <div style={{ display: "flex", gap: 20 }}>
@@ -1288,7 +1320,7 @@ export default function LandingPage() {
               href={`/${label.toLowerCase().replace(" ", "-")}`}
               style={{
                 fontSize: 13,
-                color: "rgba(255,255,255,0.3)",
+                color: isDark ? "rgba(255,255,255,0.3)" : "#64748B",
                 textDecoration: "none",
                 fontWeight: 600,
               }}

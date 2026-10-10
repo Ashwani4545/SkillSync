@@ -221,31 +221,51 @@ select option {
 }
 
 /* Page headers & sub-bars in light mode */
-[data-theme="light"] div[style*="rgba(10, 15, 30"] {
+[data-theme="light"] div[style*="rgba(10, 15, 30"],
+[data-theme="light"] div[style*="rgba(10,15,30"] {
   background: rgba(255, 255, 255, 0.92) !important;
   border-bottom-color: #E2E8F0 !important;
 }
 
-[data-theme="light"] div[style*="rgba(10, 15, 30"] span[style*="#ffffff"] {
+[data-theme="light"] div[style*="rgba(10, 15, 30"] span[style*="#ffffff"],
+[data-theme="light"] div[style*="rgba(10,15,30"] span[style*="#ffffff"],
+[data-theme="light"] div[style*="rgba(10, 15, 30"] span[style*="rgb(255, 255, 255)"],
+[data-theme="light"] div[style*="rgba(10,15,30"] span[style*="rgb(255,255,255)"] {
   color: #0F172A !important;
 }
 
 /* Global page background containers in light mode */
-[data-theme="light"] div[style*="#0A0F1E"] {
+[data-theme="light"] div[style*="#0A0F1E"],
+[data-theme="light"] div[style*="#0a0f1e"],
+[data-theme="light"] div[style*="10, 15, 30"],
+[data-theme="light"] div[style*="10,15,30"] {
   background: #F8FAFC !important;
   color: #1E293B !important;
 }
 
-[data-theme="light"] section[style*="#0A0F1E"] {
+[data-theme="light"] section[style*="#0A0F1E"],
+[data-theme="light"] section[style*="#0a0f1e"],
+[data-theme="light"] section[style*="10, 15, 30"],
+[data-theme="light"] section[style*="10,15,30"] {
   background: #F8FAFC !important;
 }
 
 /* Dark glass cards in light mode */
 [data-theme="light"] .dark-glass-card,
-[data-theme="light"] div[style*="rgba(255, 255, 255, 0.03)"],
-[data-theme="light"] div[style*="rgba(255, 255, 255, 0.04)"],
-[data-theme="light"] div[style*="rgba(255, 255, 255, 0.05)"],
-[data-theme="light"] div[style*="rgba(255, 255, 255, 0.06)"] {
+[data-theme="light"] div[style*="255, 255, 255, 0.02"],
+[data-theme="light"] div[style*="255,255,255,0.02"],
+[data-theme="light"] div[style*="255, 255, 255, 0.03"],
+[data-theme="light"] div[style*="255,255,255,0.03"],
+[data-theme="light"] div[style*="255, 255, 255, 0.04"],
+[data-theme="light"] div[style*="255,255,255,0.04"],
+[data-theme="light"] div[style*="255, 255, 255, 0.05"],
+[data-theme="light"] div[style*="255,255,255,0.05"],
+[data-theme="light"] div[style*="255, 255, 255, 0.06"],
+[data-theme="light"] div[style*="255,255,255,0.06"],
+[data-theme="light"] div[style*="255, 255, 255, 0.07"],
+[data-theme="light"] div[style*="255,255,255,0.07"],
+[data-theme="light"] div[style*="255, 255, 255, 0.08"],
+[data-theme="light"] div[style*="255,255,255,0.08"] {
   background: #FFFFFF !important;
   border-color: #E2E8F0 !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03) !important;
@@ -253,17 +273,29 @@ select option {
 }
 
 /* Light mode text colors */
-[data-theme="light"] p[style*="rgba(255, 255, 255"],
-[data-theme="light"] span[style*="rgba(255, 255, 255, 0.6)"],
-[data-theme="light"] span[style*="rgba(255, 255, 255, 0.7)"],
-[data-theme="light"] span[style*="rgba(255, 255, 255, 0.5)"] {
+[data-theme="light"] p[style*="255, 255, 255"],
+[data-theme="light"] p[style*="255,255,255"],
+[data-theme="light"] span[style*="255, 255, 255, 0.8"],
+[data-theme="light"] span[style*="255,255,255,0.8"],
+[data-theme="light"] span[style*="255, 255, 255, 0.7"],
+[data-theme="light"] span[style*="255,255,255,0.7"],
+[data-theme="light"] span[style*="255, 255, 255, 0.6"],
+[data-theme="light"] span[style*="255,255,255,0.6"],
+[data-theme="light"] span[style*="255, 255, 255, 0.5"],
+[data-theme="light"] span[style*="255,255,255,0.5"] {
   color: #475569 !important;
 }
 
-[data-theme="light"] p[style*="rgba(255,255,255,0.4)"],
-[data-theme="light"] span[style*="rgba(255, 255, 255, 0.4)"],
-[data-theme="light"] p[style*="rgba(255, 255, 255, 0.5)"],
-[data-theme="light"] p[style*="rgba(255, 255, 255, 0.45)"] {
+[data-theme="light"] p[style*="255, 255, 255, 0.4"],
+[data-theme="light"] p[style*="255,255,255,0.4"],
+[data-theme="light"] span[style*="255, 255, 255, 0.4"],
+[data-theme="light"] span[style*="255,255,255,0.4"],
+[data-theme="light"] p[style*="255, 255, 255, 0.45"],
+[data-theme="light"] p[style*="255,255,255,0.45"],
+[data-theme="light"] p[style*="255, 255, 255, 0.35"],
+[data-theme="light"] p[style*="255,255,255,0.35"],
+[data-theme="light"] p[style*="255, 255, 255, 0.3"],
+[data-theme="light"] p[style*="255,255,255,0.3"] {
   color: #64748B !important;
 }
 
@@ -295,8 +327,10 @@ select option {
 }
 
 /* Badges and pills in light mode */
-[data-theme="light"] span[style*="rgba(255, 255, 255, 0.06)"],
-[data-theme="light"] div[style*="rgba(255, 255, 255, 0.08)"] {
+[data-theme="light"] span[style*="255, 255, 255, 0.06"],
+[data-theme="light"] span[style*="255,255,255,0.06"],
+[data-theme="light"] div[style*="255, 255, 255, 0.08"],
+[data-theme="light"] div[style*="255,255,255,0.08"] {
   background: #F1F5F9 !important;
   border-color: #E2E8F0 !important;
   color: #334155 !important;
@@ -306,4 +340,5 @@ select option {
 [data-theme="light"] section[style*="radial-gradient"] {
   background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(15, 110, 86, 0.08) 0%, #F8FAFC 70%) !important;
 }
+
 

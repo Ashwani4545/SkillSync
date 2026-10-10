@@ -16,6 +16,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { useTheme } from "../providers/ThemeProvider";
 
 const PRIMARY_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
@@ -36,6 +37,8 @@ const MORE_LINKS = [
 ];
 
 export function Navbar() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [showMore, setShowMore] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<"signin" | "signup">("signin");
@@ -155,15 +158,16 @@ export function Navbar() {
     <>
       <nav
         style={{
-          background: "rgba(10, 15, 30, 0.85)",
+          background: isDark ? "rgba(10, 15, 30, 0.85)" : "rgba(255, 255, 255, 0.95)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          borderBottom: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #E2E8F0",
           padding: "0 24px",
           position: "sticky",
           top: 0,
           zIndex: 100,
-          boxShadow: "0 1px 0 rgba(255,255,255,0.04)",
+          boxShadow: isDark ? "0 1px 0 rgba(255,255,255,0.04)" : "0 1px 4px rgba(0,0,0,0.04)",
+          transition: "background 0.25s ease, border 0.25s ease",
         }}
       >
         <div
@@ -214,7 +218,13 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                style={{ color: "rgba(255,255,255,0.65)", textDecoration: "none", fontSize: 14, fontWeight: 600 }}
+                style={{
+                  color: isDark ? "rgba(255,255,255,0.7)" : "#475569",
+                  textDecoration: "none",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  transition: "color 0.2s",
+                }}
               >
                 {link.label}
               </Link>
@@ -230,10 +240,11 @@ export function Navbar() {
                   background: "none",
                   border: "none",
                   cursor: "pointer",
-                  color: "rgba(255,255,255,0.65)",
+                  color: isDark ? "rgba(255,255,255,0.7)" : "#475569",
                   fontSize: 14,
                   fontWeight: 600,
                   padding: 0,
+                  transition: "color 0.2s",
                 }}
               >
                 More <ChevronDown size={14} />
@@ -246,11 +257,11 @@ export function Navbar() {
                     left: 0,
                     top: 30,
                     width: 200,
-                    background: "rgba(10, 15, 30, 0.95)",
+                    background: isDark ? "rgba(10, 15, 30, 0.95)" : "#FFFFFF",
                     backdropFilter: "blur(20px)",
                     borderRadius: 12,
-                    boxShadow: "0 12px 30px rgba(0,0,0,0.5)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    boxShadow: isDark ? "0 12px 30px rgba(0,0,0,0.5)" : "0 12px 30px rgba(0,0,0,0.08)",
+                    border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #E2E8F0",
                     padding: 6,
                     zIndex: 200,
                   }}
@@ -266,7 +277,7 @@ export function Navbar() {
                         padding: "8px 10px",
                         borderRadius: 8,
                         fontSize: 13,
-                        color: "rgba(255,255,255,0.7)",
+                        color: isDark ? "rgba(255,255,255,0.7)" : "#334155",
                         textDecoration: "none",
                       }}
                     >
@@ -450,13 +461,14 @@ export function Navbar() {
                   gap: 6,
                   padding: "8px 16px",
                   borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  background: "rgba(255,255,255,0.07)",
-                  color: "rgba(255,255,255,0.8)",
+                  border: isDark ? "1px solid rgba(255,255,255,0.15)" : "1px solid #CBD5E1",
+                  background: isDark ? "rgba(255,255,255,0.07)" : "#FFFFFF",
+                  color: isDark ? "rgba(255,255,255,0.8)" : "#334155",
                   fontSize: 14,
                   fontWeight: 600,
                   cursor: "pointer",
                   transition: "all 0.2s",
+                  boxShadow: isDark ? "none" : "0 1px 3px rgba(0,0,0,0.03)",
                 }}
               >
                 <LogIn size={15} /> Sign in

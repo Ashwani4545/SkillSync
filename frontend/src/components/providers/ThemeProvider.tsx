@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "dark" | "light";
+export type Theme = "dark" | "light";
 
 interface ThemeContextType {
   theme: Theme;
@@ -21,26 +21,46 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Read saved preference or system preference
-    const saved = localStorage.getItem("skillsync-theme") as Theme | null;
-    const initial = saved === "light" || saved === "dark" ? saved : "dark";
-    setThemeState(initial);
-    document.documentElement.setAttribute("data-theme", initial);
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(initial);
+    try {
+      const saved = localStorage.getItem("skillsync-theme") as Theme | null;
+      const initial = saved === "light" || saved === "dark" ? saved : "dark";
+      setThemeState(initial);
+      document.documentElement.setAttribute("data-theme", initial);
+      document.documentElement.classList.remove("light", "dark");
+      document.documentElement.classList.add(initial);
+      document.body.style.backgroundColor = initial === "dark" ? "#0A0F1E" : "#F8FAFC";
+      document.body.style.color = initial === "dark" ? "#ffffff" : "#0F172A";
+    } catch {
+      // fallback
+    }
     setMounted(true);
   }, []);
 
   const setTheme = (nextTheme: Theme) => {
     setThemeState(nextTheme);
-    localStorage.setItem("skillsync-theme", nextTheme);
-    document.documentElement.setAttribute("data-theme", nextTheme);
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(nextTheme);
+    try {
+      localStorage.setItem("skillsync-theme", nextTheme);
+      document.documentElement.setAttribute("data-theme", nextTheme);
+      document.documentElement.classList.remove("light", "dark");
+      document.documentElement.classList.add(nextTheme);
+      document.body.style.backgroundColor = nextTheme === "dark" ? "#0A0F1E" : "#F8FAFC";
+      document.body.style.color = nextTheme === "dark" ? "#ffffff" : "#0F172A";
+    } catch {}
   };
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    setThemeState((curr) => {
+      const nextTheme = curr === "dark" ? "light" : "dark";
+      try {
+        localStorage.setItem("skillsync-theme", nextTheme);
+        document.documentElement.setAttribute("data-theme", nextTheme);
+        document.documentElement.classList.remove("light", "dark");
+        document.documentElement.classList.add(nextTheme);
+        document.body.style.backgroundColor = nextTheme === "dark" ? "#0A0F1E" : "#F8FAFC";
+        document.body.style.color = nextTheme === "dark" ? "#ffffff" : "#0F172A";
+      } catch {}
+      return nextTheme;
+    });
   };
 
   return (
