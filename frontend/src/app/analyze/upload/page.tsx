@@ -2,6 +2,7 @@
 import { useCallback, useState, useEffect, Suspense } from "react";
 import { useDropzone } from "react-dropzone";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Upload, FileText, X, Loader2, ChevronDown, ChevronUp, Briefcase, Code, FileCode, CheckCircle, ShieldCheck } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { Navbar } from "@/components/layout/Navbar";
@@ -125,7 +126,10 @@ function UploadFormContent() {
     } catch (e: any) {
       console.error("Upload error:", e);
       const detailMsg = e?.response?.data?.detail;
-      const errorText = typeof detailMsg === "string" ? detailMsg : detailMsg ? JSON.stringify(detailMsg) : (e?.message || "Upload or analysis initiation failed. Please try again.");
+      let errorText = typeof detailMsg === "string" ? detailMsg : detailMsg ? JSON.stringify(detailMsg) : (e?.message || "Upload or analysis initiation failed.");
+      if (e?.message?.toLowerCase().includes("network error") || !e?.response) {
+        errorText = "Network Error: Could not reach backend server. If running locally, ensure backend is active on http://localhost:8000. You can also explore a live demo analysis below.";
+      }
       setError(errorText);
       setUploading(false);
     }
@@ -176,8 +180,16 @@ function UploadFormContent() {
           </div>
 
           {error && (
-            <div style={{ padding: "14px 18px", background: "rgba(248, 113, 113, 0.15)", borderLeft: "4px solid #F87171", borderRadius: "8px", color: "#FCA5A5", fontSize: 14, marginBottom: 24 }}>
-              {error}
+            <div style={{ padding: "16px 20px", background: "rgba(248, 113, 113, 0.12)", border: "1px solid rgba(248, 113, 113, 0.3)", borderRadius: "12px", color: "#FCA5A5", fontSize: 13.5, marginBottom: 24, lineHeight: 1.5 }}>
+              <div>{error}</div>
+              <div style={{ marginTop: 10 }}>
+                <Link
+                  href="/analyze/result/demo"
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#2DD4BF", fontWeight: 700, fontSize: 13, textDecoration: "none", background: "rgba(45, 212, 191, 0.15)", padding: "6px 14px", borderRadius: 8, border: "1px solid rgba(45, 212, 191, 0.3)" }}
+                >
+                  Explore Interactive Sample Analysis →
+                </Link>
+              </div>
             </div>
           )}
 

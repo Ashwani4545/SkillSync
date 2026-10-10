@@ -49,6 +49,8 @@ const EVIDENCE_META: Record<string, { color: string; bg: string; Icon: any; labe
   UNSUPPORTED:          { color: "#F87171", bg: "rgba(248, 113, 113, 0.2)", Icon: ShieldX,     label: "Unsupported" },
 };
 
+import { DEMO_ANALYSIS } from "../../../../lib/demoData";
+
 export default function ResultPage() {
   const { id } = useParams<{ id: string }>();
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
@@ -56,6 +58,11 @@ export default function ResultPage() {
   const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
+    if (id === "demo") {
+      setAnalysis(DEMO_ANALYSIS as unknown as Analysis);
+      return;
+    }
+
     let timer: NodeJS.Timeout;
     const poll = async () => {
       try {
