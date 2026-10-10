@@ -16,6 +16,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     return (
       <button
         type="button"
+        id="theme-toggle-button"
         aria-label="Toggle theme"
         style={{
           width: 38,
