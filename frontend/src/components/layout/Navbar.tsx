@@ -15,6 +15,7 @@ import {
   Zap,
   CheckCircle,
 } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 const PRIMARY_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
@@ -280,6 +281,7 @@ export function Navbar() {
           {/* Right Auth Section */}
           {userState.isAuthenticated ? (
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <ThemeToggle />
               <span
                 style={{
                   fontSize: 11,
@@ -435,6 +437,7 @@ export function Navbar() {
             </div>
           ) : (
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <ThemeToggle />
               <button
                 id="navbar-signin-button"
                 onClick={() => {
