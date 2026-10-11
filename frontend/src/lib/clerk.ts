@@ -5,5 +5,5 @@
 // that uses them (Navbar, layout.tsx) needs to check this first.
 export function isClerkConfigured(): boolean {
   const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "";
-  return Boolean(key) && key.startsWith("pk_") && !key.includes("ZXhhbXBsZQ");
+  return Boolean(key) && key.startsWith("pk_") && !key.includes("ZXhhbXBsZQ") && !key.includes("dummy");
 }
