@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Key,
   Palette,
@@ -16,9 +16,12 @@ import {
   CheckCircle,
   X,
   Download,
+  Camera,
+  Image as ImageIcon,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PRESET_AVATARS } from "@/lib/avatars";
 
 type Tab = "account" | "apikeys" | "branding" | "security" | "notifications";
 
@@ -42,6 +45,12 @@ export default function SettingsPage() {
     bio: "Passionate engineer optimizing resume performance and AI ATS extraction systems.",
   });
   const [profileSaved, setProfileSaved] = useState(false);
+
+  // Avatar Upload & Preset State
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarFeedback, setAvatarFeedback] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Security Form State
   const [passwordState, setPasswordState] = useState({
@@ -77,6 +86,10 @@ export default function SettingsPage() {
     if (typeof window !== "undefined") {
       const storedName = localStorage.getItem("user_name");
       const storedEmail = localStorage.getItem("user_email");
+      const storedAvatar = localStorage.getItem("user_avatar");
+      if (storedAvatar) {
+        setAvatarUrl(storedAvatar);
+      }
       if (storedName || storedEmail) {
         setProfile((prev) => ({
           ...prev,
@@ -88,6 +101,85 @@ export default function SettingsPage() {
     apiClient.get("/keys").then(({ data }) => setApiKeys(data.keys ?? [])).catch(() => {});
     apiClient.get("/whitelabel/config").then(({ data }) => setBranding(data)).catch(() => {});
   }, []);
+
+  const handleProcessFile = (file: File) => {
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"];
+    if (!validTypes.includes(file.type)) {
+      setAvatarFeedback({
+        message: "Please choose a valid image file (PNG, JPG, GIF, WebP).",
+        type: "error",
+      });
+      setTimeout(() => setAvatarFeedback(null), 3500);
+      return;
+    }
+
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_SIZE) {
+      setAvatarFeedback({
+        message: "File exceeds 5MB size limit. Please choose a smaller image.",
+        type: "error",
+      });
+      setTimeout(() => setAvatarFeedback(null), 3500);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setAvatarUrl(result);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("user_avatar", result);
+        window.dispatchEvent(new Event("storage"));
+      }
+      setAvatarFeedback({
+        message: "Profile avatar successfully uploaded from computer!",
+        type: "success",
+      });
+      setTimeout(() => setAvatarFeedback(null), 3000);
+    };
+    reader.onerror = () => {
+      setAvatarFeedback({
+        message: "Could not read image file. Please try again.",
+        type: "error",
+      });
+      setTimeout(() => setAvatarFeedback(null), 3000);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleProcessFile(file);
+    }
+    e.target.value = "";
+  };
+
+  const handleSelectPreset = (presetDataUrl: string, name: string) => {
+    setAvatarUrl(presetDataUrl);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("user_avatar", presetDataUrl);
+      window.dispatchEvent(new Event("storage"));
+    }
+    setAvatarFeedback({
+      message: `Selected "${name}" avatar preset!`,
+      type: "success",
+    });
+    setTimeout(() => setAvatarFeedback(null), 2500);
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatarUrl(null);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("user_avatar");
+      window.dispatchEvent(new Event("storage"));
+    }
+    setAvatarFeedback({
+      message: "Avatar removed. Reverted to initials monogram.",
+      type: "success",
+    });
+    setTimeout(() => setAvatarFeedback(null), 2500);
+  };
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -298,16 +390,291 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Avatar Section */}
-                <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 28, padding: 20, background: "rgba(255, 255, 255, 0.02)", borderRadius: 14, border: "1px solid rgba(255, 255, 255, 0.06)" }}>
-                  <div style={{ width: 68, height: 68, borderRadius: "50%", background: "linear-gradient(135deg, #1D9E75, #0F6E56)", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 26, boxShadow: "0 0 20px rgba(29, 158, 117, 0.35)" }}>
-                    {profile.fullName ? profile.fullName[0].toUpperCase() : "A"}
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDraggingFile(true);
+                  }}
+                  onDragLeave={() => setIsDraggingFile(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDraggingFile(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleProcessFile(file);
+                  }}
+                  style={{
+                    marginBottom: 28,
+                    padding: 24,
+                    background: isDraggingFile ? "rgba(45, 212, 191, 0.08)" : "rgba(255, 255, 255, 0.02)",
+                    borderRadius: 16,
+                    border: isDraggingFile ? "1.5px dashed #2DD4BF" : "1px solid rgba(255, 255, 255, 0.06)",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+                    onChange={handleFileInputChange}
+                    style={{ display: "none" }}
+                  />
+
+                  {/* Main Avatar Row */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 22, flexWrap: "wrap" }}>
+                    {/* Avatar Circle with Hover Overlay */}
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Click to upload image from computer"
+                      style={{
+                        position: "relative",
+                        width: 76,
+                        height: 76,
+                        borderRadius: "50%",
+                        overflow: "hidden",
+                        flexShrink: 0,
+                        cursor: "pointer",
+                        border: "2.5px solid rgba(45, 212, 191, 0.6)",
+                        boxShadow: "0 0 24px rgba(45, 212, 191, 0.25)",
+                        background: "linear-gradient(135deg, #1D9E75, #0F6E56)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      className="group"
+                    >
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt={profile.fullName}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                      ) : (
+                        <span style={{ color: "#ffffff", fontWeight: 800, fontSize: 30 }}>
+                          {profile.fullName ? profile.fullName[0].toUpperCase() : "A"}
+                        </span>
+                      )}
+
+                      {/* Hover Overlay */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background: "rgba(0, 0, 0, 0.55)",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 2,
+                          opacity: 0,
+                          transition: "opacity 0.2s ease",
+                        }}
+                        className="group-hover:opacity-100"
+                      >
+                        <Camera size={20} color="#FFFFFF" />
+                        <span style={{ fontSize: 9, fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                          Change
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Details and Actions */}
+                    <div style={{ flex: 1, minWidth: 260 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                        <span style={{ fontSize: 16, fontWeight: 700, color: "#FFFFFF" }}>Profile Photo</span>
+                        {avatarUrl ? (
+                          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "rgba(45, 212, 191, 0.15)", color: "#2DD4BF", border: "1px solid rgba(45, 212, 191, 0.3)" }}>
+                            Custom Photo Set
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999, background: "rgba(255, 255, 255, 0.06)", color: "#94A3B8" }}>
+                            Default Monogram
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={{ fontSize: 13, color: "#94A3B8", marginBottom: 12 }}>
+                        Upload a photo from your computer (PNG, JPG, GIF or WebP up to 5MB), or select an AI persona below.
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          id="btn-upload-avatar-computer"
+                          onClick={() => fileInputRef.current?.click()}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 7,
+                            padding: "8px 16px",
+                            borderRadius: 10,
+                            border: "1px solid rgba(45, 212, 191, 0.45)",
+                            background: "linear-gradient(135deg, rgba(20, 184, 166, 0.25), rgba(13, 148, 136, 0.35))",
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: "#5EEAD4",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          <Upload size={14} /> Upload from Computer
+                        </button>
+
+                        {avatarUrl && (
+                          <button
+                            type="button"
+                            id="btn-remove-avatar"
+                            onClick={handleRemoveAvatar}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                              padding: "8px 14px",
+                              borderRadius: 10,
+                              border: "1px solid rgba(239, 68, 68, 0.3)",
+                              background: "rgba(239, 68, 68, 0.08)",
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: "#F87171",
+                              cursor: "pointer",
+                              transition: "all 0.15s ease",
+                            }}
+                          >
+                            <Trash2 size={13} /> Reset Photo
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Feedback notification */}
+                      {avatarFeedback && (
+                        <div
+                          style={{
+                            marginTop: 10,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                            padding: "5px 12px",
+                            borderRadius: 8,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            background: avatarFeedback.type === "success" ? "rgba(45, 212, 191, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                            color: avatarFeedback.type === "success" ? "#2DD4BF" : "#F87171",
+                            border: `1px solid ${avatarFeedback.type === "success" ? "rgba(45, 212, 191, 0.3)" : "rgba(239, 68, 68, 0.3)"}`,
+                          }}
+                        >
+                          {avatarFeedback.type === "success" ? <CheckCircle size={13} /> : <AlertTriangle size={13} />}
+                          <span>{avatarFeedback.message}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF", marginBottom: 4 }}>Profile Photo</div>
-                    <div style={{ fontSize: 13, color: "#94A3B8", marginBottom: 10 }}>PNG, JPG or GIF up to 5MB</div>
-                    <button type="button" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 8, border: "1px solid rgba(255, 255, 255, 0.12)", background: "rgba(255, 255, 255, 0.04)", fontSize: 13, fontWeight: 600, color: "#FFFFFF", cursor: "pointer" }}>
-                      <Upload size={14} /> Upload Avatar
-                    </button>
+
+                  {/* Preset Avatars Gallery */}
+                  <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, color: "#E2E8F0" }}>
+                        <Sparkles size={14} color="#2DD4BF" />
+                        <span>Choose a Preset Persona</span>
+                      </div>
+                      <span style={{ fontSize: 11, color: "#64748B", fontWeight: 600 }}>
+                        {PRESET_AVATARS.length} AI personas
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fill, minmax(84px, 1fr))",
+                        gap: 10,
+                      }}
+                    >
+                      {PRESET_AVATARS.map((preset) => {
+                        const isSelected = avatarUrl === preset.dataUrl;
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => handleSelectPreset(preset.dataUrl, preset.name)}
+                            title={`${preset.name} - ${preset.role}`}
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              gap: 6,
+                              padding: "10px 6px",
+                              borderRadius: 12,
+                              background: isSelected ? "rgba(45, 212, 191, 0.12)" : "rgba(255, 255, 255, 0.03)",
+                              border: isSelected ? "1.5px solid #2DD4BF" : "1px solid rgba(255, 255, 255, 0.06)",
+                              boxShadow: isSelected ? "0 0 16px rgba(45, 212, 191, 0.3)" : "none",
+                              cursor: "pointer",
+                              transition: "all 0.15s ease",
+                            }}
+                          >
+                            <div
+                              style={{
+                                position: "relative",
+                                width: 46,
+                                height: 46,
+                                borderRadius: "50%",
+                                overflow: "hidden",
+                                flexShrink: 0,
+                                border: isSelected ? "2px solid #2DD4BF" : "1px solid rgba(255, 255, 255, 0.1)",
+                              }}
+                            >
+                              <img
+                                src={preset.dataUrl}
+                                alt={preset.name}
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              />
+                              {isSelected && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    bottom: 0,
+                                    right: 0,
+                                    width: 16,
+                                    height: 16,
+                                    borderRadius: "50%",
+                                    background: "#2DD4BF",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    boxShadow: "0 0 4px rgba(0,0,0,0.5)",
+                                  }}
+                                >
+                                  <Check size={10} color="#042F2E" strokeWidth={3} />
+                                </div>
+                              )}
+                            </div>
+                            <span
+                              style={{
+                                fontSize: 11,
+                                fontWeight: isSelected ? 800 : 600,
+                                color: isSelected ? "#2DD4BF" : "#E2E8F0",
+                                textAlign: "center",
+                                lineHeight: 1.1,
+                              }}
+                            >
+                              {preset.name}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: 9.5,
+                                color: "#94A3B8",
+                                textAlign: "center",
+                                lineHeight: 1,
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                maxWidth: "100%",
+                              }}
+                            >
+                              {preset.role.split(" ")[0]}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 

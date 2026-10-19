@@ -44,6 +44,7 @@ export function Header() {
   const [userFullName, setUserFullName] = useState("Ashwani Pandey");
   const [userEmail, setUserEmail] = useState("ashwani.pandey@gmail.com");
   const [userPlan, setUserPlan] = useState("PRO PLAN");
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
 
   // Sync auth state from localStorage or cookies
   useEffect(() => {
@@ -62,6 +63,8 @@ export function Header() {
       if (email) setUserEmail(email);
       const plan = localStorage.getItem("user_plan");
       if (plan) setUserPlan(plan);
+      const avatar = localStorage.getItem("user_avatar");
+      setUserAvatar(avatar || null);
     };
 
     checkAuth();
@@ -305,8 +308,12 @@ export function Header() {
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-2 p-1.5 pl-2.5 pr-3 rounded-full bg-gray-100/90 dark:bg-white/[0.06] hover:bg-gray-200/80 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 transition-all text-xs font-bold text-gray-900 dark:text-white"
               >
-                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-teal-600 to-emerald-400 text-white flex items-center justify-center text-[10px] font-black shadow-sm">
-                  {userFullName.charAt(0).toUpperCase()}
+                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-teal-600 to-emerald-400 text-white flex items-center justify-center text-[10px] font-black shadow-sm overflow-hidden flex-shrink-0">
+                  {userAvatar ? (
+                    <img src={userAvatar} alt={userFullName} className="w-full h-full object-cover" />
+                  ) : (
+                    userFullName.charAt(0).toUpperCase()
+                  )}
                 </div>
                 <span>{userName}</span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-teal-500/15 text-teal-600 dark:text-teal-400 font-extrabold tracking-wider">
@@ -317,12 +324,21 @@ export function Header() {
 
               {showUserMenu && (
                 <div className="absolute right-0 mt-2 w-60 rounded-2xl bg-white dark:bg-[#0E1526] border border-gray-200 dark:border-white/10 shadow-2xl py-2 z-50 text-xs animate-fade-in">
-                  <div className="px-4 py-2.5 border-b border-gray-100 dark:border-white/5">
-                    <p className="font-bold text-gray-900 dark:text-white">{userFullName}</p>
-                    <p className="text-gray-500 dark:text-gray-400 text-[11px] truncate">{userEmail}</p>
-                    <span className="inline-block mt-1 text-[10px] font-extrabold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-full border border-teal-200 dark:border-teal-800">
-                      {userPlan} · Active
-                    </span>
+                  <div className="px-4 py-2.5 border-b border-gray-100 dark:border-white/5 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-teal-600 to-emerald-400 text-white flex items-center justify-center text-xs font-black shadow-sm overflow-hidden flex-shrink-0">
+                      {userAvatar ? (
+                        <img src={userAvatar} alt={userFullName} className="w-full h-full object-cover" />
+                      ) : (
+                        userFullName.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-gray-900 dark:text-white truncate">{userFullName}</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-[11px] truncate">{userEmail}</p>
+                      <span className="inline-block mt-1 text-[10px] font-extrabold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-full border border-teal-200 dark:border-teal-800">
+                        {userPlan} · Active
+                      </span>
+                    </div>
                   </div>
 
                   <Link
