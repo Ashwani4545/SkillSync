@@ -21,6 +21,14 @@ import {
   User,
   ArrowRight,
   Zap,
+  Users,
+  ShieldAlert,
+  Globe,
+  Github,
+  Compass,
+  ChevronDown,
+  LogOut,
+  Settings,
 } from "lucide-react";
 import { Dropdown, DropdownItem, PromoPanelData } from "./Dropdown";
 import { ThemeToggle } from "./ThemeToggle";
@@ -31,7 +39,11 @@ export function Header() {
   const { theme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [userName, setUserName] = useState("Ashwani");
+  const [userFullName, setUserFullName] = useState("Ashwani Pandey");
+  const [userEmail, setUserEmail] = useState("ashwani.pandey@gmail.com");
+  const [userPlan, setUserPlan] = useState("PRO PLAN");
 
   // Sync auth state from localStorage or cookies
   useEffect(() => {
@@ -42,7 +54,14 @@ export function Header() {
         document.cookie.includes("user_authenticated=true");
       setIsAuthenticated(auth);
       const name = localStorage.getItem("user_name");
-      if (name) setUserName(name.split(" ")[0]);
+      if (name) {
+        setUserFullName(name);
+        setUserName(name.split(" ")[0]);
+      }
+      const email = localStorage.getItem("user_email");
+      if (email) setUserEmail(email);
+      const plan = localStorage.getItem("user_plan");
+      if (plan) setUserPlan(plan);
     };
 
     checkAuth();
@@ -81,6 +100,7 @@ export function Header() {
       description: "Tailor resume bullets to any job description",
       href: "/jd-adapter",
       icon: <Wand2 size={16} />,
+      badge: "1-Click",
     },
     {
       title: "A/B Tester",
@@ -94,6 +114,34 @@ export function Header() {
       href: "/interview-prep",
       icon: <MessageSquare size={16} />,
       badge: "AI",
+    },
+    {
+      title: "Recruiter 6s Eye-Tracker",
+      description: "Simulate human glance & attention drop-offs",
+      href: "/recruiter",
+      icon: <Users size={16} />,
+      badge: "Exclusive",
+    },
+    {
+      title: "Language Bias Scanner",
+      description: "Audit ageism, gendered & exclusionary tone",
+      href: "/bias-scanner",
+      icon: <ShieldAlert size={16} />,
+      badge: "Inclusivity",
+    },
+    {
+      title: "Cultural CV Adapter",
+      description: "Convert between US, EU & Japanese formats",
+      href: "/language-adapter",
+      icon: <Globe size={16} />,
+      badge: "Global",
+    },
+    {
+      title: "GitHub Code Verifier",
+      description: "Link repos & commit history to claimed skills",
+      href: "/github",
+      icon: <Github size={16} />,
+      badge: "Verified",
     },
   ];
 
@@ -112,6 +160,7 @@ export function Header() {
       description: "Predict next role & identify skill gaps",
       href: "/career-path",
       icon: <TrendingUp size={16} />,
+      badge: "Trajectory",
     },
     {
       title: "Industry Benchmark",
@@ -124,6 +173,14 @@ export function Header() {
       description: "Verify evidenced vs unsupported claims",
       href: "/analyze#skills",
       icon: <ShieldCheck size={16} />,
+      badge: "Graph",
+    },
+    {
+      title: "Career Gap Advisor",
+      description: "Reframe employment gaps constructively",
+      href: "/gap-advisor",
+      icon: <Compass size={16} />,
+      badge: "Advisory",
     },
     {
       title: "Salary Calibration",
@@ -238,20 +295,81 @@ export function Header() {
           <ThemeToggle />
 
           {isAuthenticated ? (
-            <div className="flex items-center gap-2.5">
-              <Link
-                href="/dashboard"
-                className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800"
-              >
-                Dashboard
-              </Link>
+            <div className="relative">
               <button
                 type="button"
-                onClick={handleSignOut}
-                className="text-xs font-semibold text-gray-500 hover:text-red-500 transition-colors"
+                id="header-user-profile-btn"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 p-1.5 pl-2.5 pr-3 rounded-full bg-gray-100/90 dark:bg-white/[0.06] hover:bg-gray-200/80 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 transition-all text-xs font-bold text-gray-900 dark:text-white"
               >
-                Sign out
+                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-teal-600 to-emerald-400 text-white flex items-center justify-center text-[10px] font-black shadow-sm">
+                  {userFullName.charAt(0).toUpperCase()}
+                </div>
+                <span>{userName}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-teal-500/15 text-teal-600 dark:text-teal-400 font-extrabold tracking-wider">
+                  PRO
+                </span>
+                <ChevronDown size={13} className="text-gray-400" />
               </button>
+
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-60 rounded-2xl bg-white dark:bg-[#0E1526] border border-gray-200 dark:border-white/10 shadow-2xl py-2 z-50 text-xs animate-fade-in">
+                  <div className="px-4 py-2.5 border-b border-gray-100 dark:border-white/5">
+                    <p className="font-bold text-gray-900 dark:text-white">{userFullName}</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-[11px] truncate">{userEmail}</p>
+                    <span className="inline-block mt-1 text-[10px] font-extrabold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-full border border-teal-200 dark:border-teal-800">
+                      {userPlan} · Active
+                    </span>
+                  </div>
+
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200 transition-colors"
+                  >
+                    <User size={14} className="text-teal-600" />
+                    <span>My Resumes & Dashboard</span>
+                  </Link>
+
+                  <Link
+                    href="/analyze"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200 transition-colors"
+                  >
+                    <FileText size={14} className="text-teal-600" />
+                    <span>Run New ATS Audit</span>
+                  </Link>
+
+                  <Link
+                    href="/recruiter"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200 transition-colors"
+                  >
+                    <Users size={14} className="text-amber-500" />
+                    <span>Recruiter Candidate Screener</span>
+                  </Link>
+
+                  <Link
+                    href="/settings"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200 transition-colors"
+                  >
+                    <Settings size={14} className="text-gray-500" />
+                    <span>Account Settings</span>
+                  </Link>
+
+                  <div className="border-t border-gray-100 dark:border-white/5 my-1" />
+
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="w-full text-left flex items-center gap-2.5 px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 font-bold transition-colors"
+                  >
+                    <LogOut size={14} />
+                    <span>Sign out</span>
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-2">

@@ -27,6 +27,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ScoreRing } from "@/components/ui/ScoreRing";
 import { ResumeScene3D, ReviewerId } from "@/components/hero/ResumeScene3D";
+import { ReviewerLensSimulator } from "@/components/analysis/ReviewerLensSimulator";
 
 // ─── READER DATA FOR HERO & PICK A READER PANEL ──────────────────────────────
 interface ReaderDetail {
@@ -530,6 +531,11 @@ export default function OverviewPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ── 2B. INTERACTIVE REVIEWER LENS & 6-SEC EYE-TRACKING SIMULATOR ── */}
+      <section className="py-12 lg:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ReviewerLensSimulator />
       </section>
 
       {/* ── 3. 9 FEATURE CARDS ───────────────────────────────────────────── */}

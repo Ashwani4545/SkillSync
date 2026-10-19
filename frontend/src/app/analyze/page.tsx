@@ -28,6 +28,7 @@ import { BarRow } from "@/components/ui/BarRow";
 import { Chip } from "@/components/ui/Chip";
 import { UploadCard } from "@/components/analysis/UploadCard";
 import { ScanProgress } from "@/components/analysis/ScanProgress";
+import { ReviewerLensSimulator } from "@/components/analysis/ReviewerLensSimulator";
 import { apiClient } from "@/lib/api";
 
 type FlowStep = "upload" | "scanning" | "results";
@@ -459,6 +460,11 @@ export default function AnalyzePage() {
               </div>
             </div>
           </div>
+
+          {/* Interactive Multi-Persona Vision & 6-Second Eye-Tracking Heatmap */}
+          <ReviewerLensSimulator
+            candidateRole={results.candidateRole}
+          />
 
           {/* Row 3: Skill Authenticity with Evidence */}
           <div id="skills" className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
