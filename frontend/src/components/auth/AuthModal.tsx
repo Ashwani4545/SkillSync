@@ -694,7 +694,7 @@ export function AuthCard({
   const isDark = theme === "dark";
 
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
-  const [activeTab, setActiveTab] = useState<"social" | "email">("social");
+  const [activeTab, setActiveTab] = useState<"social" | "email">("email");
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
   // Active OAuth Picker State
@@ -885,9 +885,11 @@ export function AuthCard({
           </p>
         </div>
 
-        {/* Tab Switcher */}
+        {/* Login and Create Account Tab Switcher */}
         <div style={{ padding: "0 28px 16px" }}>
           <div
+            role="tablist"
+            aria-label="Authentication mode"
             style={{
               display: "flex",
               background: isDark ? "rgba(255, 255, 255, 0.05)" : "#F1F5F9",
@@ -898,31 +900,37 @@ export function AuthCard({
           >
             <button
               type="button"
-              onClick={() => setActiveTab("social")}
+              role="tab"
+              aria-selected={mode === "signin"}
+              id="auth-tab-login"
+              onClick={() => {
+                setMode("signin");
+                setErrorMsg("");
+              }}
               style={{
                 flex: 1,
-                padding: "8px 12px",
+                padding: "9px 14px",
                 borderRadius: 9,
                 fontSize: 13,
                 fontWeight: 700,
                 cursor: "pointer",
                 border: "none",
                 background:
-                  activeTab === "social"
+                  mode === "signin"
                     ? isDark
                       ? "#1E293B"
                       : "#FFFFFF"
                     : "transparent",
                 color:
-                  activeTab === "social"
+                  mode === "signin"
                     ? isDark
                       ? "#FFFFFF"
                       : "#0F172A"
                     : isDark
-                    ? "rgba(255, 255, 255, 0.5)"
+                    ? "rgba(255, 255, 255, 0.55)"
                     : "#64748B",
                 boxShadow:
-                  activeTab === "social"
+                  mode === "signin"
                     ? isDark
                       ? "0 2px 8px rgba(0,0,0,0.3)"
                       : "0 2px 6px rgba(0,0,0,0.06)"
@@ -930,35 +938,41 @@ export function AuthCard({
                 transition: "all 0.15s ease",
               }}
             >
-              Social / OAuth
+              Login
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab("email")}
+              role="tab"
+              aria-selected={mode === "signup"}
+              id="auth-tab-create-account"
+              onClick={() => {
+                setMode("signup");
+                setErrorMsg("");
+              }}
               style={{
                 flex: 1,
-                padding: "8px 12px",
+                padding: "9px 14px",
                 borderRadius: 9,
                 fontSize: 13,
                 fontWeight: 700,
                 cursor: "pointer",
                 border: "none",
                 background:
-                  activeTab === "email"
+                  mode === "signup"
                     ? isDark
                       ? "#1E293B"
                       : "#FFFFFF"
                     : "transparent",
                 color:
-                  activeTab === "email"
+                  mode === "signup"
                     ? isDark
                       ? "#FFFFFF"
                       : "#0F172A"
                     : isDark
-                    ? "rgba(255, 255, 255, 0.5)"
+                    ? "rgba(255, 255, 255, 0.55)"
                     : "#64748B",
                 boxShadow:
-                  activeTab === "email"
+                  mode === "signup"
                     ? isDark
                       ? "0 2px 8px rgba(0,0,0,0.3)"
                       : "0 2px 6px rgba(0,0,0,0.06)"
@@ -966,7 +980,7 @@ export function AuthCard({
                 transition: "all 0.15s ease",
               }}
             >
-              Email & Password
+              Create account
             </button>
           </div>
         </div>
@@ -1352,6 +1366,26 @@ export function AuthCard({
                   Quick Sign In
                 </button>
               </div>
+
+              <div style={{ marginTop: 14, textAlign: "center" }}>
+                <button
+                  type="button"
+                  id="auth-switch-to-email-btn"
+                  onClick={() => setActiveTab("email")}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: isDark ? "rgba(255, 255, 255, 0.75)" : "#475569",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                    padding: "4px 8px",
+                  }}
+                >
+                  ← Or continue with Email & Password
+                </button>
+              </div>
             </div>
           ) : (
             /* Email & Password Form Tab */
@@ -1532,6 +1566,26 @@ export function AuthCard({
                   </>
                 )}
               </button>
+
+              <div style={{ marginTop: 14, textAlign: "center" }}>
+                <button
+                  type="button"
+                  id="auth-switch-to-social-btn"
+                  onClick={() => setActiveTab("social")}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: isDark ? "rgba(255, 255, 255, 0.75)" : "#475569",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                    padding: "4px 8px",
+                  }}
+                >
+                  Or continue with Google, LinkedIn, GitHub →
+                </button>
+              </div>
             </form>
           )}
 

@@ -1,1335 +1,804 @@
 "use client";
 
+import React, { useState } from "react";
 import Link from "next/link";
-import { useState } from "react";
 import {
   ArrowRight,
-  CheckCircle,
-  Zap,
-  Users,
-  Target,
-  TrendingUp,
+  Sparkles,
   Bot,
+  Users,
   Briefcase,
-  Brain,
+  CheckCircle2,
+  XCircle,
+  ShieldCheck,
+  AlertTriangle,
+  FileText,
+  Wand2,
   GitCompare,
-  Award,
-  Shield,
-  Gauge,
-  Flame,
-  Clock,
+  MessageSquare,
+  TrendingUp,
+  BarChart2,
+  Calendar,
+  Lock,
   ChevronRight,
+  Zap,
 } from "lucide-react";
-import { Navbar } from "../components/layout/Navbar";
-import { useTheme } from "../components/providers/ThemeProvider";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { ScoreRing } from "@/components/ui/ScoreRing";
+import { ResumeScene3D, ReviewerId } from "@/components/hero/ResumeScene3D";
 
-// ─── Data ────────────────────────────────────────────────────────────────────
+// ─── READER DATA FOR HERO & PICK A READER PANEL ──────────────────────────────
+interface ReaderDetail {
+  id: ReviewerId;
+  label: string;
+  badge: string;
+  score: number;
+  tagline: string;
+  headline: string;
+  body: string;
+  stopAt: string;
+  fixTitle: string;
+  fixDescription: string;
+  fixCodeBefore: string;
+  fixCodeAfter: string;
+  accentColor: string;
+}
 
-const READERS = [
-  {
+const READERS: Record<ReviewerId, ReaderDetail> = {
+  ats: {
     id: "ats",
     label: "ATS Bot",
-    accent: "#1D9E75",
-    bg: "linear-gradient(135deg, #064035 0%, #0F6E56 100%)",
-    badge: "LAYER 1",
-    headline: "Your resume never reaches a human.",
-    body: "The ATS bot rejected you at keyword density. It found 3 missing required skills, a two-column layout it can't parse, and a summary section with no job-title match.",
-    stopAt: "Stopped reading at: Line 4 — Skills section",
+    badge: "LAYER 1 AUDIT",
     score: 61,
-    pills: ["Missing: Python", "Missing: REST APIs", "Layout: Two columns"],
+    tagline: "Keyword Density & Schema Parser",
+    headline: "Your resume never reaches a human reviewer.",
+    body: "The ATS parser stopped scanning at keyword density. It detected 3 missing required role qualifications, an unparseable two-column table layout, and an ambiguous job-title match.",
+    stopAt: "Line 4 — Skills & Certifications section",
+    fixTitle: "Fix Layout & Match Core Keywords",
+    fixDescription: "Convert to clean single-column format and inject required primary keywords with verifiable project bullets.",
+    fixCodeBefore: "• Skills: React, Node, Web tech, fast learner",
+    fixCodeAfter: "• Built microservices using TypeScript, Node.js, and React, reducing latency by 34%.",
+    accentColor: "#1D9E75",
   },
-  {
+  recruiter: {
     id: "recruiter",
     label: "HR Recruiter",
-    accent: "#378ADD",
-    bg: "linear-gradient(135deg, #0D2E5A 0%, #185FA5 100%)",
-    badge: "LAYER 2",
-    headline: "She skimmed for 6 seconds and moved on.",
-    body: "A 7-month gap in 2022. No seniority signal in the title. Three vague bullets that don't say what you actually built. She's already on the next resume.",
-    stopAt: "Stopped reading at: Line 11 — First job bullet",
+    badge: "LAYER 2 AUDIT",
     score: 54,
-    pills: ["Gap: 7 months unexplained", "Tone: Passive voice", "Seniority: Unclear"],
+    tagline: "6-Second Human Screen",
+    headline: "She skimmed for 6 seconds and moved on.",
+    body: "A 7-month unexplained employment gap in 2022. No seniority signal in the job title. Three passive bullets that describe company features instead of what you actually built.",
+    stopAt: "Line 11 — First experience bullet",
+    fixTitle: "Reframe Employment Gap & Lead with Metrics",
+    fixDescription: "Add professional development context to the gap and restructure your first bullet with an active verb + metric.",
+    fixCodeBefore: "• Responsible for maintaining dashboard features and attending daily team standups.",
+    fixCodeAfter: "• Spearheaded redesign of core analytics dashboard used by 12,000+ daily active enterprise users.",
+    accentColor: "#38BDF8",
+  },
+  hiring_manager: {
+    id: "hiring_manager",
+    label: "Hiring Manager",
+    badge: "LAYER 3 AUDIT",
+    score: 48,
+    tagline: "Deep Technical Competence Check",
+    headline: "He wanted technical evidence. You gave him generic claims.",
+    body: "'Led a cross-functional team' — how large? 'Improved system performance' — by how much? Every bullet is a claim without a baseline number. He is skeptical you can perform at the level required.",
+    stopAt: "Line 18 — Project architecture description",
+    fixTitle: "Back Claims with Hard Evidence Graph",
+    fixDescription: "Map every high-level skill claim to an explicit architectural tradeoff, team size, and quantified business outcome.",
+    fixCodeBefore: "• Optimized database performance for heavy traffic operations.",
+    fixCodeAfter: "• Re-indexed PostgreSQL database and implemented Redis caching, reducing query time from 420ms to 45ms.",
+    accentColor: "#A855F7",
+  },
+};
+
+// ─── 9 FEATURE CARDS DATA ───────────────────────────────────────────────────
+const NINE_FEATURES = [
+  {
+    title: "Persona Analysis",
+    description: "Simulate ATS bot keyword filters, recruiter 6-second skim scans, and hiring manager depth audits simultaneously.",
+    icon: <Users size={22} className="text-teal-600 dark:text-teal-400" />,
+    badge: "Core AI",
+    href: "/analyze",
   },
   {
-    id: "hm",
-    label: "Hiring Manager",
-    accent: "#7F77DD",
-    bg: "linear-gradient(135deg, #2A2060 0%, #534AB7 100%)",
-    badge: "LAYER 3",
-    headline: "He wanted evidence. You gave him claims.",
-    body: "'Led a cross-functional team' — how large? 'Improved performance' — by how much? Every bullet is a claim without a number. He's skeptical you can do the job.",
-    stopAt: "Stopped reading at: Line 18 — Project description",
-    score: 48,
-    pills: ["No metrics", "Unquantified impact", "Vague ownership"],
+    title: "Tone & Confidence Analyzer",
+    description: "Detect passive hedging phrases ('helped with', 'responsible for') and replace them with confident action verbs.",
+    icon: <Sparkles size={22} className="text-sky-600 dark:text-sky-400" />,
+    badge: "Tone",
+    href: "/analyze#tone",
+  },
+  {
+    title: "Interview Question Predictor",
+    description: "Map vague resume claims to the exact probing technical and behavioral questions hiring managers will ask.",
+    icon: <MessageSquare size={22} className="text-violet-600 dark:text-violet-400" />,
+    badge: "Interview",
+    href: "/interview-prep",
+  },
+  {
+    title: "JD Adapter",
+    description: "Paste any target job description and tailor your bullets, keywords, and summary to match in one click.",
+    icon: <Wand2 size={22} className="text-emerald-600 dark:text-emerald-400" />,
+    badge: "Match",
+    href: "/jd-adapter",
+  },
+  {
+    title: "Resume A/B Tester",
+    description: "Compare two versions of your resume head-to-head. AI declares the winning version with clear comparative criteria.",
+    icon: <GitCompare size={22} className="text-amber-600 dark:text-amber-400" />,
+    badge: "Compare",
+    href: "/compare",
+  },
+  {
+    title: "Skill Authenticity Checker",
+    description: "Verify which listed skills are backed by verifiable evidence in your bullets versus unevidenced keywords.",
+    icon: <ShieldCheck size={22} className="text-teal-600 dark:text-teal-400" />,
+    badge: "Evidence",
+    href: "/analyze#skills",
+  },
+  {
+    title: "Industry Benchmark",
+    description: "Benchmark your skills, bullet strength, and ATS readability against the top 10% of candidates in your field.",
+    icon: <BarChart2 size={22} className="text-blue-600 dark:text-blue-400" />,
+    badge: "Benchmark",
+    href: "/benchmark",
+  },
+  {
+    title: "Career Gap Advisor",
+    description: "Strategically address employment breaks, parental leaves, or sabbatical gaps without triggering red flags.",
+    icon: <Calendar size={22} className="text-rose-600 dark:text-rose-400" />,
+    badge: "Strategy",
+    href: "/gap-advisor",
+  },
+  {
+    title: "Career Trajectory Predictor",
+    description: "Forecast your realistic next 2-3 roles, promotion timelines, and specific skills required to reach target bands.",
+    icon: <TrendingUp size={22} className="text-purple-600 dark:text-purple-400" />,
+    badge: "Path",
+    href: "/career-path",
   },
 ];
 
-const COMPARISONS = [
-  { tool: "Jobscan", them: "Keyword match vs JD", us: "Persona analysis + tone scoring + interview predictor" },
-  { tool: "Resume Worded", them: "Generic improvement tips", us: "Role-specific benchmarking against real top candidates" },
-  { tool: "Rezi.ai", them: "ATS scoring only", us: "Full career intelligence — trajectory, salary, interviews" },
-  { tool: "Enhancv", them: "Design-focused output", us: "Deep content quality analysis, not just visual layout" },
-  { tool: "Teal HQ", them: "Job tracking platform", us: "Resume AI as the primary product, not an afterthought" },
+// ─── COMPETITOR COMPARISON TABLE DATA ───────────────────────────────────────
+const COMPARISON_ROWS = [
+  {
+    feature: "ATS Keyword & Schema Parsing",
+    skillsync: true,
+    jobscan: true,
+    resumeWorded: true,
+    rezi: true,
+    enhancv: "Basic",
+    teal: true,
+  },
+  {
+    feature: "3-Reviewer Persona Simulation (ATS + HR + HM)",
+    skillsync: true,
+    jobscan: false,
+    resumeWorded: false,
+    rezi: false,
+    enhancv: false,
+    teal: false,
+  },
+  {
+    feature: "Drop-Off Detection ('Stops Reading Here')",
+    skillsync: true,
+    jobscan: false,
+    resumeWorded: false,
+    rezi: false,
+    enhancv: false,
+    teal: false,
+  },
+  {
+    feature: "Skill Authenticity & Evidence Graph",
+    skillsync: true,
+    jobscan: false,
+    resumeWorded: false,
+    rezi: false,
+    enhancv: false,
+    teal: false,
+  },
+  {
+    feature: "Interview Question Predictor from Bullets",
+    skillsync: true,
+    jobscan: false,
+    resumeWorded: false,
+    rezi: false,
+    enhancv: false,
+    teal: false,
+  },
+  {
+    feature: "1-Click Job Description Adaptation",
+    skillsync: true,
+    jobscan: "Manual",
+    resumeWorded: false,
+    rezi: "Limited",
+    enhancv: false,
+    teal: "Tracker only",
+  },
+  {
+    feature: "Top 10% Candidate Benchmarking",
+    skillsync: true,
+    jobscan: false,
+    resumeWorded: "Generic",
+    rezi: false,
+    enhancv: false,
+    teal: false,
+  },
 ];
 
-const ROADMAP = [
+// ─── 4-PHASE ROADMAP DATA ───────────────────────────────────────────────────
+const ROADMAP_PHASES = [
   {
     phase: "Phase 1",
-    label: "MVP",
+    title: "MVP Core Engine",
     timeline: "Weeks 1–8",
-    status: "done",
+    completed: true,
     items: [
-      "Resume upload + parsing (PDF & DOCX)",
-      "ATS compatibility scoring",
-      "Section-by-section grading",
-      "Bullet rewriter",
-      "Tone + confidence analyzer",
-      "Persona-based analysis (ATS / HR / HM)",
+      { text: "Resume upload & text parser (PDF, DOCX, TXT)", done: true },
+      { text: "30+ ATS schema & formatting checks", done: true },
+      { text: "Section-by-section scoring & bullet rewriter", done: true },
+      { text: "Active vs passive tone detector", done: true },
+      { text: "3-Persona view (ATS, Recruiter, Hiring Manager)", done: true },
     ],
   },
   {
     phase: "Phase 2",
-    label: "Differentiators",
+    title: "Differentiators",
     timeline: "Weeks 9–16",
-    status: "active",
+    completed: false,
+    active: true,
     items: [
-      "One-click JD adapter",
-      "Interview question predictor",
-      "Resume A/B tester",
-      "Skill authenticity checker",
-      "Career gap advisor",
-      "Industry benchmark comparison DONE",
+      { text: "1-Click Job Description adapter engine", done: true },
+      { text: "Interview question predictor from vague bullets", done: true },
+      { text: "Head-to-head Resume A/B tester", done: true },
+      { text: "Skill authenticity & evidence graph verification", done: true },
+      { text: "Top 10% industry role benchmarking", done: true },
     ],
   },
   {
     phase: "Phase 3",
-    label: "Career Intelligence",
+    title: "Career Intelligence",
     timeline: "Weeks 17–24",
-    status: "upcoming",
+    completed: false,
     items: [
-      "Career trajectory predictor",
-      "Real-time salary calibration",
-      "GitHub portfolio integration DONE",
-      "LinkedIn OAuth + profile sync",
-      "Expanded benchmark database",
+      { text: "Career trajectory & promotion timeline predictor", done: true },
+      { text: "Real-time salary calibration by geo & seniority", done: false },
+      { text: "GitHub portfolio repository proof sync", done: true },
+      { text: "LinkedIn OAuth & profile differential sync", done: false },
     ],
   },
   {
     phase: "Phase 4",
-    label: "V2 Advanced",
+    title: "Advanced Enterprise",
     timeline: "Month 7+",
-    status: "future",
+    completed: false,
     items: [
-      "Multilingual + cultural format adapter",
-      "Bias and inclusivity language scanner",
-      "Recruiter / team dashboard (B2B)",
-      "Bulk resume screening API",
-      "White-label licensing",
+      { text: "Recruiter multi-candidate bulk screening", done: true },
+      { text: "Bias & exclusionary language scanner", done: true },
+      { text: "Cross-border cultural CV adapter", done: true },
+      { text: "White-label enterprise reports & API keys", done: true },
     ],
   },
 ];
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+export default function OverviewPage() {
+  const [selectedReader, setSelectedReader] = useState<ReviewerId>("ats");
+  const reader = READERS[selectedReader];
 
-type Reader = typeof READERS[0];
+  // 3D Tilt State for "Pick a Reader" panel
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
-function ScoreBar({ value, color, isDark = true }: { value: number; color: string; isDark?: boolean }) {
-  return (
-    <div style={{ height: 6, background: isDark ? "rgba(255,255,255,0.08)" : "#E2E8F0", borderRadius: 3, overflow: "hidden" }}>
-      <div
-        style={{
-          height: "100%",
-          width: `${value}%`,
-          background: color,
-          borderRadius: 3,
-          transition: "width 1s ease",
-        }}
-      />
-    </div>
-  );
-}
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -6;
+    const rotateY = ((x - centerX) / centerX) * 6;
+    setTilt({ x: rotateX, y: rotateY });
+  };
 
-function ReaderCard({
-  reader,
-  depth,
-  onClick,
-}: {
-  reader: Reader;
-  depth: number;
-  onClick: () => void;
-}) {
-  const offset = depth * 18;
-  const scale = 1 - depth * 0.04;
-  const opacity = depth === 0 ? 1 : 1 - depth * 0.25;
+  const handleCardMouseLeave = () => {
+    setTilt({ x: 0, y: 0 });
+  };
 
   return (
-    <div
-      onClick={onClick}
-      style={{
-        position: "absolute",
-        top: offset,
-        left: offset * 0.6,
-        right: -offset * 0.6,
-        bottom: -offset,
-        background: reader.bg,
-        borderRadius: 20,
-        padding: "28px 30px",
-        cursor: depth > 0 ? "pointer" : "default",
-        transform: `scale(${scale})`,
-        transformOrigin: "top left",
-        opacity,
-        transition: "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
-        boxShadow:
-          depth === 0
-            ? "0 24px 60px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.3)"
-            : "0 8px 20px rgba(0,0,0,0.25)",
-        border: "1px solid rgba(255,255,255,0.1)",
-        zIndex: 10 - depth,
-        userSelect: "none" as const,
-        display: "flex",
-        flexDirection: "column" as const,
-        gap: 16,
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 800,
-            letterSpacing: "0.12em",
-            color: "rgba(255,255,255,0.6)",
-            background: "rgba(255,255,255,0.1)",
-            padding: "4px 10px",
-            borderRadius: 20,
-            border: "1px solid rgba(255,255,255,0.15)",
-          }}
-        >
-          {reader.badge}
-        </span>
-        <span
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            color: "rgba(255,255,255,0.9)",
-            background: "rgba(255,255,255,0.12)",
-            padding: "4px 12px",
-            borderRadius: 20,
-          }}
-        >
-          {reader.label}
-        </span>
-      </div>
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0A0F1E] text-gray-900 dark:text-white transition-colors duration-200">
+      <Header />
 
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
-        <span style={{ fontSize: 52, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{reader.score}</span>
-        <span style={{ fontSize: 18, fontWeight: 700, color: "rgba(255,255,255,0.5)", paddingBottom: 6 }}>/100</span>
-      </div>
-
-      <p style={{ fontSize: 17, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.4 }}>
-        {reader.headline}
-      </p>
-
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.65, margin: 0 }}>
-        {reader.body}
-      </p>
-
-      <div
-        style={{
-          background: "rgba(0,0,0,0.25)",
-          borderRadius: 10,
-          padding: "8px 12px",
-          fontSize: 12,
-          color: "rgba(255,255,255,0.6)",
-          fontWeight: 600,
-          fontFamily: "monospace",
-          borderLeft: `3px solid ${reader.accent}`,
-        }}
-      >
-        {reader.stopAt}
-      </div>
-
-      <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
-        {reader.pills.map((pill, i) => (
-          <span
-            key={i}
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: "rgba(255,255,255,0.8)",
-              background: "rgba(255,255,255,0.1)",
-              border: "1px solid rgba(255,255,255,0.15)",
-              padding: "3px 10px",
-              borderRadius: 20,
-            }}
-          >
-            {pill}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ReaderStack() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const ordered = [
-    READERS[activeIndex],
-    READERS[(activeIndex + 1) % 3],
-    READERS[(activeIndex + 2) % 3],
-  ];
-
-  return (
-    <div style={{ width: "100%", maxWidth: 520, margin: "0 auto" }}>
-      <div style={{ display: "flex", gap: 8, marginBottom: 24, justifyContent: "center" }}>
-        {READERS.map((r, i) => (
-          <button
-            key={r.id}
-            onClick={() => setActiveIndex(i)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "8px 18px",
-              borderRadius: 30,
-              border: activeIndex === i ? "none" : "1px solid rgba(255,255,255,0.12)",
-              background: activeIndex === i ? r.accent : "rgba(255,255,255,0.06)",
-              color: activeIndex === i ? "#fff" : "rgba(255,255,255,0.55)",
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: "pointer",
-              transition: "all 0.25s",
-            }}
-          >
-            {i === 0 && <Bot size={14} />}
-            {i === 1 && <Briefcase size={14} />}
-            {i === 2 && <Brain size={14} />}
-            {r.label}
-          </button>
-        ))}
-      </div>
-
-      <div style={{ position: "relative", height: 420 }}>
-        {ordered.map((reader, depth) => (
-          <ReaderCard
-            key={reader.id}
-            reader={reader}
-            depth={depth}
-            onClick={() => {
-              if (depth > 0) {
-                const idx = READERS.findIndex((r) => r.id === reader.id);
-                setActiveIndex(idx);
-              }
-            }}
-          />
-        ))}
-      </div>
-
-      <p
-        style={{
-          textAlign: "center",
-          fontSize: 12,
-          color: "rgba(255,255,255,0.35)",
-          marginTop: 24,
-          fontStyle: "italic",
-        }}
-      >
-        Click a card behind to pull it forward
-      </p>
-    </div>
-  );
-}
-
-// ─── Feature data (defined inline to avoid JSX in const arrays at module scope) ──
-
-const FEATURE_DATA = [
-  { iconName: "Users", title: "Persona-based analysis", desc: "Three simultaneous reviewer perspectives — ATS bot, HR recruiter, hiring manager — each with a stop-reading timestamp and specific fix list.", badge: "Unique", badgeColor: "#0F6E56" },
-  { iconName: "Brain", title: "Interview question predictor", desc: "Every vague bullet becomes a predicted interview question. You see the question before the recruiter asks it — plus the rewrite that makes it disappear.", badge: "Unique", badgeColor: "#0F6E56" },
-  { iconName: "Target", title: "JD adapter", desc: "Paste any job description. Get a tailored resume variant optimised for that role's keywords, seniority signals, and exact phrasing.", badge: "Pro", badgeColor: "#185FA5" },
-  { iconName: "GitCompare", title: "Resume A/B tester", desc: "Upload two versions. Run them against the same role. Get a winner and a reasoning summary that explains exactly what changed the outcome.", badge: "Pro", badgeColor: "#185FA5" },
-  { iconName: "Zap", title: "Bullet rewriter", desc: "Passive bullet in → action-verb + metric + outcome out. In one click, every weak line becomes something a hiring manager will actually remember.", badge: "Free", badgeColor: "#475569" },
-  { iconName: "Shield", title: "Skill authenticity checker", desc: "Claims 'Python' but no Python in your project descriptions? Flagged. It cross-references every skill against the work you describe, not just the skills section.", badge: "Unique", badgeColor: "#0F6E56" },
-  { iconName: "Award", title: "Industry benchmark", desc: "Real vector-similarity comparison against top-10% resumes in your role. Not simulated — actual percentile rankings from ingested top-performer data.", badge: "Career", badgeColor: "#534AB7" },
-  { iconName: "Clock", title: "Career gap disguiser", desc: "A gap is a question mark in a recruiter's mind. SkillSync reframes it as a narrative — honest, confident, and structured to pass the 6-second scan.", badge: "Pro", badgeColor: "#185FA5" },
-  { iconName: "TrendingUp", title: "Career trajectory predictor", desc: "Based on your resume and live market signals, predict your most realistic next 2 roles and the exact skill gaps blocking you from each one.", badge: "Career", badgeColor: "#534AB7" },
-];
-
-function FeatureIcon({ name }: { name: string }) {
-  const sz = 22;
-  if (name === "Users") return <Users size={sz} />;
-  if (name === "Brain") return <Brain size={sz} />;
-  if (name === "Target") return <Target size={sz} />;
-  if (name === "GitCompare") return <GitCompare size={sz} />;
-  if (name === "Zap") return <Zap size={sz} />;
-  if (name === "Shield") return <Shield size={sz} />;
-  if (name === "Award") return <Award size={sz} />;
-  if (name === "Clock") return <Clock size={sz} />;
-  if (name === "TrendingUp") return <TrendingUp size={sz} />;
-  return null;
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
-export default function LandingPage() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-
-  return (
-    <div
-      style={{
-        background: isDark ? "#0A0F1E" : "#F8FAFC",
-        minHeight: "100vh",
-        color: isDark ? "#fff" : "#0F172A",
-        fontFamily: "'DM Sans', system-ui, sans-serif",
-        transition: "background 0.25s ease, color 0.25s ease",
-      }}
-    >
-      <Navbar />
-
-      {/* ── Hero ── */}
-      <section
-        style={{
-          position: "relative",
-          overflow: "hidden",
-          padding: "100px 24px 80px",
-          background: isDark
-            ? "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(15,110,86,0.18) 0%, rgba(10,15,30,0) 70%)"
-            : "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(15,110,86,0.10) 0%, rgba(248,250,252,0) 70%)",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            top: 80,
-            left: "10%",
-            width: 300,
-            height: 300,
-            background: isDark
-              ? "radial-gradient(circle, rgba(15,110,86,0.12) 0%, transparent 70%)"
-              : "radial-gradient(circle, rgba(15,110,86,0.06) 0%, transparent 70%)",
-            borderRadius: "50%",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: 120,
-            right: "8%",
-            width: 260,
-            height: 260,
-            background: isDark
-              ? "radial-gradient(circle, rgba(55,138,221,0.10) 0%, transparent 70%)"
-              : "radial-gradient(circle, rgba(55,138,221,0.06) 0%, transparent 70%)",
-            borderRadius: "50%",
-            pointerEvents: "none",
-          }}
-        />
-
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                background: isDark ? "rgba(15, 110, 86, 0.15)" : "#E1F5EE",
-                border: isDark ? "1px solid rgba(29, 158, 117, 0.3)" : "1px solid #A3E0C8",
-                color: "#1D9E75",
-                fontSize: 12,
-                fontWeight: 800,
-                padding: "7px 20px",
-                borderRadius: 30,
-                letterSpacing: "0.06em",
-              }}
-            >
-              <Zap size={13} fill="currentColor" /> AI-POWERED RESUME INTELLIGENCE
-            </div>
-          </div>
-
-          <h1
-            style={{
-              textAlign: "center",
-              fontSize: "clamp(36px, 5.5vw, 68px)",
-              fontWeight: 900,
-              lineHeight: 1.1,
-              letterSpacing: "-0.035em",
-              marginBottom: 20,
-              fontFamily: "'Syne', sans-serif",
-              color: isDark ? "#fff" : "#0F172A",
-            }}
-          >
-            Three readers.{" "}
-            <span style={{ color: isDark ? "rgba(255,255,255,0.4)" : "#64748B" }}>One resume.</span>
-            <br />
-            <span
-              style={{
-                background: "linear-gradient(135deg, #1D9E75 0%, #378ADD 50%, #7F77DD 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              See where each one quits.
-            </span>
-          </h1>
-
-          <p
-            style={{
-              textAlign: "center",
-              fontSize: 19,
-              color: isDark ? "rgba(255,255,255,0.55)" : "#475569",
-              maxWidth: 580,
-              margin: "0 auto 52px",
-              lineHeight: 1.7,
-            }}
-          >
-            Analyze your resume through the eyes of an ATS bot, a recruiter and a hiring manager at once.
-            Get AI fixes, predicted interview questions and a benchmark against top candidates in your field.
-          </p>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1.1fr",
-              gap: 60,
-              alignItems: "center",
-            }}
-          >
-            {/* Left column */}
-            <div>
-              <p
-                style={{
-                  fontSize: 15,
-                  color: isDark ? "rgba(255,255,255,0.5)" : "#475569",
-                  lineHeight: 1.7,
-                  marginBottom: 20,
-                  borderLeft: "2px solid rgba(29, 158, 117, 0.4)",
-                  paddingLeft: 16,
-                }}
-              >
-                <strong style={{ color: isDark ? "rgba(255,255,255,0.75)" : "#1E293B" }}>Each page in the stack</strong>{" "}
-                is how one reviewer sees the same resume. Choose one to pull it forward. Fix what
-                they&apos;re stopping on.
-              </p>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 32 }}>
-                {READERS.map((r) => (
-                  <div
-                    key={r.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      padding: "10px 16px",
-                      borderRadius: 12,
-                      background: isDark ? "rgba(255,255,255,0.04)" : "#FFFFFF",
-                      border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #E2E8F0",
-                      boxShadow: isDark ? "none" : "0 2px 8px rgba(0,0,0,0.02)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        background: r.accent,
-                        flexShrink: 0,
-                        boxShadow: `0 0 8px ${r.accent}`,
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 700,
-                        color: isDark ? "rgba(255,255,255,0.8)" : "#1E293B",
-                        minWidth: 110,
-                      }}
-                    >
-                      {r.label}
-                    </span>
-                    <div style={{ flex: 1 }}>
-                      <ScoreBar value={r.score} color={r.accent} isDark={isDark} />
-                    </div>
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: r.accent,
-                        minWidth: 36,
-                        textAlign: "right",
-                      }}
-                    >
-                      {r.score}
-                    </span>
-                  </div>
-                ))}
+      {/* ── 1. HERO SECTION ──────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            {/* Hero Left Column */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800/80 shadow-xs">
+                <Zap size={13} className="text-teal-600 dark:text-teal-400" />
+                Next-Gen Multi-Persona Resume Audit
               </div>
 
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
-                <Link
-                  href="/dashboard"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "15px 30px",
-                    borderRadius: 14,
-                    background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
-                    color: "#fff",
-                    textDecoration: "none",
-                    fontSize: 15,
-                    fontWeight: 700,
-                    boxShadow: "0 8px 24px rgba(15, 110, 86, 0.4)",
-                  }}
-                >
-                  Analyze my resume free <ArrowRight size={17} />
-                </Link>
-                <Link
-                  href="/build"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "15px 24px",
-                    borderRadius: 14,
-                    background: isDark ? "rgba(255,255,255,0.06)" : "#FFFFFF",
-                    border: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid #CBD5E1",
-                    color: isDark ? "rgba(255,255,255,0.8)" : "#1E293B",
-                    textDecoration: "none",
-                    fontSize: 15,
-                    fontWeight: 600,
-                    boxShadow: isDark ? "none" : "0 2px 8px rgba(0,0,0,0.02)",
-                  }}
-                >
-                  Build my resume
-                </Link>
-              </div>
-              <p style={{ marginTop: 14, fontSize: 12, color: isDark ? "rgba(255,255,255,0.3)" : "#94A3B8", fontWeight: 500 }}>
-                No credit card required · 3 free analyses per month
-              </p>
-            </div>
-
-            {/* Right column: stacked reader cards */}
-            <ReaderStack />
-          </div>
-        </div>
-      </section>
-
-      {/* ── "0 tools" callout ── */}
-      <section
-        style={{
-          borderTop: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #E2E8F0",
-          borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #E2E8F0",
-          padding: "48px 24px",
-          background: isDark ? "rgba(255,255,255,0.02)" : "#FFFFFF",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 900,
-            margin: "0 auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 20,
-            flexWrap: "wrap" as const,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 56,
-              fontWeight: 900,
-              fontFamily: "'Syne', sans-serif",
-              background: "linear-gradient(135deg, #1D9E75, #378ADD)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              lineHeight: 1,
-            }}
-          >
-            0
-          </div>
-          <div style={{ maxWidth: 520 }}>
-            <p
-              style={{
-                fontSize: 18,
-                fontWeight: 700,
-                color: isDark ? "#fff" : "#0F172A",
-                margin: "0 0 6px",
-                fontFamily: "'Syne', sans-serif",
-              }}
-            >
-              Resume tools that actually explain why you&apos;re filtered out.
-            </p>
-            <p style={{ fontSize: 14, color: isDark ? "rgba(255,255,255,0.4)" : "#64748B", margin: 0, lineHeight: 1.6 }}>
-              Every other tool tells you <em>what&apos;s missing.</em> SkillSync tells you{" "}
-              <em>why you&apos;re being filtered out</em> — and exactly how to fix it.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Nine Features ── */}
-      <section style={{ padding: "100px 24px", maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 64 }}>
-          <p
-            style={{
-              fontSize: 12,
-              fontWeight: 800,
-              letterSpacing: "0.1em",
-              color: "#1D9E75",
-              marginBottom: 16,
-              textTransform: "uppercase",
-            }}
-          >
-            Nine features
-          </p>
-          <h2
-            style={{
-              fontSize: "clamp(28px, 4vw, 48px)",
-              fontWeight: 900,
-              fontFamily: "'Syne', sans-serif",
-              color: isDark ? "#fff" : "#0F172A",
-              letterSpacing: "-0.03em",
-              lineHeight: 1.15,
-              marginBottom: 16,
-            }}
-          >
-            Most tools say what is missing.
-            <br />
-            <span style={{ color: isDark ? "rgba(255,255,255,0.35)" : "#64748B" }}>
-              SkillSync says why you get filtered out.
-            </span>
-          </h2>
-          <p style={{ fontSize: 16, color: isDark ? "rgba(255,255,255,0.45)" : "#64748B", maxWidth: 520, margin: "0 auto" }}>
-            Nine features built around that one question.
-          </p>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: 20,
-          }}
-        >
-          {FEATURE_DATA.map((f, i) => (
-            <div
-              key={i}
-              style={{
-                background: isDark ? "rgba(255,255,255,0.03)" : "#FFFFFF",
-                borderRadius: 18,
-                border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #E2E8F0",
-                padding: "26px 28px",
-                position: "relative",
-                overflow: "hidden",
-                boxShadow: isDark ? "none" : "0 4px 16px rgba(0,0,0,0.03)",
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 2,
-                  background: `linear-gradient(90deg, transparent, ${f.badgeColor}80, transparent)`,
-                }}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                  marginBottom: 16,
-                }}
+              <h1
+                className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.08] text-gray-900 dark:text-white"
+                style={{ fontFamily: "var(--font-heading, 'Syne', sans-serif)" }}
               >
-                <div
-                  style={{
-                    width: 46,
-                    height: 46,
-                    borderRadius: 13,
-                    background: `${f.badgeColor}20`,
-                    border: `1px solid ${f.badgeColor}40`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: f.badgeColor,
-                  }}
+                Three readers. One resume.{" "}
+                <span className="bg-gradient-to-r from-teal-700 via-teal-500 to-sky-500 bg-clip-text text-transparent">
+                  See where each one quits.
+                </span>
+              </h1>
+
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-xl leading-relaxed">
+                SkillSync analyzes your resume through the eyes of an ATS bot, an HR recruiter, and a hiring manager at once. Get instant AI fixes, predicted interview questions, and benchmarks against top candidates in your field.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+                <Link
+                  href="/analyze"
+                  id="hero-start-scan-btn"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full text-base font-extrabold bg-gradient-to-r from-teal-700 to-teal-500 hover:from-teal-600 hover:to-teal-400 text-white shadow-xl shadow-teal-700/25 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                 >
-                  <FeatureIcon name={f.iconName} />
+                  Check your resume free <ArrowRight size={18} />
+                </Link>
+
+                <a
+                  href="#pick-a-reader"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full text-base font-bold bg-white dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-800 dark:text-white border border-gray-200 dark:border-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                >
+                  Explore sample audit
+                </a>
+              </div>
+
+              {/* Trust signals */}
+              <div className="pt-4 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={15} className="text-teal-600 dark:text-teal-400" />
+                  <span>30+ ATS schema criteria</span>
                 </div>
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 800,
-                    padding: "4px 10px",
-                    borderRadius: 20,
-                    background: `${f.badgeColor}20`,
-                    color: f.badgeColor,
-                    border: `1px solid ${f.badgeColor}40`,
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {f.badge}
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={15} className="text-teal-600 dark:text-teal-400" />
+                  <span>No credit card required</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={15} className="text-teal-600 dark:text-teal-400" />
+                  <span>Confidential & encrypted</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Hero Right Column: Interactive 3D Stacked Scene */}
+            <div className="lg:col-span-5 relative">
+              <ResumeScene3D
+                activeReviewer={selectedReader}
+                onSelectReviewer={(id) => setSelectedReader(id)}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 2. "PICK A READER" INTERACTIVE PANEL WITH 3D TILT ───────────── */}
+      <section
+        id="pick-a-reader"
+        className="py-16 lg:py-24 bg-gray-100/60 dark:bg-white/[0.02] border-y border-gray-200 dark:border-white/10"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-teal-600 dark:text-teal-400">
+              Interactive Persona Simulation
+            </span>
+            <h2
+              className="text-3xl sm:text-4xl font-extrabold mt-2 text-gray-900 dark:text-white"
+              style={{ fontFamily: "var(--font-heading, 'Syne', sans-serif)" }}
+            >
+              Pick a Reader. See Where They Stop.
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-3">
+              Each reviewer looks for entirely different signals. Choose a reader below to inspect their score, failure trigger, and instant AI fix.
+            </p>
+          </div>
+
+          {/* Reader Tabs */}
+          <div className="flex justify-center mb-8">
+            <div
+              role="tablist"
+              aria-label="Reviewer Persona Tabs"
+              className="inline-flex p-1.5 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-sm gap-1"
+            >
+              {(Object.keys(READERS) as ReviewerId[]).map((id) => {
+                const r = READERS[id];
+                const isSelected = selectedReader === id;
+                return (
+                  <button
+                    key={id}
+                    role="tab"
+                    id={`tab-reader-${id}`}
+                    aria-selected={isSelected}
+                    aria-controls={`panel-reader-${id}`}
+                    onClick={() => setSelectedReader(id)}
+                    className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
+                      isSelected
+                        ? "bg-teal-700 text-white shadow-md shadow-teal-700/20 scale-[1.02]"
+                        : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5"
+                    }`}
+                  >
+                    {id === "ats" ? <Bot size={16} /> : id === "recruiter" ? <Users size={16} /> : <Briefcase size={16} />}
+                    <span>{r.label}</span>
+                    <span className="text-xs opacity-80">({r.score})</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 3D Tilting Reader Card */}
+          <div
+            id={`panel-reader-${selectedReader}`}
+            role="tabpanel"
+            aria-labelledby={`tab-reader-${selectedReader}`}
+            onMouseMove={handleCardMouseMove}
+            onMouseLeave={handleCardMouseLeave}
+            style={{
+              transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+              transition: "transform 0.15s ease-out, box-shadow 0.2s ease",
+            }}
+            className="max-w-4xl mx-auto rounded-3xl bg-white dark:bg-slate-900 border-2 border-teal-500/30 dark:border-teal-500/40 p-6 sm:p-10 shadow-2xl relative overflow-hidden"
+          >
+            {/* Header row */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-8 border-b border-gray-100 dark:border-white/10">
+              <div className="flex items-start gap-5">
+                <ScoreRing score={reader.score} size={110} strokeWidth={9} showGrade label="Audit Score" />
+                <div>
+                  <span
+                    className="inline-block text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full text-white mb-2"
+                    style={{ backgroundColor: reader.accentColor }}
+                  >
+                    {reader.badge}
+                  </span>
+                  <h3
+                    className="text-2xl font-extrabold text-gray-900 dark:text-white"
+                    style={{ fontFamily: "var(--font-heading, 'Syne', sans-serif)" }}
+                  >
+                    {reader.label} View
+                  </h3>
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-0.5">
+                    {reader.tagline}
+                  </p>
+                </div>
+              </div>
+
+              {/* Stop indicator badge */}
+              <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 rounded-2xl p-4 sm:max-w-xs">
+                <div className="flex items-center gap-2 text-xs font-extrabold uppercase text-red-600 dark:text-red-400">
+                  <AlertTriangle size={15} />
+                  <span>Drop-Off Point</span>
+                </div>
+                <p className="text-sm font-bold text-gray-900 dark:text-white mt-1">
+                  {reader.stopAt}
+                </p>
+              </div>
+            </div>
+
+            {/* Critique & Why it fails */}
+            <div className="py-6 space-y-3">
+              <h4 className="text-lg font-bold text-gray-900 dark:text-white">
+                &ldquo;{reader.headline}&rdquo;
+              </h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                {reader.body}
+              </p>
+            </div>
+
+            {/* Actionable AI Fix Preview */}
+            <div className="mt-4 p-5 sm:p-6 rounded-2xl bg-teal-50/50 dark:bg-teal-950/20 border border-teal-200/80 dark:border-teal-800/60 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-teal-800 dark:text-teal-300">
+                  <Sparkles size={15} /> Recommended AI Fix
+                </div>
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                  +18 pts Potential Gain
                 </span>
               </div>
-              <h3
-                style={{
-                  fontSize: 16,
-                  fontWeight: 800,
-                  marginBottom: 10,
-                  color: isDark ? "#fff" : "#0F172A",
-                  fontFamily: "'Syne', sans-serif",
-                }}
-              >
-                {f.title}
-              </h3>
-              <p style={{ fontSize: 13, color: isDark ? "rgba(255,255,255,0.5)" : "#64748B", lineHeight: 1.7, margin: 0 }}>
-                {f.desc}
-              </p>
+
+              <div>
+                <p className="text-sm font-bold text-gray-900 dark:text-white">
+                  {reader.fixTitle}
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  {reader.fixDescription}
+                </p>
+              </div>
+
+              {/* Before / After comparison */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-red-50/80 dark:bg-red-950/30 border border-red-200/60 dark:border-red-900/40 text-red-900 dark:text-red-200">
+                  <span className="font-extrabold uppercase text-[10px] text-red-600 dark:text-red-400 block mb-1">
+                    Before (Rejected)
+                  </span>
+                  <code>{reader.fixCodeBefore}</code>
+                </div>
+                <div className="p-3 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-200">
+                  <span className="font-extrabold uppercase text-[10px] text-emerald-600 dark:text-emerald-400 block mb-1">
+                    SkillSync AI Rewrite (Pass)
+                  </span>
+                  <code>{reader.fixCodeAfter}</code>
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 3. 9 FEATURE CARDS ───────────────────────────────────────────── */}
+      <section className="py-16 lg:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-teal-600 dark:text-teal-400">
+            Comprehensive Career Stack
+          </span>
+          <h2
+            className="text-3xl sm:text-4xl font-extrabold mt-2 text-gray-900 dark:text-white"
+            style={{ fontFamily: "var(--font-heading, 'Syne', sans-serif)" }}
+          >
+            Everything You Need to Pass Every Filter
+          </h2>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-3">
+            SkillSync is not just another keyword counter. It is a full career intelligence engine built for ambitious engineers and professionals.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {NINE_FEATURES.map((feat, idx) => (
+            <Link
+              key={idx}
+              href={feat.href}
+              className="group p-6 rounded-2xl bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 hover:border-teal-500/60 dark:hover:border-teal-400/60 shadow-sm hover:shadow-xl transition-all duration-200 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 group-hover:scale-110 transition-transform">
+                    {feat.icon}
+                  </div>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300">
+                    {feat.badge}
+                  </span>
+                </div>
+                <h3
+                  className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors"
+                  style={{ fontFamily: "var(--font-heading, 'Syne', sans-serif)" }}
+                >
+                  {feat.title}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
+                  {feat.description}
+                </p>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-white/5 flex items-center text-xs font-bold text-teal-700 dark:text-teal-400 gap-1.5 group-hover:gap-2.5 transition-all">
+                <span>Explore capability</span>
+                <ChevronRight size={14} />
+              </div>
+            </Link>
           ))}
         </div>
       </section>
 
-      {/* ── Comparison ── */}
-      <section
-        style={{
-          padding: "100px 24px",
-          background: isDark ? "rgba(255,255,255,0.02)" : "#F1F5F9",
-          borderTop: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #E2E8F0",
-          borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #E2E8F0",
-        }}
-      >
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 56 }}>
-            <p
-              style={{
-                fontSize: 12,
-                fontWeight: 800,
-                letterSpacing: "0.1em",
-                color: "#378ADD",
-                marginBottom: 16,
-                textTransform: "uppercase",
-              }}
-            >
-              How it compares
-            </p>
+      {/* ── 4. COMPETITOR COMPARISON TABLE ─────────────────────────────────── */}
+      <section className="py-16 lg:py-24 bg-gray-50 dark:bg-white/[0.02] border-t border-gray-200 dark:border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-teal-600 dark:text-teal-400">
+              Honest Platform Comparison
+            </span>
             <h2
-              style={{
-                fontSize: "clamp(28px, 4vw, 44px)",
-                fontWeight: 900,
-                fontFamily: "'Syne', sans-serif",
-                color: isDark ? "#fff" : "#0F172A",
-                letterSpacing: "-0.03em",
-                marginBottom: 14,
-              }}
+              className="text-3xl sm:text-4xl font-extrabold mt-2 text-gray-900 dark:text-white"
+              style={{ fontFamily: "var(--font-heading, 'Syne', sans-serif)" }}
             >
-              What other resume tools do,
-              <br />
-              <span style={{ color: isDark ? "rgba(255,255,255,0.35)" : "#64748B" }}>
-                and what SkillSync does differently.
-              </span>
+              Why Generic Resume Tools Fall Short
             </h2>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-3">
+              Most resume tools only check if keyword &ldquo;X&rdquo; appears in your text. SkillSync evaluates the human reading psychology and technical authenticity behind each bullet.
+            </p>
           </div>
 
-          <div
-            style={{
-              borderRadius: 20,
-              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid #CBD5E1",
-              background: isDark ? "transparent" : "#FFFFFF",
-              boxShadow: isDark ? "none" : "0 4px 20px rgba(0,0,0,0.04)",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "150px 1fr 1fr",
-                background: isDark ? "rgba(255,255,255,0.05)" : "#F8FAFC",
-                padding: "14px 24px",
-                borderBottom: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #E2E8F0",
-                gap: 16,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  color: isDark ? "rgba(255,255,255,0.3)" : "#94A3B8",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Tool
-              </span>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  color: isDark ? "rgba(255,255,255,0.3)" : "#94A3B8",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                }}
-              >
-                What they do
-              </span>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  color: "#1D9E75",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                }}
-              >
-                SkillSync does differently
-              </span>
-            </div>
-
-            {COMPARISONS.map((row, i) => (
-              <div
-                key={i}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "150px 1fr 1fr",
-                  padding: "18px 24px",
-                  borderBottom:
-                    i < COMPARISONS.length - 1
-                      ? isDark
-                        ? "1px solid rgba(255,255,255,0.05)"
-                        : "1px solid #F1F5F9"
-                      : "none",
-                  background:
-                    i % 2 === 0
-                      ? "transparent"
-                      : isDark
-                      ? "rgba(255,255,255,0.015)"
-                      : "#F8FAFC",
-                  alignItems: "center",
-                  gap: 16,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 800,
-                    color: isDark ? "rgba(255,255,255,0.7)" : "#334155",
-                    background: isDark ? "rgba(255,255,255,0.05)" : "#E2E8F0",
-                    padding: "4px 10px",
-                    borderRadius: 8,
-                    display: "inline-block",
-                  }}
-                >
-                  {row.tool}
-                </span>
-                <span style={{ fontSize: 13, color: isDark ? "rgba(255,255,255,0.4)" : "#64748B", lineHeight: 1.5 }}>
-                  {row.them}
-                </span>
-                <span
-                  style={{
-                    fontSize: 13,
-                    color: isDark ? "rgba(255,255,255,0.75)" : "#0F172A",
-                    lineHeight: 1.5,
-                    fontWeight: 600,
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 6,
-                  }}
-                >
-                  <CheckCircle
-                    size={14}
-                    color="#1D9E75"
-                    style={{ flexShrink: 0, marginTop: 2 }}
-                  />
-                  {row.us}
-                </span>
-              </div>
-            ))}
+          <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900 shadow-xl">
+            <table className="w-full text-left border-collapse text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50/80 dark:bg-white/[0.04]">
+                  <th className="p-4 sm:p-5 font-bold text-gray-900 dark:text-white">Capability</th>
+                  <th className="p-4 sm:p-5 font-extrabold text-teal-700 dark:text-teal-400 bg-teal-50/50 dark:bg-teal-950/40 border-x border-teal-200 dark:border-teal-800/40">
+                    SkillSync
+                  </th>
+                  <th className="p-4 sm:p-5 font-semibold text-gray-600 dark:text-gray-300">Jobscan</th>
+                  <th className="p-4 sm:p-5 font-semibold text-gray-600 dark:text-gray-300">Resume Worded</th>
+                  <th className="p-4 sm:p-5 font-semibold text-gray-600 dark:text-gray-300">Rezi.ai</th>
+                  <th className="p-4 sm:p-5 font-semibold text-gray-600 dark:text-gray-300">Enhancv</th>
+                  <th className="p-4 sm:p-5 font-semibold text-gray-600 dark:text-gray-300">Teal HQ</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                {COMPARISON_ROWS.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                    <td className="p-4 sm:p-5 font-semibold text-gray-900 dark:text-white">
+                      {row.feature}
+                    </td>
+                    <td className="p-4 sm:p-5 bg-teal-50/30 dark:bg-teal-950/20 border-x border-teal-200/60 dark:border-teal-800/30 font-bold text-teal-700 dark:text-teal-300">
+                      <span className="inline-flex items-center gap-1.5">
+                        <CheckCircle2 size={16} className="text-emerald-500" /> Yes
+                      </span>
+                    </td>
+                    <td className="p-4 sm:p-5 text-gray-600 dark:text-gray-300">
+                      {typeof row.jobscan === "boolean" ? (
+                        row.jobscan ? (
+                          <CheckCircle2 size={16} className="text-emerald-500" />
+                        ) : (
+                          <XCircle size={16} className="text-gray-300 dark:text-gray-600" />
+                        )
+                      ) : (
+                        row.jobscan
+                      )}
+                    </td>
+                    <td className="p-4 sm:p-5 text-gray-600 dark:text-gray-300">
+                      {typeof row.resumeWorded === "boolean" ? (
+                        row.resumeWorded ? (
+                          <CheckCircle2 size={16} className="text-emerald-500" />
+                        ) : (
+                          <XCircle size={16} className="text-gray-300 dark:text-gray-600" />
+                        )
+                      ) : (
+                        row.resumeWorded
+                      )}
+                    </td>
+                    <td className="p-4 sm:p-5 text-gray-600 dark:text-gray-300">
+                      {typeof row.rezi === "boolean" ? (
+                        row.rezi ? (
+                          <CheckCircle2 size={16} className="text-emerald-500" />
+                        ) : (
+                          <XCircle size={16} className="text-gray-300 dark:text-gray-600" />
+                        )
+                      ) : (
+                        row.rezi
+                      )}
+                    </td>
+                    <td className="p-4 sm:p-5 text-gray-600 dark:text-gray-300">
+                      {typeof row.enhancv === "boolean" ? (
+                        row.enhancv ? (
+                          <CheckCircle2 size={16} className="text-emerald-500" />
+                        ) : (
+                          <XCircle size={16} className="text-gray-300 dark:text-gray-600" />
+                        )
+                      ) : (
+                        row.enhancv
+                      )}
+                    </td>
+                    <td className="p-4 sm:p-5 text-gray-600 dark:text-gray-300">
+                      {typeof row.teal === "boolean" ? (
+                        row.teal ? (
+                          <CheckCircle2 size={16} className="text-emerald-500" />
+                        ) : (
+                          <XCircle size={16} className="text-gray-300 dark:text-gray-600" />
+                        )
+                      ) : (
+                        row.teal
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
 
-      {/* ── Roadmap ── */}
-      <section style={{ padding: "100px 24px", maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 64 }}>
-          <p
-            style={{
-              fontSize: 12,
-              fontWeight: 800,
-              letterSpacing: "0.1em",
-              color: "#7F77DD",
-              marginBottom: 16,
-              textTransform: "uppercase",
-            }}
-          >
-            Roadmap
-          </p>
+      {/* ── 5. ROADMAP IN 4 PHASE CARDS ──────────────────────────────────── */}
+      <section id="roadmap" className="py-16 lg:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-teal-600 dark:text-teal-400">
+            Transparent Engineering Plan
+          </span>
           <h2
-            style={{
-              fontSize: "clamp(28px, 4vw, 44px)",
-              fontWeight: 900,
-              fontFamily: "'Syne', sans-serif",
-              color: isDark ? "#fff" : "#0F172A",
-              letterSpacing: "-0.03em",
-              marginBottom: 14,
-            }}
+            className="text-3xl sm:text-4xl font-extrabold mt-2 text-gray-900 dark:text-white"
+            style={{ fontFamily: "var(--font-heading, 'Syne', sans-serif)" }}
           >
-            Four phases over roughly seven months.
+            Product Development Roadmap
           </h2>
-          <p style={{ fontSize: 15, color: isDark ? "rgba(255,255,255,0.4)" : "#64748B", maxWidth: 440, margin: "0 auto" }}>
-            Phase 1 is complete and tested end-to-end. Phase 2 is actively in progress.
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-3">
+            Track our progress from MVP launch to enterprise grade career intelligence. Finished items are actively deployed in this build.
           </p>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: 20,
-          }}
-        >
-          {ROADMAP.map((phase, i) => {
-            type StatusKey = "done" | "active" | "upcoming" | "future";
-            const STATUS_MAP: Record<StatusKey, { dot: string; label: string; labelBg: string; labelColor: string }> = {
-              done: { dot: "#1D9E75", label: "Complete", labelBg: isDark ? "rgba(29, 158, 117, 0.15)" : "#E1F5EE", labelColor: "#1D9E75" },
-              active: { dot: "#378ADD", label: "In progress", labelBg: isDark ? "rgba(55, 138, 221, 0.15)" : "#E0F2FE", labelColor: "#0284C7" },
-              upcoming: { dot: "#7F77DD", label: "Upcoming", labelBg: isDark ? "rgba(127, 119, 221, 0.15)" : "#EDE9FE", labelColor: "#7C3AED" },
-              future: { dot: isDark ? "rgba(255,255,255,0.2)" : "#94A3B8", label: "Planned", labelBg: isDark ? "rgba(255,255,255,0.05)" : "#F1F5F9", labelColor: isDark ? "rgba(255,255,255,0.4)" : "#64748B" },
-            };
-            const sc = STATUS_MAP[phase.status as StatusKey];
-
-            return (
-              <div
-                key={i}
-                style={{
-                  background: isDark ? "rgba(255,255,255,0.03)" : "#FFFFFF",
-                  border: isDark
-                    ? `1px solid ${phase.status === "active" ? "rgba(55, 138, 221, 0.25)" : "rgba(255,255,255,0.07)"}`
-                    : `1px solid ${phase.status === "active" ? "#93C5FD" : "#E2E8F0"}`,
-                  borderRadius: 18,
-                  padding: "24px 26px",
-                  position: "relative",
-                  overflow: "hidden",
-                  boxShadow: isDark ? "none" : "0 4px 16px rgba(0,0,0,0.03)",
-                }}
-              >
-                {phase.status === "active" && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: 2,
-                      background: "linear-gradient(90deg, transparent, #378ADD, transparent)",
-                    }}
-                  />
-                )}
-
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: 16,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 800,
-                      letterSpacing: "0.1em",
-                      color: isDark ? "rgba(255,255,255,0.3)" : "#94A3B8",
-                      textTransform: "uppercase",
-                    }}
-                  >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {ROADMAP_PHASES.map((phase, idx) => (
+            <div
+              key={idx}
+              className={`p-6 rounded-2xl flex flex-col justify-between border ${
+                phase.active
+                  ? "bg-white dark:bg-slate-900 border-2 border-teal-500 shadow-xl shadow-teal-500/10"
+                  : "bg-white dark:bg-white/[0.03] border-gray-200 dark:border-white/10"
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-teal-600 dark:text-teal-400">
                     {phase.phase}
                   </span>
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 800,
-                      padding: "3px 10px",
-                      borderRadius: 20,
-                      background: sc.labelBg,
-                      color: sc.labelColor,
-                      border: `1px solid ${sc.dot}40`,
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 5,
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        background: sc.dot,
-                        display: "inline-block",
-                        boxShadow: phase.status !== "future" ? `0 0 6px ${sc.dot}` : "none",
-                      }}
-                    />
-                    {sc.label}
+                  <span className="text-[11px] font-semibold text-gray-400">
+                    {phase.timeline}
                   </span>
                 </div>
 
                 <h3
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 800,
-                    color: isDark ? "#fff" : "#0F172A",
-                    fontFamily: "'Syne', sans-serif",
-                    marginBottom: 4,
-                  }}
+                  className="text-lg font-bold text-gray-900 dark:text-white"
+                  style={{ fontFamily: "var(--font-heading, 'Syne', sans-serif)" }}
                 >
-                  {phase.label}
+                  {phase.title}
                 </h3>
-                <p
-                  style={{
-                    fontSize: 12,
-                    color: isDark ? "rgba(255,255,255,0.3)" : "#64748B",
-                    marginBottom: 18,
-                    fontWeight: 600,
-                  }}
-                >
-                  {phase.timeline}
-                </p>
 
-                <ul
-                  style={{
-                    listStyle: "none",
-                    padding: 0,
-                    margin: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                  }}
-                >
-                  {phase.items.map((item, j) => {
-                    const isDone =
-                      item.includes("DONE") || phase.status === "done";
-                    const cleanItem = item.replace(" DONE", "");
-                    return (
-                      <li
-                        key={j}
-                        style={{
-                          display: "flex",
-                          alignItems: "flex-start",
-                          gap: 8,
-                          fontSize: 13,
-                          lineHeight: 1.5,
-                          color: isDone
-                            ? isDark ? "rgba(255,255,255,0.7)" : "#1E293B"
-                            : isDark ? "rgba(255,255,255,0.35)" : "#94A3B8",
-                        }}
-                      >
-                        <span
-                          style={{
-                            width: 16,
-                            height: 16,
-                            borderRadius: "50%",
-                            background: isDone
-                              ? isDark ? "rgba(29, 158, 117, 0.2)" : "#E1F5EE"
-                              : isDark ? "rgba(255,255,255,0.06)" : "#F1F5F9",
-                            border: isDone
-                              ? "1px solid rgba(29, 158, 117, 0.4)"
-                              : isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #CBD5E1",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
-                            marginTop: 1,
-                          }}
-                        >
-                          {isDone && <CheckCircle size={10} color="#1D9E75" />}
-                        </span>
-                        {cleanItem}
-                      </li>
-                    );
-                  })}
+                <ul className="mt-5 space-y-2.5 text-xs">
+                  {phase.items.map((item, i) => (
+                    <li
+                      key={i}
+                      className={`flex items-start gap-2.5 leading-snug ${
+                        item.done
+                          ? "text-gray-800 dark:text-gray-200 font-medium"
+                          : "text-gray-400 dark:text-gray-400"
+                      }`}
+                    >
+                      {item.done ? (
+                        <CheckCircle2 size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+                      ) : (
+                        <span className="w-3.5 h-3.5 rounded-full border border-gray-300 dark:border-white/20 shrink-0 mt-0.5" />
+                      )}
+                      <span>{item.text}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
-            );
-          })}
-        </div>
-      </section>
 
-      {/* ── Sample interface CTA ── */}
-      <section
-        style={{
-          padding: "80px 24px",
-          borderTop: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #E2E8F0",
-          background: isDark
-            ? "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(29,158,117,0.08) 0%, transparent 70%)"
-            : "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(29,158,117,0.04) 0%, transparent 70%)",
-        }}
-      >
-        <div style={{ maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: isDark ? "rgba(255,255,255,0.04)" : "#FFFFFF",
-              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid #E2E8F0",
-              borderRadius: 12,
-              padding: "8px 18px",
-              fontSize: 12,
-              color: isDark ? "rgba(255,255,255,0.35)" : "#64748B",
-              fontWeight: 600,
-              marginBottom: 28,
-              boxShadow: isDark ? "none" : "0 2px 6px rgba(0,0,0,0.02)",
-            }}
-          >
-            <Gauge size={13} />
-            SkillSync sample interface · All scores, resume text, prices and salaries are
-            placeholder data
-          </div>
-
-          <h2
-            style={{
-              fontSize: "clamp(28px, 4vw, 48px)",
-              fontWeight: 900,
-              fontFamily: "'Syne', sans-serif",
-              color: isDark ? "#fff" : "#0F172A",
-              letterSpacing: "-0.03em",
-              marginBottom: 20,
-              lineHeight: 1.15,
-            }}
-          >
-            Stop guessing. Start knowing
-            <br />
-            <span
-              style={{
-                background: "linear-gradient(135deg, #1D9E75 0%, #378ADD 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              exactly why you&apos;re rejected.
-            </span>
-          </h2>
-          <p
-            style={{
-              fontSize: 16,
-              color: isDark ? "rgba(255,255,255,0.4)" : "#475569",
-              lineHeight: 1.7,
-              marginBottom: 36,
-            }}
-          >
-            Your next application deserves more than a keyword checker. Run it through three reviewer
-            lenses and fix the actual problems — before a human ever reads it.
-          </p>
-
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" as const }}>
-            <Link
-              href="/dashboard"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "16px 32px",
-                borderRadius: 14,
-                background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
-                color: "#fff",
-                textDecoration: "none",
-                fontSize: 15,
-                fontWeight: 700,
-                boxShadow: "0 8px 32px rgba(15, 110, 86, 0.45)",
-              }}
-            >
-              <Flame size={16} />
-              Start for free
-            </Link>
-            <Link
-              href="/analyze/upload"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "16px 24px",
-                borderRadius: 14,
-                background: isDark ? "rgba(255,255,255,0.05)" : "#FFFFFF",
-                border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #CBD5E1",
-                color: isDark ? "rgba(255,255,255,0.7)" : "#1E293B",
-                textDecoration: "none",
-                fontSize: 15,
-                fontWeight: 600,
-                boxShadow: isDark ? "none" : "0 2px 6px rgba(0,0,0,0.02)",
-              }}
-            >
-              Upload a resume <ChevronRight size={16} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Footer ── */}
-      <footer
-        style={{
-          borderTop: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #E2E8F0",
-          background: isDark ? "transparent" : "#FFFFFF",
-          padding: "40px 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap" as const,
-          gap: 16,
-          maxWidth: 1200,
-          margin: "0 auto",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 9,
-              background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
-              fontWeight: 900,
-              fontSize: 15,
-            }}
-          >
-            S
-          </div>
-          <span
-            style={{
-              fontFamily: "'Syne', sans-serif",
-              fontWeight: 800,
-              fontSize: 18,
-              color: "#1D9E75",
-            }}
-          >
-            SkillSync
-          </span>
-        </div>
-        <p style={{ fontSize: 13, color: isDark ? "rgba(255,255,255,0.25)" : "#94A3B8", margin: 0 }}>
-          &copy; {new Date().getFullYear()} SkillSync &middot; Built to help real people get real jobs.
-        </p>
-        <div style={{ display: "flex", gap: 20 }}>
-          {["Dashboard", "Analyze", "Benchmark", "Career Path"].map((label) => (
-            <Link
-              key={label}
-              href={`/${label.toLowerCase().replace(" ", "-")}`}
-              style={{
-                fontSize: 13,
-                color: isDark ? "rgba(255,255,255,0.3)" : "#64748B",
-                textDecoration: "none",
-                fontWeight: 600,
-              }}
-            >
-              {label}
-            </Link>
+              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-white/10">
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                    phase.completed
+                      ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
+                      : phase.active
+                      ? "bg-teal-50 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300"
+                      : "bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-400"
+                  }`}
+                >
+                  {phase.completed ? "Done" : phase.active ? "Active Release" : "Upcoming"}
+                </span>
+              </div>
+            </div>
           ))}
         </div>
-      </footer>
+      </section>
+
+      {/* ── 6. FINAL BOTTOM CTA BANNER ───────────────────────────────────── */}
+      <section className="py-16 bg-gradient-to-r from-teal-800 to-teal-600 text-white text-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <h2
+            className="text-3xl sm:text-4xl font-black"
+            style={{ fontFamily: "var(--font-heading, 'Syne', sans-serif)" }}
+          >
+            Ready to See Why Recruiters Are Passing?
+          </h2>
+          <p className="mt-3 text-teal-100 text-base max-w-xl mx-auto">
+            Upload your resume or paste text. In 10 seconds, get actionable multi-persona feedback that gets you interviews.
+          </p>
+          <div className="mt-8 flex justify-center">
+            <Link
+              href="/analyze"
+              className="px-8 py-4 rounded-full text-base font-extrabold bg-white text-teal-900 hover:bg-gray-100 shadow-xl transition-all"
+            >
+              Analyze My Resume Free &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
     </div>
   );
 }
