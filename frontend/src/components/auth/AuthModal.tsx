@@ -1142,11 +1142,11 @@ export function AuthCard({
               </span>
             </button>
 
-            {/* 2. Continue with LinkedIn */}
+            {/* 2. Continue with GitHub */}
             <button
               type="button"
-              id="sign-in-with-linkedin-btn"
-              onClick={() => setActiveOAuthProvider("linkedin")}
+              id="sign-in-with-github-btn"
+              onClick={() => setActiveOAuthProvider("github")}
               disabled={loadingProvider !== null}
               style={{
                 display: "flex",
@@ -1164,85 +1164,15 @@ export function AuthCard({
                 boxShadow: isDark
                   ? "0 2px 8px rgba(0,0,0,0.2)"
                   : "0 2px 6px rgba(0,0,0,0.04)",
-                opacity: loadingProvider !== null && loadingProvider !== "linkedin" ? 0.6 : 1,
+                opacity: loadingProvider !== null && loadingProvider !== "github" ? 0.6 : 1,
               }}
               onMouseEnter={(e) => {
                 if (loadingProvider === null) {
-                  e.currentTarget.style.borderColor = "#0A66C2";
-                  e.currentTarget.style.transform = "translateY(-1px)";
-                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(10, 102, 194, 0.25)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.14)" : "#CBD5E1";
-                e.currentTarget.style.transform = "none";
-                e.currentTarget.style.boxShadow = isDark
-                  ? "0 2px 8px rgba(0,0,0,0.2)"
-                  : "0 2px 6px rgba(0,0,0,0.04)";
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                {loadingProvider === "linkedin" ? (
-                  <Loader2 size={18} className="animate-spin" color="#0A66C2" />
-                ) : (
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="#0A66C2">
-                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-                  </svg>
-                )}
-                <span>
-                  {loadingProvider === "linkedin"
-                    ? "Connecting to LinkedIn..."
-                    : mode === "signin"
-                    ? "Continue with LinkedIn"
-                    : "Sign up with LinkedIn"}
-                </span>
-              </div>
-              <span
-                style={{
-                  fontSize: 10.5,
-                  fontWeight: 700,
-                  padding: "3px 8px",
-                  borderRadius: 20,
-                  background: "rgba(10, 102, 194, 0.14)",
-                  color: "#0A66C2",
-                  border: "1px solid rgba(10, 102, 194, 0.25)",
-                }}
-              >
-                Career
-              </span>
-            </button>
-
-            {/* 3. Continue with X (Twitter) */}
-            <button
-              type="button"
-              id="sign-in-with-twitter-btn"
-              onClick={() => setActiveOAuthProvider("twitter")}
-              disabled={loadingProvider !== null}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 16px",
-                borderRadius: 14,
-                border: isDark ? "1px solid rgba(255, 255, 255, 0.14)" : "1px solid #CBD5E1",
-                background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
-                color: isDark ? "#FFFFFF" : "#0F172A",
-                cursor: loadingProvider !== null ? "not-allowed" : "pointer",
-                fontSize: 13.5,
-                fontWeight: 700,
-                transition: "all 0.15s ease",
-                boxShadow: isDark
-                  ? "0 2px 8px rgba(0,0,0,0.2)"
-                  : "0 2px 6px rgba(0,0,0,0.04)",
-                opacity: loadingProvider !== null && loadingProvider !== "twitter" ? 0.6 : 1,
-              }}
-              onMouseEnter={(e) => {
-                if (loadingProvider === null) {
-                  e.currentTarget.style.borderColor = isDark ? "#38BDF8" : "#0F1419";
+                  e.currentTarget.style.borderColor = isDark ? "#FFFFFF" : "#0F172A";
                   e.currentTarget.style.transform = "translateY(-1px)";
                   e.currentTarget.style.boxShadow = isDark
-                    ? "0 4px 16px rgba(56, 189, 248, 0.25)"
-                    : "0 4px 16px rgba(15, 20, 25, 0.15)";
+                    ? "0 4px 16px rgba(255, 255, 255, 0.15)"
+                    : "0 4px 16px rgba(15, 23, 42, 0.15)";
                 }
               }}
               onMouseLeave={(e) => {
@@ -1254,19 +1184,19 @@ export function AuthCard({
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                {loadingProvider === "twitter" ? (
-                  <Loader2 size={18} className="animate-spin" color={isDark ? "#38BDF8" : "#0F1419"} />
+                {loadingProvider === "github" ? (
+                  <Loader2 size={18} className="animate-spin" color={isDark ? "#fff" : "#0F172A"} />
                 ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
                   </svg>
                 )}
                 <span>
-                  {loadingProvider === "twitter"
-                    ? "Connecting to X..."
+                  {loadingProvider === "github"
+                    ? "Connecting to GitHub..."
                     : mode === "signin"
-                    ? "Continue with X (Twitter)"
-                    : "Sign up with X (Twitter)"}
+                    ? "Continue with GitHub"
+                    : "Sign up with GitHub"}
                 </span>
               </div>
               <span
@@ -1277,109 +1207,12 @@ export function AuthCard({
                   borderRadius: 20,
                   background: isDark ? "rgba(255, 255, 255, 0.08)" : "#F1F5F9",
                   color: isDark ? "#CBD5E1" : "#475569",
+                  border: isDark ? "1px solid rgba(255, 255, 255, 0.12)" : "1px solid #E2E8F0",
                 }}
               >
-                Social
+                Developer
               </span>
             </button>
-
-            {/* 4. GitHub and Microsoft Grid Row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              {/* GitHub */}
-              <button
-                type="button"
-                id="sign-in-with-github-btn"
-                onClick={() => setActiveOAuthProvider("github")}
-                disabled={loadingProvider !== null}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  padding: "11px 12px",
-                  borderRadius: 14,
-                  border: isDark ? "1px solid rgba(255, 255, 255, 0.14)" : "1px solid #CBD5E1",
-                  background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
-                  color: isDark ? "#FFFFFF" : "#0F172A",
-                  cursor: loadingProvider !== null ? "not-allowed" : "pointer",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  transition: "all 0.15s ease",
-                  boxShadow: isDark
-                    ? "0 2px 8px rgba(0,0,0,0.2)"
-                    : "0 2px 6px rgba(0,0,0,0.04)",
-                  opacity: loadingProvider !== null && loadingProvider !== "github" ? 0.6 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (loadingProvider === null) {
-                    e.currentTarget.style.borderColor = isDark ? "#FFFFFF" : "#0F172A";
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.14)" : "#CBD5E1";
-                  e.currentTarget.style.transform = "none";
-                }}
-              >
-                {loadingProvider === "github" ? (
-                  <Loader2 size={16} className="animate-spin" color={isDark ? "#fff" : "#0F172A"} />
-                ) : (
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-                  </svg>
-                )}
-                <span>GitHub</span>
-              </button>
-
-              {/* Microsoft */}
-              <button
-                type="button"
-                id="sign-in-with-microsoft-btn"
-                onClick={() => setActiveOAuthProvider("microsoft")}
-                disabled={loadingProvider !== null}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  padding: "11px 12px",
-                  borderRadius: 14,
-                  border: isDark ? "1px solid rgba(255, 255, 255, 0.14)" : "1px solid #CBD5E1",
-                  background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
-                  color: isDark ? "#FFFFFF" : "#0F172A",
-                  cursor: loadingProvider !== null ? "not-allowed" : "pointer",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  transition: "all 0.15s ease",
-                  boxShadow: isDark
-                    ? "0 2px 8px rgba(0,0,0,0.2)"
-                    : "0 2px 6px rgba(0,0,0,0.04)",
-                  opacity: loadingProvider !== null && loadingProvider !== "microsoft" ? 0.6 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (loadingProvider === null) {
-                    e.currentTarget.style.borderColor = "#00A4EF";
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.14)" : "#CBD5E1";
-                  e.currentTarget.style.transform = "none";
-                }}
-              >
-                {loadingProvider === "microsoft" ? (
-                  <Loader2 size={16} className="animate-spin" color="#00A4EF" />
-                ) : (
-                  <svg width="17" height="17" viewBox="0 0 24 24">
-                    <rect x="1" y="1" width="10" height="10" fill="#F25022" />
-                    <rect x="13" y="1" width="10" height="10" fill="#7FBA00" />
-                    <rect x="1" y="13" width="10" height="10" fill="#00A4EF" />
-                    <rect x="13" y="13" width="10" height="10" fill="#FFB900" />
-                  </svg>
-                )}
-                <span>Microsoft</span>
-              </button>
-            </div>
           </div>
 
           {/* Elegant Divider between Social and Email */}
@@ -1586,14 +1419,14 @@ export function AuthCard({
             </button>
           </form>
 
-          {/* Fast 1-Click Instant Preview Option */}
+          {/* Sample Data Demo Sandbox Access */}
           <div
             style={{
               marginTop: 14,
               padding: "11px 15px",
               borderRadius: 14,
-              background: isDark ? "rgba(29, 158, 117, 0.1)" : "#E1F5EE",
-              border: isDark ? "1px solid rgba(29, 158, 117, 0.25)" : "1px solid #A3E0C8",
+              background: isDark ? "rgba(29, 158, 117, 0.08)" : "#E1F5EE",
+              border: isDark ? "1px solid rgba(29, 158, 117, 0.2)" : "1px solid #A3E0C8",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -1603,7 +1436,7 @@ export function AuthCard({
             <div>
               <div
                 style={{
-                  fontSize: 12.5,
+                  fontSize: 12,
                   fontWeight: 700,
                   color: "#1D9E75",
                   display: "flex",
@@ -1611,7 +1444,7 @@ export function AuthCard({
                   gap: 6,
                 }}
               >
-                <Zap size={14} /> Quick Demo Access
+                <Zap size={13} /> Explore Demo Sandbox (Sample Data)
               </div>
               <div
                 style={{
@@ -1620,28 +1453,33 @@ export function AuthCard({
                   marginTop: 2,
                 }}
               >
-                Bypass credentials & explore as Demo Evaluator
+                Preview the platform with sample candidate records
               </div>
             </div>
             <button
               type="button"
               id="instant-demo-access-btn"
-              onClick={() => executeLogin("Demo Evaluator", "demo@skillsync.ai", "demo")}
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("user_is_demo", "true");
+                }
+                executeLogin("Demo Evaluator", "demo@skillsync.ai", "demo");
+              }}
               disabled={loadingProvider !== null}
               style={{
-                padding: "7px 14px",
+                padding: "7px 13px",
                 borderRadius: 9,
                 background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
                 color: "#ffffff",
                 border: "none",
                 fontWeight: 700,
-                fontSize: 11.5,
+                fontSize: 11,
                 cursor: "pointer",
                 whiteSpace: "nowrap",
-                boxShadow: "0 2px 6px rgba(15, 110, 86, 0.3)",
+                boxShadow: "0 2px 6px rgba(15, 110, 86, 0.25)",
               }}
             >
-              Quick Sign In
+              Explore Sample
             </button>
           </div>
 
@@ -1717,7 +1555,12 @@ export function AuthCard({
           }}
         >
           <Shield size={13} color="#1D9E75" />
-          <span>256-bit TLS encrypted &middot; Zero unauthorized data sharing</span>
+          <span>
+            TLS 1.3 encrypted &middot; Zero AI model training on resumes &middot;{" "}
+            <a href="/privacy" style={{ color: "#1D9E75", textDecoration: "underline" }}>
+              Privacy Policy
+            </a>
+          </span>
         </div>
       </div>
     </>

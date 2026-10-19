@@ -115,10 +115,10 @@ export default function SignInPage() {
             {/* Feature Highlights */}
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 8 }}>
               {[
-                "1-Click sign-in with Google, LinkedIn, X (Twitter), GitHub, or Microsoft",
+                "1-Click sign-in with Google or GitHub (or direct email magic link)",
                 "Instant resume ATS parser & evidence graph scoring",
                 "Live interview question predictor tailored to your experience",
-                "100% confidential & 256-bit TLS encrypted session",
+                "TLS 1.3 encrypted in transit · Resumes never used for public AI training",
               ].map((text, idx) => (
                 <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <div

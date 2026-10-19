@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   FileText,
   CheckCircle2,
@@ -20,6 +21,7 @@ import {
   Sliders,
   Layers,
   Award,
+  Loader2,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -115,7 +117,7 @@ const FAQS = [
   },
   {
     q: "Is my resume data kept confidential?",
-    a: "Yes. SkillSync enforces 256-bit TLS encryption in transit and never sells or shares your uploaded resumes with third-party recruiters without your explicit permission.",
+    a: "Yes. All resume uploads and session traffic are encrypted in transit using TLS 1.3. Your resume text is processed through zero-data-retention enterprise AI endpoints that never train on customer data, and we never sell your personal information. Read our full Privacy Policy (/privacy) for complete details.",
   },
   {
     q: "Can I tailor my resume to a specific job description?",
@@ -124,12 +126,57 @@ const FAQS = [
 ];
 
 export default function AnalyzePage() {
+  const router = useRouter();
   const [step, setStep] = useState<FlowStep>("upload");
   const [results, setResults] = useState(SAMPLE_RESULTS);
+  const [isSampleDemo, setIsSampleDemo] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
+  const handleUploadRealFile = async (file: File) => {
+    setIsUploading(true);
+    setUploadError(null);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const { data: resume } = await apiClient.post("/resume/upload", form);
+      const { data: analysis } = await apiClient.post("/analysis/start", {
+        resume_id: resume.id,
+        target_role: "General Professional",
+        demanded_skills: "General Industry Competencies",
+      });
+      router.push(`/analyze/result/${analysis.id}`);
+    } catch (err: any) {
+      console.error("Live upload error:", err);
+      const detailMsg = err?.response?.data?.detail;
+      setUploadError(
+        typeof detailMsg === "string"
+          ? detailMsg
+          : "Backend connection issue. Switched to interactive sample mode."
+      );
+      setIsUploading(false);
+      // Fallback to sample
+      setIsSampleDemo(true);
+      setStep("results");
+    }
+  };
+
+  const handlePasteText = async (text: string) => {
+    // Convert pasted text to a text file for upload
+    const textBlob = new Blob([text], { type: "text/plain" });
+    const textFile = new File([textBlob], "pasted_resume.txt", { type: "text/plain" });
+    await handleUploadRealFile(textFile);
+  };
+
+  const handleUseSample = () => {
+    setIsSampleDemo(true);
+    setStep("scanning");
+  };
+
   const handleStartScan = () => {
+    setIsSampleDemo(true);
     setStep("scanning");
   };
 
@@ -254,18 +301,46 @@ export default function AnalyzePage() {
 
             {/* Right Column: Upload Card or Scanning or Summary */}
             <div className="lg:col-span-6">
+              {uploadError && (
+                <div className="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle size={15} className="shrink-0 text-amber-500" />
+                    <span>{uploadError}</span>
+                  </div>
+                  <button
+                    onClick={() => setUploadError(null)}
+                    className="text-amber-600 dark:text-amber-400 hover:underline font-bold"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+
               {step === "upload" && (
-                <UploadCard
-                  onUploadFile={(file) => {
-                    handleStartScan();
-                  }}
-                  onPasteText={(text) => {
-                    handleStartScan();
-                  }}
-                  onUseSample={() => {
-                    handleStartScan();
-                  }}
-                />
+                <div className="space-y-4">
+                  <UploadCard
+                    onUploadFile={handleUploadRealFile}
+                    onPasteText={handlePasteText}
+                    onUseSample={handleUseSample}
+                    isLoading={isUploading}
+                  />
+
+                  {isUploading && (
+                    <div className="p-4 rounded-xl bg-teal-500/10 border border-teal-500/25 flex items-center gap-3 text-xs text-teal-700 dark:text-teal-300 font-semibold animate-pulse">
+                      <Loader2 size={16} className="animate-spin text-teal-600 dark:text-teal-400 shrink-0" />
+                      <span>Uploading resume to backend AI parser and calculating ATS criteria...</span>
+                    </div>
+                  )}
+
+                  <div className="text-center">
+                    <Link
+                      href="/analyze/upload"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 dark:text-teal-400 hover:underline"
+                    >
+                      <Sparkles size={13} /> Looking for role-targeted analysis with a Job Description? Open Advanced Auditor &rarr;
+                    </Link>
+                  </div>
+                </div>
               )}
 
               {step === "scanning" && (
@@ -274,10 +349,20 @@ export default function AnalyzePage() {
 
               {step === "results" && (
                 <div className="rounded-2xl border border-teal-500/30 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xl space-y-5">
+                  {/* Demo Mode Badge */}
+                  {isSampleDemo && (
+                    <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs flex items-start gap-2.5">
+                      <Sparkles size={16} className="text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="font-bold">DEMONSTRATION SHOWCASE:</strong> Displaying sample ATS audit for Senior Full Stack Engineer. Upload your own resume file above for live AI analysis.
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-white/10">
                     <div>
                       <span className="text-xs font-extrabold uppercase tracking-wider text-teal-600 dark:text-teal-400">
-                        Scan Complete
+                        {isSampleDemo ? "Sample Report" : "Scan Complete"}
                       </span>
                       <h2
                         className="text-xl font-extrabold text-gray-900 dark:text-white"
@@ -288,10 +373,13 @@ export default function AnalyzePage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setStep("upload")}
+                      onClick={() => {
+                        setStep("upload");
+                        setIsSampleDemo(false);
+                      }}
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 dark:text-teal-400 hover:underline"
                     >
-                      <RotateCcw size={13} /> Re-scan new file
+                      <RotateCcw size={13} /> Upload your resume
                     </button>
                   </div>
 
@@ -319,6 +407,34 @@ export default function AnalyzePage() {
       {/* ── 2. FULL AUDIT RESULTS DASHBOARD (Visible when step === 'results') ── */}
       {step === "results" && (
         <section className="py-12 lg:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* Top Banner for Demonstration Notice */}
+          {isSampleDemo && (
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 to-teal-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+                  <Sparkles size={18} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+                    Sample Candidate Demonstration Data
+                  </h4>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+                    This sample preview illustrates SkillSync&apos;s 30+ ATS schema checks, evidence graph, and rewrite engine. To analyze your actual resume, upload a PDF/DOCX file.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("upload");
+                  setIsSampleDemo(false);
+                }}
+                className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-all shrink-0 shadow-md"
+              >
+                Upload My Resume
+              </button>
+            </div>
+          )}
           {/* Row 1: Section Grades & Format Audit Chips */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Section Grades (7 cols) */}

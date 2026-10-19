@@ -40,7 +40,7 @@ export default function SettingsPage() {
     fullName: "Ashwani Pandey",
     email: "ashwani.pandey@gmail.com",
     role: "Senior Software Engineer & Data Analyst",
-    company: "SkillSync Inc.",
+    company: "SkillSync",
     location: "San Francisco, CA",
     bio: "Passionate engineer optimizing resume performance and AI ATS extraction systems.",
   });

@@ -182,7 +182,7 @@ export function Footer() {
         {/* Bottom Row */}
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500 dark:text-gray-400">
           <div>
-            &copy; {new Date().getFullYear()} SkillSync Inc. All rights reserved.
+            &copy; {new Date().getFullYear()} Ashwani Pandey. All rights reserved.
           </div>
 
           <div className="flex flex-wrap items-center gap-6">
@@ -196,23 +196,20 @@ export function Footer() {
               Accessibility
             </Link>
 
-            {/* Accessible Language Selector */}
+            {/* Language Selector: only show verified translated languages */}
             <div className="flex items-center gap-1.5 ml-2">
-              <Globe size={14} className="text-gray-400" />
+              <Globe size={14} className="text-teal-600 dark:text-teal-400" />
               <label htmlFor="language-select" className="sr-only">
                 Select language
               </label>
               <select
                 id="language-select"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="bg-transparent text-xs text-gray-600 dark:text-gray-300 border-none cursor-pointer p-0 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                value="en"
+                disabled
+                title="SkillSync is currently localized in English (US). Try Cultural CV Adapter for US/EU/JP formats."
+                className="bg-transparent text-xs text-gray-600 dark:text-gray-300 border-none cursor-default p-0 focus:outline-none"
               >
                 <option value="en">English (US)</option>
-                <option value="es">Español</option>
-                <option value="de">Deutsch</option>
-                <option value="fr">Français</option>
-                <option value="ja">日本語</option>
               </select>
             </div>
           </div>

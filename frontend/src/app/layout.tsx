@@ -6,13 +6,42 @@ import { isClerkConfigured } from "@/lib/clerk";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SkillSync — AI-Powered Resume Analyzer",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://skillsync.ai"),
+  title: {
+    default: "SkillSync — Multi-Persona AI Resume Analyzer & Career Intelligence",
+    template: "%s | SkillSync",
+  },
   description:
-    "Analyze your resume through the eyes of an ATS bot, a recruiter, and a hiring manager. Get AI suggestions, predict interview questions, benchmark against top candidates.",
+    "Analyze your resume through the eyes of an ATS bot, a recruiter, and a hiring manager. Get verified skill evidence, interview question predictions, and job-tailored rewrites.",
+  keywords: [
+    "ATS resume checker",
+    "resume analyzer",
+    "AI resume score",
+    "interview question predictor",
+    "job description match",
+    "recruiter review",
+    "career roadmap",
+  ],
+  authors: [{ name: "Ashwani Pandey" }],
+  creator: "Ashwani Pandey",
   openGraph: {
-    title: "SkillSync",
-    description: "AI-powered resume analyzer and career coach",
+    title: "SkillSync — Multi-Persona AI Resume Analyzer",
+    description:
+      "Pass ATS screens and impress hiring managers with AI-powered resume audits, skill evidence graphs, and tailored bullet rewrites.",
+    siteName: "SkillSync",
     type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SkillSync — Multi-Persona AI Resume Analyzer",
+    description:
+      "Pass ATS screens and impress hiring managers with AI-powered resume audits, skill evidence graphs, and tailored bullet rewrites.",
+    creator: "@ashwanipandey",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
