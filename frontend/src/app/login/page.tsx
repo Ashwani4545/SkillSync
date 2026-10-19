@@ -115,7 +115,7 @@ export default function LoginPage() {
             {/* Feature Highlights */}
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 8 }}>
               {[
-                "1-Click sign-in with Google, LinkedIn, GitHub, or Microsoft",
+                "1-Click sign-in with Google, LinkedIn, X (Twitter), GitHub, or Microsoft",
                 "Instant resume ATS parser & evidence graph scoring",
                 "Live interview question predictor tailored to your experience",
                 "100% confidential & 256-bit TLS encrypted session",

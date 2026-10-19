@@ -32,7 +32,7 @@ export interface AuthSuccessData {
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface OAuthAccountPickerModalProps {
-  provider: "google" | "linkedin" | "github" | "microsoft";
+  provider: "google" | "linkedin" | "github" | "microsoft" | "twitter";
   onClose: () => void;
   onSelectAccount: (name: string, email: string) => void;
 }
@@ -76,17 +76,13 @@ export function OAuthAccountPickerModal({
 
     const trimmedEmail = customEmail.trim();
     if (!trimmedEmail) {
-      setCustomError("Please enter your email address.");
-      return;
-    }
-    if (!trimmedEmail.includes("@") || !trimmedEmail.includes(".")) {
-      setCustomError("Please enter a valid email address.");
+      setCustomError("Please enter your email or handle.");
       return;
     }
 
     const defaultName =
       customName.trim() ||
-      trimmedEmail.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ||
+      trimmedEmail.replace("@", "").split(/[@._-]/)[0].replace(/\b\w/g, (c) => c.toUpperCase()) ||
       "User";
 
     handlePickAccount(defaultName, trimmedEmail);
@@ -129,6 +125,27 @@ export function OAuthAccountPickerModal({
       ],
       placeholderEmail: "email@company.com",
       accentColor: "#0A66C2",
+    },
+    twitter: {
+      brandName: "X (Twitter)",
+      title: "Sign in with X",
+      subtitle: "to authorize SkillSync",
+      accounts: [
+        {
+          name: "Ashwani Pandey",
+          email: "@ashwanipandey (ashwani@x.com)",
+          badgeColor: "#0F1419",
+          initials: "𝕏",
+        },
+        {
+          name: "SkillSync Developer",
+          email: "@skillsync_dev (dev@skillsync.ai)",
+          badgeColor: "#1D9BF0",
+          initials: "AD",
+        },
+      ],
+      placeholderEmail: "@username, phone or email",
+      accentColor: "#1D9BF0",
     },
     github: {
       brandName: "GitHub",
@@ -281,6 +298,17 @@ export function OAuthAccountPickerModal({
                 <rect x="13" y="1" width="10" height="10" fill="#7FBA00" />
                 <rect x="1" y="13" width="10" height="10" fill="#00A4EF" />
                 <rect x="13" y="13" width="10" height="10" fill="#FFB900" />
+              </svg>
+            )}
+
+            {provider === "twitter" && (
+              <svg
+                width="34"
+                height="34"
+                viewBox="0 0 24 24"
+                fill={isDark ? "#ffffff" : "#0F1419"}
+              >
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
               </svg>
             )}
           </div>
@@ -699,7 +727,7 @@ export function AuthCard({
 
   // Active OAuth Picker State
   const [activeOAuthProvider, setActiveOAuthProvider] = useState<
-    "google" | "linkedin" | "github" | "microsoft" | null
+    "google" | "linkedin" | "github" | "microsoft" | "twitter" | null
   >(null);
 
   useEffect(() => {
@@ -1027,156 +1055,237 @@ export function AuthCard({
             </div>
           )}
 
-          {activeTab === "social" ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-              {/* 1. Continue with Google */}
-              <button
-                type="button"
-                id="sign-in-with-google-btn"
-                onClick={() => setActiveOAuthProvider("google")}
-                disabled={loadingProvider !== null}
+          {/* 1-Click Social Sign-in & Sign-up Stack */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {/* 1. Continue with Google */}
+            <button
+              type="button"
+              id="sign-in-with-google-btn"
+              onClick={() => setActiveOAuthProvider("google")}
+              disabled={loadingProvider !== null}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 16px",
+                borderRadius: 14,
+                border: isDark ? "1px solid rgba(255, 255, 255, 0.14)" : "1px solid #CBD5E1",
+                background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
+                color: isDark ? "#FFFFFF" : "#0F172A",
+                cursor: loadingProvider !== null ? "not-allowed" : "pointer",
+                fontSize: 13.5,
+                fontWeight: 700,
+                transition: "all 0.15s ease",
+                boxShadow: isDark
+                  ? "0 2px 8px rgba(0,0,0,0.2)"
+                  : "0 2px 6px rgba(0,0,0,0.04)",
+                opacity: loadingProvider !== null && loadingProvider !== "google" ? 0.6 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (loadingProvider === null) {
+                  e.currentTarget.style.borderColor = "#4285F4";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(66, 133, 244, 0.25)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.14)" : "#CBD5E1";
+                e.currentTarget.style.transform = "none";
+                e.currentTarget.style.boxShadow = isDark
+                  ? "0 2px 8px rgba(0,0,0,0.2)"
+                  : "0 2px 6px rgba(0,0,0,0.04)";
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {loadingProvider === "google" ? (
+                  <Loader2 size={18} className="animate-spin" color="#4285F4" />
+                ) : (
+                  <svg width="19" height="19" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    />
+                  </svg>
+                )}
+                <span>
+                  {loadingProvider === "google"
+                    ? "Connecting to Google..."
+                    : mode === "signin"
+                    ? "Continue with Google"
+                    : "Sign up with Google"}
+                </span>
+              </div>
+              <span
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "13px 18px",
-                  borderRadius: 14,
-                  border: isDark ? "1px solid rgba(255, 255, 255, 0.14)" : "1px solid #CBD5E1",
-                  background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
-                  color: isDark ? "#FFFFFF" : "#0F172A",
-                  cursor: loadingProvider !== null ? "not-allowed" : "pointer",
-                  fontSize: 14,
+                  fontSize: 10.5,
                   fontWeight: 700,
-                  transition: "all 0.15s ease",
-                  boxShadow: isDark
-                    ? "0 2px 8px rgba(0,0,0,0.2)"
-                    : "0 2px 6px rgba(0,0,0,0.04)",
-                  opacity: loadingProvider !== null && loadingProvider !== "google" ? 0.6 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (loadingProvider === null) {
-                    e.currentTarget.style.borderColor = "#4285F4";
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                    e.currentTarget.style.boxShadow = "0 4px 16px rgba(66, 133, 244, 0.25)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.14)" : "#CBD5E1";
-                  e.currentTarget.style.transform = "none";
-                  e.currentTarget.style.boxShadow = isDark
-                    ? "0 2px 8px rgba(0,0,0,0.2)"
-                    : "0 2px 6px rgba(0,0,0,0.04)";
+                  padding: "3px 8px",
+                  borderRadius: 20,
+                  background: "rgba(66, 133, 244, 0.14)",
+                  color: "#3B82F6",
+                  border: "1px solid rgba(66, 133, 244, 0.25)",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  {loadingProvider === "google" ? (
-                    <Loader2 size={20} className="animate-spin" color="#4285F4" />
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24">
-                      <path
-                        fill="#4285F4"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                      />
-                      <path
-                        fill="#EA4335"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                      />
-                    </svg>
-                  )}
-                  <span>
-                    {loadingProvider === "google" ? "Signing in..." : "Continue with Google"}
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "3px 9px",
-                    borderRadius: 20,
-                    background: "rgba(66, 133, 244, 0.14)",
-                    color: "#3B82F6",
-                    border: "1px solid rgba(66, 133, 244, 0.25)",
-                  }}
-                >
-                  Choose Account
-                </span>
-              </button>
+                1-Click
+              </span>
+            </button>
 
-              {/* 2. Continue with LinkedIn */}
-              <button
-                type="button"
-                id="sign-in-with-linkedin-btn"
-                onClick={() => setActiveOAuthProvider("linkedin")}
-                disabled={loadingProvider !== null}
+            {/* 2. Continue with LinkedIn */}
+            <button
+              type="button"
+              id="sign-in-with-linkedin-btn"
+              onClick={() => setActiveOAuthProvider("linkedin")}
+              disabled={loadingProvider !== null}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 16px",
+                borderRadius: 14,
+                border: isDark ? "1px solid rgba(255, 255, 255, 0.14)" : "1px solid #CBD5E1",
+                background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
+                color: isDark ? "#FFFFFF" : "#0F172A",
+                cursor: loadingProvider !== null ? "not-allowed" : "pointer",
+                fontSize: 13.5,
+                fontWeight: 700,
+                transition: "all 0.15s ease",
+                boxShadow: isDark
+                  ? "0 2px 8px rgba(0,0,0,0.2)"
+                  : "0 2px 6px rgba(0,0,0,0.04)",
+                opacity: loadingProvider !== null && loadingProvider !== "linkedin" ? 0.6 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (loadingProvider === null) {
+                  e.currentTarget.style.borderColor = "#0A66C2";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(10, 102, 194, 0.25)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.14)" : "#CBD5E1";
+                e.currentTarget.style.transform = "none";
+                e.currentTarget.style.boxShadow = isDark
+                  ? "0 2px 8px rgba(0,0,0,0.2)"
+                  : "0 2px 6px rgba(0,0,0,0.04)";
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {loadingProvider === "linkedin" ? (
+                  <Loader2 size={18} className="animate-spin" color="#0A66C2" />
+                ) : (
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="#0A66C2">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                  </svg>
+                )}
+                <span>
+                  {loadingProvider === "linkedin"
+                    ? "Connecting to LinkedIn..."
+                    : mode === "signin"
+                    ? "Continue with LinkedIn"
+                    : "Sign up with LinkedIn"}
+                </span>
+              </div>
+              <span
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "13px 18px",
-                  borderRadius: 14,
-                  border: isDark ? "1px solid rgba(255, 255, 255, 0.14)" : "1px solid #CBD5E1",
-                  background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
-                  color: isDark ? "#FFFFFF" : "#0F172A",
-                  cursor: loadingProvider !== null ? "not-allowed" : "pointer",
-                  fontSize: 14,
+                  fontSize: 10.5,
                   fontWeight: 700,
-                  transition: "all 0.15s ease",
-                  boxShadow: isDark
-                    ? "0 2px 8px rgba(0,0,0,0.2)"
-                    : "0 2px 6px rgba(0,0,0,0.04)",
-                  opacity: loadingProvider !== null && loadingProvider !== "linkedin" ? 0.6 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (loadingProvider === null) {
-                    e.currentTarget.style.borderColor = "#0A66C2";
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                    e.currentTarget.style.boxShadow = "0 4px 16px rgba(10, 102, 194, 0.25)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.14)" : "#CBD5E1";
-                  e.currentTarget.style.transform = "none";
-                  e.currentTarget.style.boxShadow = isDark
-                    ? "0 2px 8px rgba(0,0,0,0.2)"
-                    : "0 2px 6px rgba(0,0,0,0.04)";
+                  padding: "3px 8px",
+                  borderRadius: 20,
+                  background: "rgba(10, 102, 194, 0.14)",
+                  color: "#0A66C2",
+                  border: "1px solid rgba(10, 102, 194, 0.25)",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  {loadingProvider === "linkedin" ? (
-                    <Loader2 size={20} className="animate-spin" color="#0A66C2" />
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#0A66C2">
-                      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-                    </svg>
-                  )}
-                  <span>
-                    {loadingProvider === "linkedin" ? "Signing in..." : "Continue with LinkedIn"}
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "3px 9px",
-                    borderRadius: 20,
-                    background: "rgba(10, 102, 194, 0.14)",
-                    color: "#0A66C2",
-                    border: "1px solid rgba(10, 102, 194, 0.25)",
-                  }}
-                >
-                  Career Sync
-                </span>
-              </button>
+                Career
+              </span>
+            </button>
 
-              {/* 3. Continue with GitHub */}
+            {/* 3. Continue with X (Twitter) */}
+            <button
+              type="button"
+              id="sign-in-with-twitter-btn"
+              onClick={() => setActiveOAuthProvider("twitter")}
+              disabled={loadingProvider !== null}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 16px",
+                borderRadius: 14,
+                border: isDark ? "1px solid rgba(255, 255, 255, 0.14)" : "1px solid #CBD5E1",
+                background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
+                color: isDark ? "#FFFFFF" : "#0F172A",
+                cursor: loadingProvider !== null ? "not-allowed" : "pointer",
+                fontSize: 13.5,
+                fontWeight: 700,
+                transition: "all 0.15s ease",
+                boxShadow: isDark
+                  ? "0 2px 8px rgba(0,0,0,0.2)"
+                  : "0 2px 6px rgba(0,0,0,0.04)",
+                opacity: loadingProvider !== null && loadingProvider !== "twitter" ? 0.6 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (loadingProvider === null) {
+                  e.currentTarget.style.borderColor = isDark ? "#38BDF8" : "#0F1419";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                  e.currentTarget.style.boxShadow = isDark
+                    ? "0 4px 16px rgba(56, 189, 248, 0.25)"
+                    : "0 4px 16px rgba(15, 20, 25, 0.15)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.14)" : "#CBD5E1";
+                e.currentTarget.style.transform = "none";
+                e.currentTarget.style.boxShadow = isDark
+                  ? "0 2px 8px rgba(0,0,0,0.2)"
+                  : "0 2px 6px rgba(0,0,0,0.04)";
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {loadingProvider === "twitter" ? (
+                  <Loader2 size={18} className="animate-spin" color={isDark ? "#38BDF8" : "#0F1419"} />
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                )}
+                <span>
+                  {loadingProvider === "twitter"
+                    ? "Connecting to X..."
+                    : mode === "signin"
+                    ? "Continue with X (Twitter)"
+                    : "Sign up with X (Twitter)"}
+                </span>
+              </div>
+              <span
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  padding: "3px 8px",
+                  borderRadius: 20,
+                  background: isDark ? "rgba(255, 255, 255, 0.08)" : "#F1F5F9",
+                  color: isDark ? "#CBD5E1" : "#475569",
+                }}
+              >
+                Social
+              </span>
+            </button>
+
+            {/* 4. GitHub and Microsoft Grid Row */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              {/* GitHub */}
               <button
                 type="button"
                 id="sign-in-with-github-btn"
@@ -1185,14 +1294,15 @@ export function AuthCard({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "13px 18px",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "11px 12px",
                   borderRadius: 14,
                   border: isDark ? "1px solid rgba(255, 255, 255, 0.14)" : "1px solid #CBD5E1",
                   background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
                   color: isDark ? "#FFFFFF" : "#0F172A",
                   cursor: loadingProvider !== null ? "not-allowed" : "pointer",
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: 700,
                   transition: "all 0.15s ease",
                   boxShadow: isDark
@@ -1204,44 +1314,24 @@ export function AuthCard({
                   if (loadingProvider === null) {
                     e.currentTarget.style.borderColor = isDark ? "#FFFFFF" : "#0F172A";
                     e.currentTarget.style.transform = "translateY(-1px)";
-                    e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.2)";
                   }
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.14)" : "#CBD5E1";
                   e.currentTarget.style.transform = "none";
-                  e.currentTarget.style.boxShadow = isDark
-                    ? "0 2px 8px rgba(0,0,0,0.2)"
-                    : "0 2px 6px rgba(0,0,0,0.04)";
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  {loadingProvider === "github" ? (
-                    <Loader2 size={20} className="animate-spin" color={isDark ? "#fff" : "#0F172A"} />
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-                    </svg>
-                  )}
-                  <span>
-                    {loadingProvider === "github" ? "Signing in..." : "Continue with GitHub"}
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "3px 9px",
-                    borderRadius: 20,
-                    background: isDark ? "rgba(255, 255, 255, 0.08)" : "#F1F5F9",
-                    color: isDark ? "#CBD5E1" : "#475569",
-                  }}
-                >
-                  Developer
-                </span>
+                {loadingProvider === "github" ? (
+                  <Loader2 size={16} className="animate-spin" color={isDark ? "#fff" : "#0F172A"} />
+                ) : (
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                  </svg>
+                )}
+                <span>GitHub</span>
               </button>
 
-              {/* 4. Continue with Microsoft */}
+              {/* Microsoft */}
               <button
                 type="button"
                 id="sign-in-with-microsoft-btn"
@@ -1250,14 +1340,15 @@ export function AuthCard({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "13px 18px",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "11px 12px",
                   borderRadius: 14,
                   border: isDark ? "1px solid rgba(255, 255, 255, 0.14)" : "1px solid #CBD5E1",
                   background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
                   color: isDark ? "#FFFFFF" : "#0F172A",
                   cursor: loadingProvider !== null ? "not-allowed" : "pointer",
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: 700,
                   transition: "all 0.15s ease",
                   boxShadow: isDark
@@ -1269,160 +1360,48 @@ export function AuthCard({
                   if (loadingProvider === null) {
                     e.currentTarget.style.borderColor = "#00A4EF";
                     e.currentTarget.style.transform = "translateY(-1px)";
-                    e.currentTarget.style.boxShadow = "0 4px 16px rgba(0, 164, 239, 0.25)";
                   }
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.14)" : "#CBD5E1";
                   e.currentTarget.style.transform = "none";
-                  e.currentTarget.style.boxShadow = isDark
-                    ? "0 2px 8px rgba(0,0,0,0.2)"
-                    : "0 2px 6px rgba(0,0,0,0.04)";
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  {loadingProvider === "microsoft" ? (
-                    <Loader2 size={20} className="animate-spin" color="#00A4EF" />
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24">
-                      <rect x="1" y="1" width="10" height="10" fill="#F25022" />
-                      <rect x="13" y="1" width="10" height="10" fill="#7FBA00" />
-                      <rect x="1" y="13" width="10" height="10" fill="#00A4EF" />
-                      <rect x="13" y="13" width="10" height="10" fill="#FFB900" />
-                    </svg>
-                  )}
-                  <span>
-                    {loadingProvider === "microsoft" ? "Signing in..." : "Continue with Microsoft"}
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "3px 9px",
-                    borderRadius: 20,
-                    background: "rgba(0, 164, 239, 0.12)",
-                    color: "#0284C7",
-                    border: "1px solid rgba(0, 164, 239, 0.25)",
-                  }}
-                >
-                  Work
-                </span>
+                {loadingProvider === "microsoft" ? (
+                  <Loader2 size={16} className="animate-spin" color="#00A4EF" />
+                ) : (
+                  <svg width="17" height="17" viewBox="0 0 24 24">
+                    <rect x="1" y="1" width="10" height="10" fill="#F25022" />
+                    <rect x="13" y="1" width="10" height="10" fill="#7FBA00" />
+                    <rect x="1" y="13" width="10" height="10" fill="#00A4EF" />
+                    <rect x="13" y="13" width="10" height="10" fill="#FFB900" />
+                  </svg>
+                )}
+                <span>Microsoft</span>
               </button>
-
-              {/* Fast 1-Click Instant Preview Option */}
-              <div
-                style={{
-                  marginTop: 6,
-                  padding: "12px 16px",
-                  borderRadius: 14,
-                  background: isDark ? "rgba(29, 158, 117, 0.1)" : "#E1F5EE",
-                  border: isDark ? "1px solid rgba(29, 158, 117, 0.25)" : "1px solid #A3E0C8",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <div>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: "#1D9E75",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                    }}
-                  >
-                    <Zap size={14} /> Instant Preview Access
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: isDark ? "rgba(255, 255, 255, 0.6)" : "#064035",
-                      marginTop: 2,
-                    }}
-                  >
-                    Bypass OAuth & enter as Demo Evaluator
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  id="instant-demo-access-btn"
-                  onClick={() => executeLogin("Demo Evaluator", "demo@skillsync.ai", "demo")}
-                  disabled={loadingProvider !== null}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: 10,
-                    background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
-                    color: "#ffffff",
-                    border: "none",
-                    fontWeight: 700,
-                    fontSize: 12,
-                    cursor: "pointer",
-                    boxShadow: "0 2px 6px rgba(15, 110, 86, 0.3)",
-                  }}
-                >
-                  Quick Sign In
-                </button>
-              </div>
-
-              <div style={{ marginTop: 14, textAlign: "center" }}>
-                <button
-                  type="button"
-                  id="auth-switch-to-email-btn"
-                  onClick={() => setActiveTab("email")}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: isDark ? "rgba(255, 255, 255, 0.75)" : "#475569",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                    padding: "4px 8px",
-                  }}
-                >
-                  ← Or continue with Email & Password
-                </button>
-              </div>
             </div>
-          ) : (
-            /* Email & Password Form Tab */
-            <form onSubmit={handleEmailAuthSubmit}>
-              {mode === "signup" && (
-                <div style={{ marginBottom: 14 }}>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: isDark ? "rgba(255, 255, 255, 0.7)" : "#475569",
-                      marginBottom: 6,
-                    }}
-                  >
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ashwani Pandey"
-                    value={nameInput}
-                    onChange={(e) => setNameInput(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "11px 14px",
-                      borderRadius: 12,
-                      border: isDark ? "1px solid rgba(255, 255, 255, 0.15)" : "1px solid #CBD5E1",
-                      background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
-                      color: isDark ? "#FFFFFF" : "#0F172A",
-                      fontSize: 14,
-                      outline: "none",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                </div>
-              )}
+          </div>
 
+          {/* Elegant Divider between Social and Email */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "18px 0 16px" }}>
+            <div style={{ flex: 1, height: 1, background: isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0" }} />
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: isDark ? "rgba(255, 255, 255, 0.45)" : "#94A3B8",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+              }}
+            >
+              {mode === "signin" ? "or continue with email" : "or sign up with email"}
+            </span>
+            <div style={{ flex: 1, height: 1, background: isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0" }} />
+          </div>
+
+          {/* Email & Password Form */}
+          <form onSubmit={handleEmailAuthSubmit}>
+            {mode === "signup" && (
               <div style={{ marginBottom: 14 }}>
                 <label
                   style={{
@@ -1433,20 +1412,19 @@ export function AuthCard({
                     marginBottom: 6,
                   }}
                 >
-                  Email Address
+                  Your Full Name
                 </label>
                 <div style={{ position: "relative" }}>
-                  <Mail
+                  <User
                     size={16}
                     color={isDark ? "rgba(255, 255, 255, 0.4)" : "#94A3B8"}
                     style={{ position: "absolute", left: 14, top: 14 }}
                   />
                   <input
-                    type="email"
-                    required
-                    placeholder="ashwani.pandey@gmail.com"
-                    value={emailInput}
-                    onChange={(e) => setEmailInput(e.target.value)}
+                    type="text"
+                    placeholder="Ashwani Pandey"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
                     style={{
                       width: "100%",
                       padding: "11px 14px 11px 40px",
@@ -1461,133 +1439,211 @@ export function AuthCard({
                   />
                 </div>
               </div>
+            )}
 
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                  <label
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: isDark ? "rgba(255, 255, 255, 0.7)" : "#475569",
-                    }}
-                  >
-                    Password
-                  </label>
-                  {mode === "signin" && (
-                    <button
-                      type="button"
-                      onClick={() => alert("Password reset link sent to your email address.")}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "#1D9E75",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        padding: 0,
-                      }}
-                    >
-                      Forgot password?
-                    </button>
-                  )}
-                </div>
-                <div style={{ position: "relative" }}>
-                  <Lock
-                    size={16}
-                    color={isDark ? "rgba(255, 255, 255, 0.4)" : "#94A3B8"}
-                    style={{ position: "absolute", left: 14, top: 14 }}
-                  />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={passwordInput}
-                    onChange={(e) => setPasswordInput(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "11px 40px 11px 40px",
-                      borderRadius: 12,
-                      border: isDark ? "1px solid rgba(255, 255, 255, 0.15)" : "1px solid #CBD5E1",
-                      background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
-                      color: isDark ? "#FFFFFF" : "#0F172A",
-                      fontSize: 14,
-                      outline: "none",
-                      boxSizing: "border-box",
-                    }}
-                  />
+            <div style={{ marginBottom: 14 }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: isDark ? "rgba(255, 255, 255, 0.7)" : "#475569",
+                  marginBottom: 6,
+                }}
+              >
+                Work Email Address
+              </label>
+              <div style={{ position: "relative" }}>
+                <Mail
+                  size={16}
+                  color={isDark ? "rgba(255, 255, 255, 0.4)" : "#94A3B8"}
+                  style={{ position: "absolute", left: 14, top: 14 }}
+                />
+                <input
+                  type="email"
+                  required
+                  placeholder="ashwani.pandey@gmail.com"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "11px 14px 11px 40px",
+                    borderRadius: 12,
+                    border: isDark ? "1px solid rgba(255, 255, 255, 0.15)" : "1px solid #CBD5E1",
+                    background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
+                    color: isDark ? "#FFFFFF" : "#0F172A",
+                    fontSize: 14,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <label
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: isDark ? "rgba(255, 255, 255, 0.7)" : "#475569",
+                  }}
+                >
+                  Password
+                </label>
+                {mode === "signin" && (
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => alert("Password reset link sent to your email address.")}
                     style={{
-                      position: "absolute",
-                      right: 14,
-                      top: 13,
                       background: "none",
                       border: "none",
-                      color: isDark ? "rgba(255, 255, 255, 0.4)" : "#94A3B8",
+                      color: "#1D9E75",
+                      fontSize: 11,
+                      fontWeight: 700,
                       cursor: "pointer",
                       padding: 0,
                     }}
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    Forgot password?
                   </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                id="auth-email-submit-button"
-                disabled={loadingProvider !== null}
-                style={{
-                  width: "100%",
-                  padding: "13px 18px",
-                  borderRadius: 14,
-                  background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
-                  color: "#ffffff",
-                  border: "none",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  boxShadow: "0 4px 14px rgba(15, 110, 86, 0.35)",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                {loadingProvider === "email" ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" /> Authenticating...
-                  </>
-                ) : (
-                  <>
-                    {mode === "signin" ? "Sign in with Email" : "Create Account"}
-                    <ArrowRight size={16} />
-                  </>
                 )}
-              </button>
-
-              <div style={{ marginTop: 14, textAlign: "center" }}>
+              </div>
+              <div style={{ position: "relative" }}>
+                <Lock
+                  size={16}
+                  color={isDark ? "rgba(255, 255, 255, 0.4)" : "#94A3B8"}
+                  style={{ position: "absolute", left: 14, top: 14 }}
+                />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "11px 40px 11px 40px",
+                    borderRadius: 12,
+                    border: isDark ? "1px solid rgba(255, 255, 255, 0.15)" : "1px solid #CBD5E1",
+                    background: isDark ? "rgba(255, 255, 255, 0.05)" : "#FFFFFF",
+                    color: isDark ? "#FFFFFF" : "#0F172A",
+                    fontSize: 14,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
                 <button
                   type="button"
-                  id="auth-switch-to-social-btn"
-                  onClick={() => setActiveTab("social")}
+                  onClick={() => setShowPassword(!showPassword)}
                   style={{
+                    position: "absolute",
+                    right: 14,
+                    top: 13,
                     background: "none",
                     border: "none",
-                    color: isDark ? "rgba(255, 255, 255, 0.75)" : "#475569",
-                    fontSize: 12,
-                    fontWeight: 600,
+                    color: isDark ? "rgba(255, 255, 255, 0.4)" : "#94A3B8",
                     cursor: "pointer",
-                    textDecoration: "underline",
-                    padding: "4px 8px",
+                    padding: 0,
                   }}
                 >
-                  Or continue with Google, LinkedIn, GitHub →
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-            </form>
-          )}
+            </div>
+
+            <button
+              type="submit"
+              id="auth-email-submit-button"
+              disabled={loadingProvider !== null}
+              style={{
+                width: "100%",
+                padding: "13px 18px",
+                borderRadius: 14,
+                background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
+                color: "#ffffff",
+                border: "none",
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                boxShadow: "0 4px 14px rgba(15, 110, 86, 0.35)",
+                transition: "all 0.15s ease",
+              }}
+            >
+              {loadingProvider === "email" ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" /> Authenticating...
+                </>
+              ) : (
+                <>
+                  {mode === "signin" ? "Sign in with Email" : "Create Free Account"}
+                  <ArrowRight size={16} />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Fast 1-Click Instant Preview Option */}
+          <div
+            style={{
+              marginTop: 14,
+              padding: "11px 15px",
+              borderRadius: 14,
+              background: isDark ? "rgba(29, 158, 117, 0.1)" : "#E1F5EE",
+              border: isDark ? "1px solid rgba(29, 158, 117, 0.25)" : "1px solid #A3E0C8",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  color: "#1D9E75",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <Zap size={14} /> Quick Demo Access
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: isDark ? "rgba(255, 255, 255, 0.6)" : "#064035",
+                  marginTop: 2,
+                }}
+              >
+                Bypass credentials & explore as Demo Evaluator
+              </div>
+            </div>
+            <button
+              type="button"
+              id="instant-demo-access-btn"
+              onClick={() => executeLogin("Demo Evaluator", "demo@skillsync.ai", "demo")}
+              disabled={loadingProvider !== null}
+              style={{
+                padding: "7px 14px",
+                borderRadius: 9,
+                background: "linear-gradient(135deg, #0F6E56, #1D9E75)",
+                color: "#ffffff",
+                border: "none",
+                fontWeight: 700,
+                fontSize: 11.5,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                boxShadow: "0 2px 6px rgba(15, 110, 86, 0.3)",
+              }}
+            >
+              Quick Sign In
+            </button>
+          </div>
 
           {/* Toggle Mode Footer */}
           <div

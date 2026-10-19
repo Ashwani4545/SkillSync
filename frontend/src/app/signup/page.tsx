@@ -115,7 +115,7 @@ export default function SignUpPage() {
             {/* Feature Highlights */}
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 8 }}>
               {[
-                "1-Click signup with Google, LinkedIn, GitHub, or Microsoft",
+                "1-Click signup with Google, LinkedIn, X (Twitter), GitHub, or Microsoft",
                 "Instant access to full career intelligence command center",
                 "No credit card required · Free tier available forever",
                 "Multi-persona scoring (ATS Bot, Recruiter, Hiring Manager)",
