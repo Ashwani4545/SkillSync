@@ -135,16 +135,20 @@ export function Dropdown({
         aria-controls={menuId}
         onClick={() => setIsOpen((prev) => !prev)}
         onKeyDown={handleTriggerKeyDown}
-        className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
+        className={`group inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-bold rounded-lg transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
           isOpen || isCurrentSection
-            ? "text-teal-700 dark:text-teal-300 bg-teal-50/50 dark:bg-white/[0.04]"
-            : "text-gray-700 dark:text-gray-200 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-gray-100/60 dark:hover:bg-white/[0.04]"
+            ? "text-teal-700 dark:text-teal-400 bg-teal-50/80 dark:bg-teal-950/50 shadow-sm"
+            : "text-slate-800 dark:text-slate-100 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-slate-100/80 dark:hover:bg-white/[0.08]"
         }`}
       >
-        <span>{label}</span>
+        <span className="tracking-wide">{label}</span>
         <ChevronDown
           size={14}
-          className={`transition-transform duration-200 ${isOpen ? "rotate-180 text-teal-600 dark:text-teal-400" : "text-gray-400"}`}
+          className={`transition-transform duration-200 ${
+            isOpen
+              ? "rotate-180 text-teal-600 dark:text-teal-400"
+              : "text-slate-500 dark:text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400"
+          }`}
           aria-hidden="true"
         />
       </button>

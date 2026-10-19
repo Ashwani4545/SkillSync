@@ -233,10 +233,10 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-[#0A0F1E]/90 backdrop-blur-md border-b border-gray-200 dark:border-white/10 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-[#0A0F1E]/95 backdrop-blur-md border-b border-gray-200 dark:border-white/10 transition-colors duration-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Left: Brand Logo */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center flex-1 justify-start min-w-fit">
           <Link
             href="/"
             className="flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded-lg p-1"
@@ -253,45 +253,48 @@ export function Header() {
               </span>
             </div>
           </Link>
-
-          {/* Desktop Navigation Menus */}
-          <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
-            <Dropdown
-              label="Tools"
-              items={toolItems}
-              promoPanel={toolsPromo}
-              currentPath={pathname}
-            />
-
-            <Dropdown
-              label="Career"
-              items={careerItems}
-              promoPanel={careerPromo}
-              currentPath={pathname}
-            />
-
-            <Dropdown
-              label="Resources"
-              items={resourceItems}
-              currentPath={pathname}
-            />
-
-            {/* Direct Pricing Link */}
-            <Link
-              href="/pricing"
-              className={`px-3 py-2 text-sm font-semibold rounded-lg transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
-                pathname === "/pricing"
-                  ? "text-teal-700 dark:text-teal-300 bg-teal-50/50 dark:bg-white/[0.04]"
-                  : "text-gray-700 dark:text-gray-200 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-gray-100/60 dark:hover:bg-white/[0.04]"
-              }`}
-            >
-              Pricing
-            </Link>
-          </nav>
         </div>
 
+        {/* Center: Desktop Navigation Menus (Centered) */}
+        <nav
+          className="hidden lg:flex items-center justify-center gap-1.5 flex-initial"
+          aria-label="Main navigation"
+        >
+          <Dropdown
+            label="Tools"
+            items={toolItems}
+            promoPanel={toolsPromo}
+            currentPath={pathname}
+          />
+
+          <Dropdown
+            label="Career"
+            items={careerItems}
+            promoPanel={careerPromo}
+            currentPath={pathname}
+          />
+
+          <Dropdown
+            label="Resources"
+            items={resourceItems}
+            currentPath={pathname}
+          />
+
+          {/* Direct Pricing Link */}
+          <Link
+            href="/pricing"
+            className={`px-3.5 py-2 text-sm font-bold rounded-lg transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 tracking-wide ${
+              pathname === "/pricing"
+                ? "text-teal-700 dark:text-teal-400 bg-teal-50/80 dark:bg-teal-950/50 shadow-sm"
+                : "text-slate-800 dark:text-slate-100 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-slate-100/80 dark:hover:bg-white/[0.08]"
+            }`}
+          >
+            Pricing
+          </Link>
+        </nav>
+
         {/* Right side Actions */}
-        <div className="hidden sm:flex items-center gap-3">
+        <div className="hidden sm:flex items-center flex-1 justify-end gap-3 min-w-fit">
           <ThemeToggle />
 
           {isAuthenticated ? (
@@ -376,7 +379,7 @@ export function Header() {
               <Link
                 href="/signin"
                 id="header-login-btn"
-                className="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-teal-700 dark:hover:text-teal-300 transition-colors rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                className="px-4 py-2 text-sm font-bold text-slate-800 dark:text-slate-100 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-slate-100/80 dark:hover:bg-white/[0.08] transition-colors rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
               >
                 Login
               </Link>

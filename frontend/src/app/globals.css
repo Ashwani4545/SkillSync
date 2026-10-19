@@ -246,30 +246,6 @@ select option {
   color: #0F172A !important;
 }
 
-/* Navbar in light mode */
-[data-theme="light"] nav {
-  background: rgba(255, 255, 255, 0.94) !important;
-  border-bottom: 1px solid #E2E8F0 !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
-}
-
-[data-theme="light"] nav a:not([style*="background"]):not([style*="linear-gradient"]) {
-  color: #475569 !important;
-}
-[data-theme="light"] nav a:not([style*="background"]):not([style*="linear-gradient"]):hover {
-  color: #0F6E56 !important;
-}
-
-[data-theme="light"] #navbar-signin-button {
-  background: #FFFFFF !important;
-  border-color: #CBD5E1 !important;
-  color: #334155 !important;
-}
-
-[data-theme="light"] #navbar-signin-button:hover {
-  background: #F1F5F9 !important;
-}
-
 /* Page headers & sub-bars in light mode */
 [data-theme="light"] div[style*="rgba(10, 15, 30"],
 [data-theme="light"] div[style*="rgba(10,15,30"] {
