@@ -169,7 +169,7 @@ export default function PrivacyPage() {
             </h2>
             <p>We work with trusted infrastructure providers that adhere to rigorous data compliance:</p>
             <ul className="list-disc pl-5 space-y-1.5">
-              <li><strong>Hosting & Edge Delivery:</strong> Vercel Inc. and cloud infrastructure providers.</li>
+              <li><strong>Hosting & Edge Delivery:</strong> Cloud infrastructure providers.</li>
               <li><strong>Database Storage:</strong> Managed relational databases with encrypted volumes.</li>
               <li><strong>Authentication:</strong> Secure OAuth integrations (Google, LinkedIn, GitHub, Microsoft) that verify identity tokens without accessing personal contact books.</li>
               <li><strong>Billing:</strong> Stripe Inc. for payment processing. SkillSync never handles or stores credit card numbers on our servers.</li>

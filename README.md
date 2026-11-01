@@ -123,7 +123,6 @@ ResumeAI is a full-stack SaaS application that goes far beyond keyword matching.
 ### DevOps
 - **Docker + Docker Compose** — local development and containerized deployment
 - **AWS EC2 / RDS / S3** — production infrastructure
-- **Vercel** — frontend deployment with edge functions
 - **GitHub Actions** — CI/CD pipelines
 - **Sentry** — error tracking and performance monitoring
 - **PostHog** — product analytics and feature flags
@@ -483,35 +482,6 @@ CREATE TABLE subscriptions (
 
 ## Deployment
 
-### Frontend — Vercel
-
-This is a monorepo — the Next.js app lives in `frontend/`, not the repo root.
-A root-level `vercel.json` (already in this repo) tells Vercel how to build
-it, so **importing the repo as-is at the repo root now works** — you don't
-need to manually set a "Root Directory" in the Vercel dashboard.
-
-```bash
-# Either: import the GitHub repo directly in the Vercel dashboard, or:
-npx vercel --prod   # run from the repo root
-```
-
-The build succeeds even with zero environment variables set (verified: Clerk
-sign-in gracefully shows "Sign-in not configured" instead of crashing, and
-API calls fall back to `localhost:8000` with a console warning instead of
-crashing). For a fully working deployment, set these in the Vercel project's
-Environment Variables:
-
-| Variable | Needed for |
-|---|---|
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | Real sign-in/sign-up (Clerk) |
-| `NEXT_PUBLIC_BACKEND_URL` | Pointing the frontend at your deployed backend instead of `localhost:8000` |
-
-The backend (FastAPI + Postgres + Redis + Celery worker) isn't something
-Vercel can host — it needs a container platform (see below). Deploy that
-first, then set `NEXT_PUBLIC_BACKEND_URL` to its public URL.
-
-Set all `NEXT_PUBLIC_*` environment variables in the Vercel dashboard.
-
 ### Backend — AWS EC2
 
 ```bash
@@ -538,7 +508,6 @@ The `.github/workflows/deploy.yml` pipeline runs on every push to `main`:
 2. Run backend Python tests (`pytest`)
 3. Build and push Docker images to ECR
 4. Deploy backend to EC2 via SSH
-5. Deploy frontend to Vercel
 
 ---
 
