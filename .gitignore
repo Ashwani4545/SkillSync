@@ -1,17 +1,64 @@
-# Dependencies
+# ══════════════════════════════════════════════════════════════════════════
+# SkillSync .gitignore
+# NOTE: .gitignore only affects files git is NOT already tracking. If something
+# below was committed earlier, untrack it with:  git rm -r --cached <path>
+# (and purge it from history with scripts/purge_history.sh if it was sensitive)
+# ══════════════════════════════════════════════════════════════════════════
+
+# ── Secrets & credentials (NEVER commit) ─────────────────────────────────
+.env
+.env.*
+!.env.example
+frontend/.env
+frontend/.env.*
+backend/.env
+backend/.env.*
+!frontend/.env.example
+!backend/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+infra/ssl/
+.aws/
+credentials.json
+service-account*.json
+
+# ── User data & uploads (resumes are personal data) ──────────────────────
+scratch/
+**/scratch/
+resumeai_uploads/
+uploads/
+**/uploads/
+resume_deep_analysis.md
+
+# Personal documents. Re-allowed below only where synthetic/public files belong.
+*.pdf
+*.docx
+*.doc
+!docs/**
+!frontend/public/**
+!backend/tests/fixtures/**
+
+# ── Dependencies ─────────────────────────────────────────────────────────
 node_modules/
 frontend/node_modules/
 .pnp
 .pnp.js
 
-# Production build outputs
+# ── Build outputs ────────────────────────────────────────────────────────
 .next/
 frontend/.next/
 out/
 build/
 dist/
+*.tsbuildinfo
+next-env.d.ts
+.vercel/
+.turbo/
 
-# Python
+# ── Python ───────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
@@ -23,8 +70,14 @@ venv/
 ENV/
 *.egg-info/
 .eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
 
-# Database & Storage
+# ── Databases, queues & local data stores ────────────────────────────────
 *.db
 *.sqlite
 *.sqlite3
@@ -32,27 +85,35 @@ resumeai.db
 backend/resumeai.db
 postgres_data/
 redis_data/
+dump.rdb
+appendonly.aof
+appendonlydir/
+celerybeat-schedule*
 
-# Environment Variables
-.env
-.env.local
-.env.*.local
-frontend/.env
-frontend/.env.local
-backend/.env
+# ── ML model weights & datasets (large; download at deploy time) ─────────
+*.safetensors
+*.gguf
+*.bin
+*.pt
+*.onnx
+models/
+data/raw/
 
-# Logs & Diagnostics
+# ── History-rewrite backups ──────────────────────────────────────────────
+*.bundle
+
+# ── Logs & diagnostics ───────────────────────────────────────────────────
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .system_generated/
 
-# OS files
+# ── OS files ─────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 
-# IDE & Scratch
+# ── IDE ──────────────────────────────────────────────────────────────────
 .idea/
 .vscode/
-scratch/
+*.swp
