@@ -1,4 +1,4 @@
-# ResumeAI — AI-Powered Resume Analyzer & Career Coach
+# Skillsync — AI-Powered Resume Analyzer & Career Coach
 
 > Analyze your resume through the eyes of an ATS bot, a recruiter, and a hiring manager — all at once. Get actionable AI suggestions, predict interview questions, and benchmark against top candidates in your field.
 
