@@ -33,44 +33,33 @@ import {
 import { Dropdown, DropdownItem, PromoPanelData } from "./Dropdown";
 import { ThemeToggle } from "./ThemeToggle";
 import { useTheme } from "../providers/ThemeProvider";
+import { useClerk, useUser } from "@clerk/nextjs";
+import { isClerkConfigured } from "@/lib/clerk";
 
 export function Header() {
+  if (!isClerkConfigured()) {
+    return (
+      <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white px-4 py-4 dark:border-white/10 dark:bg-[#0A0F1E]">
+        <Link href="/" className="font-extrabold text-teal-700 dark:text-teal-400">SkillSync</Link>
+        <span className="ml-4 text-sm text-slate-500">Configure Clerk to enable account access.</span>
+      </header>
+    );
+  }
+  return <ClerkHeader />;
+}
+
+function ClerkHeader() {
+  const { isLoaded, isSignedIn, user } = useUser();
+  const { signOut } = useClerk();
   const pathname = usePathname();
   const { theme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [userName, setUserName] = useState("Ashwani");
-  const [userFullName, setUserFullName] = useState("Ashwani Pandey");
-  const [userEmail, setUserEmail] = useState("ashwani.pandey@gmail.com");
-  const [userPlan, setUserPlan] = useState("PRO PLAN");
-  const [userAvatar, setUserAvatar] = useState<string | null>(null);
-
-  // Sync auth state from localStorage or cookies
-  useEffect(() => {
-    const checkAuth = () => {
-      if (typeof window === "undefined") return;
-      const auth =
-        localStorage.getItem("user_authenticated") === "true" ||
-        document.cookie.includes("user_authenticated=true");
-      setIsAuthenticated(auth);
-      const name = localStorage.getItem("user_name");
-      if (name) {
-        setUserFullName(name);
-        setUserName(name.split(" ")[0]);
-      }
-      const email = localStorage.getItem("user_email");
-      if (email) setUserEmail(email);
-      const plan = localStorage.getItem("user_plan");
-      if (plan) setUserPlan(plan);
-      const avatar = localStorage.getItem("user_avatar");
-      setUserAvatar(avatar || null);
-    };
-
-    checkAuth();
-    window.addEventListener("storage", checkAuth);
-    return () => window.removeEventListener("storage", checkAuth);
-  }, []);
+  const isAuthenticated = isLoaded && Boolean(isSignedIn);
+  const userFullName = user?.fullName || user?.firstName || "Account";
+  const userName = user?.firstName || user?.username || "Account";
+  const userEmail = user?.primaryEmailAddress?.emailAddress || "";
+  const userAvatar = user?.imageUrl || null;
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -224,15 +213,9 @@ export function Header() {
     },
   ];
 
-  const handleSignOut = () => {
-    localStorage.removeItem("user_authenticated");
-    localStorage.removeItem("user_name");
-    localStorage.removeItem("user_email");
-    localStorage.removeItem("user_provider");
-    localStorage.removeItem("user_plan");
-    document.cookie = "user_authenticated=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    setIsAuthenticated(false);
-    window.location.href = "/";
+  const handleSignOut = async () => {
+    setShowUserMenu(false);
+    await signOut({ redirectUrl: "/" });
   };
 
   return (
@@ -317,7 +300,7 @@ export function Header() {
                 </div>
                 <span>{userName}</span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-teal-500/15 text-teal-600 dark:text-teal-400 font-extrabold tracking-wider">
-                  PRO
+                  ACCOUNT
                 </span>
                 <ChevronDown size={13} className="text-gray-400" />
               </button>
@@ -336,7 +319,7 @@ export function Header() {
                       <p className="font-bold text-gray-900 dark:text-white truncate">{userFullName}</p>
                       <p className="text-gray-500 dark:text-gray-400 text-[11px] truncate">{userEmail}</p>
                       <span className="inline-block mt-1 text-[10px] font-extrabold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-full border border-teal-200 dark:border-teal-800">
-                        {userPlan} · Active
+                        Signed in with Clerk
                       </span>
                     </div>
                   </div>

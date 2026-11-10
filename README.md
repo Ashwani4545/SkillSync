@@ -365,11 +365,36 @@ POST   /api/v1/interview/predict      Generate predicted interview questions
 
 ### Authentication
 
-All endpoints (except public landing data) require a valid Clerk JWT passed as a Bearer token:
+SkillSync uses Clerk for sign-in, sign-up, OAuth, password recovery, email verification,
+and session management. Configure the Clerk instance in the Clerk Dashboard, including
+the OAuth providers you want to expose.
 
-```
+All protected API endpoints require a Clerk **session JWT**:
+
+```http
 Authorization: Bearer <clerk_session_token>
 ```
+
+Required backend environment:
+- `CLERK_SECRET_KEY`: server-only Clerk secret. Never expose it to the browser.
+- `CLERK_ISSUER`: exact `iss` value from a session JWT issued by your Clerk instance.
+- `CLERK_JWKS_URL`: that instance's public JWKS URL (usually
+  `https://<your-clerk-domain>/.well-known/jwks.json`).
+- `CLERK_AUDIENCE`: optional; set only when the session JWT template uses an audience.
+- `ADMIN_CLERK_IDS`: comma-separated Clerk user IDs allowed to use admin endpoints.
+- `ALLOW_DEV_AUTH`: defaults to false. Set true only for an isolated local environment
+  with `ENVIRONMENT=development`; never enable it in staging or production.
+
+The API verifies the RS256 signature, issuer, expiration, issued-at time, and session ID.
+It retrieves the verified primary email from Clerk's server-side Users API when syncing
+the local user record. Local records are keyed by Clerk user ID; matching email addresses
+never merge separate Clerk identities. The frontend Axios client receives the current
+session token through a bridge backed by Clerk's `useAuth().getToken()`.
+
+The former sample-account picker and localStorage authentication flags have been removed.
+OAuth providers are offered by Clerk only when enabled in the Clerk Dashboard. The
+application-managed in-memory TOTP prototype is disabled; configure MFA in Clerk instead.
+
 
 ---
 

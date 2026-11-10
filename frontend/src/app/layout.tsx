@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { QueryProvider } from "../components/providers/QueryProvider";
 import { ThemeProvider } from "../components/providers/ThemeProvider";
 import { isClerkConfigured } from "@/lib/clerk";
+import { ClerkTokenBridge } from "@/components/providers/ClerkTokenBridge";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -75,9 +76,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   if (isClerkConfigured()) {
     return (
       <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+        <ClerkTokenBridge />
         {content}
       </ClerkProvider>
     );
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY must be configured in production.");
   }
 
   return content;

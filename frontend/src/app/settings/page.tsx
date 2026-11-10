@@ -22,10 +22,12 @@ import {
 import { apiClient } from "@/lib/api";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PRESET_AVATARS } from "@/lib/avatars";
+import { UserProfile, useUser } from "@clerk/nextjs";
 
 type Tab = "account" | "apikeys" | "branding" | "security" | "notifications";
 
 export default function SettingsPage() {
+  const { user } = useUser();
   const [tab, setTab] = useState<Tab>("account");
   const [apiKeys, setApiKeys] = useState<any[]>([]);
   const [newKeyName, setNewKeyName] = useState("");
@@ -83,21 +85,16 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedName = localStorage.getItem("user_name");
-      const storedEmail = localStorage.getItem("user_email");
-      const storedAvatar = localStorage.getItem("user_avatar");
-      if (storedAvatar) {
-        setAvatarUrl(storedAvatar);
-      }
-      if (storedName || storedEmail) {
-        setProfile((prev) => ({
-          ...prev,
-          fullName: storedName || prev.fullName,
-          email: storedEmail || prev.email,
-        }));
-      }
-    }
+    if (!user) return;
+    setProfile((prev) => ({
+      ...prev,
+      fullName: user.fullName || user.firstName || prev.fullName,
+      email: user.primaryEmailAddress?.emailAddress || prev.email,
+    }));
+    setAvatarUrl(user.imageUrl || null);
+  }, [user]);
+
+  useEffect(() => {
     apiClient.get("/keys").then(({ data }) => setApiKeys(data.keys ?? [])).catch(() => {});
     apiClient.get("/whitelabel/config").then(({ data }) => setBranding(data)).catch(() => {});
   }, []);
@@ -932,130 +929,14 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* TAB 4: SECURITY & PASSWORDS & 2FA */}
+          {/* TAB 4: SECURITY — Clerk manages credentials and MFA */}
           {tab === "security" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-              <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 32 }}>
-                <div style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.06)", paddingBottom: 16, marginBottom: 24 }}>
-                  <h2 style={{ fontSize: 20, fontWeight: 800, color: "#FFFFFF", margin: "0 0 4px", fontFamily: "Syne, sans-serif" }}>Security & Password</h2>
-                  <p style={{ fontSize: 14, color: "#94A3B8", margin: 0 }}>Update your account password and security options.</p>
-                </div>
-
-                <form onSubmit={handleSavePassword} style={{ display: "flex", flexDirection: "column", gap: 18, maxWidth: 450 }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#94A3B8", marginBottom: 6 }}>Current Password</label>
-                    <input
-                      type="password"
-                      required
-                      value={passwordState.currentPassword}
-                      onChange={(e) => setPasswordState({ ...passwordState, currentPassword: e.target.value })}
-                      placeholder="••••••••••••"
-                      style={{ width: "100%", padding: "12px 16px", borderRadius: 10, border: "1px solid rgba(255, 255, 255, 0.12)", background: "rgba(0, 0, 0, 0.25)", color: "#FFFFFF", fontSize: 14, outline: "none" }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#94A3B8", marginBottom: 6 }}>New Password</label>
-                    <input
-                      type="password"
-                      required
-                      value={passwordState.newPassword}
-                      onChange={(e) => setPasswordState({ ...passwordState, newPassword: e.target.value })}
-                      placeholder="••••••••••••"
-                      style={{ width: "100%", padding: "12px 16px", borderRadius: 10, border: "1px solid rgba(255, 255, 255, 0.12)", background: "rgba(0, 0, 0, 0.25)", color: "#FFFFFF", fontSize: 14, outline: "none" }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#94A3B8", marginBottom: 6 }}>Confirm New Password</label>
-                    <input
-                      type="password"
-                      required
-                      value={passwordState.confirmPassword}
-                      onChange={(e) => setPasswordState({ ...passwordState, confirmPassword: e.target.value })}
-                      placeholder="••••••••••••"
-                      style={{ width: "100%", padding: "12px 16px", borderRadius: 10, border: "1px solid rgba(255, 255, 255, 0.12)", background: "rgba(0, 0, 0, 0.25)", color: "#FFFFFF", fontSize: 14, outline: "none" }}
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    style={{
-                      marginTop: 6,
-                      alignSelf: "flex-start",
-                      padding: "12px 24px",
-                      borderRadius: 10,
-                      border: "none",
-                      background: passwordSaved ? "#0F6E56" : "linear-gradient(135deg, #1D9E75 0%, #0F6E56 100%)",
-                      color: "#ffffff",
-                      fontSize: 14,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      boxShadow: "0 0 15px rgba(29, 158, 117, 0.3)",
-                    }}
-                  >
-                    {passwordSaved ? <><Check size={16} /> Password Updated!</> : "Update Password"}
-                  </button>
-                </form>
-              </div>
-
-              {/* 2FA Card */}
-              <div style={{ background: "rgba(255, 255, 255, 0.03)", backdropFilter: "blur(12px)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 28 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <Shield size={20} color={twoFactorActive ? "#2DD4BF" : "#94A3B8"} />
-                      <div style={{ fontSize: 17, fontWeight: 800, color: "#FFFFFF", fontFamily: "Syne, sans-serif" }}>Two-Factor Authentication (2FA)</div>
-                    </div>
-                    <p style={{ fontSize: 14, color: "#94A3B8", margin: "4px 0 0" }}>
-                      Protect your account with Google Authenticator, Authy, or 1Password TOTP verification.
-                    </p>
-                  </div>
-
-                  {twoFactorActive ? (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 20, background: "rgba(45, 212, 191, 0.15)", border: "1px solid rgba(45, 212, 191, 0.3)", color: "#2DD4BF", fontWeight: 700, fontSize: 13 }}>
-                      <CheckCircle size={15} /> ✓ 2FA Active
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={start2FASetup}
-                      disabled={is2FALoading}
-                      style={{
-                        padding: "12px 22px",
-                        borderRadius: 12,
-                        border: "none",
-                        background: "linear-gradient(135deg, #1D9E75 0%, #0F6E56 100%)",
-                        color: "#ffffff",
-                        fontWeight: 700,
-                        fontSize: 14,
-                        cursor: "pointer",
-                        boxShadow: "0 0 15px rgba(29, 158, 117, 0.3)",
-                      }}
-                    >
-                      {is2FALoading ? "Generating Setup..." : "Enable 2FA"}
-                    </button>
-                  )}
-                </div>
-
-                {twoFactorActive && (
-                  <div style={{ paddingTop: 16, borderTop: "1px solid rgba(255, 255, 255, 0.06)", display: "flex", gap: 12 }}>
-                    <button
-                      onClick={() => { setSetupStep("backup"); setShow2FAModal(true); }}
-                      style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid rgba(255, 255, 255, 0.12)", background: "rgba(255, 255, 255, 0.05)", color: "#FFFFFF", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
-                    >
-                      View Emergency Recovery Codes
-                    </button>
-                    <button
-                      onClick={handleDisable2FA}
-                      style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid rgba(239, 68, 68, 0.3)", background: "rgba(239, 68, 68, 0.15)", color: "#FCA5A5", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
-                    >
-                      Disable 2FA
-                    </button>
-                  </div>
-                )}
-              </div>
+            <div style={{ background: "rgba(255, 255, 255, 0.03)", borderRadius: 18, border: "1px solid rgba(255, 255, 255, 0.08)", padding: 24 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: "#FFFFFF", margin: "0 0 8px" }}>Account security</h2>
+              <p style={{ color: "#94A3B8", fontSize: 14, margin: "0 0 20px" }}>
+                Manage your password, verified email addresses, active sessions and multi-factor authentication through Clerk.
+              </p>
+              <UserProfile routing="hash" />
             </div>
           )}
 

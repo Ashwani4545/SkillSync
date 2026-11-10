@@ -19,6 +19,14 @@ class Settings(BaseSettings):
     # Auth (Clerk)
     CLERK_SECRET_KEY: str
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: str = ""
+    CLERK_ISSUER: str = ""
+    CLERK_JWKS_URL: str = ""
+    CLERK_AUDIENCE: str = ""
+    # Must be explicitly true AND ENVIRONMENT=development to enable local bypass.
+    ALLOW_DEV_AUTH: bool = False
+    ADMIN_CLERK_IDS: str = ""
+    LLM_DAILY_LIMIT_USD: float = 20.0
+    LLM_MONTHLY_LIMIT_USD: float = 300.0
 
     # AWS
     AWS_ACCESS_KEY_ID: str = ""
