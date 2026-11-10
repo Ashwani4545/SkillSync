@@ -20,6 +20,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useTheme } from "../providers/ThemeProvider";
+import { SignIn, SignUp } from "@clerk/nextjs";
+import { isClerkConfigured } from "@/lib/clerk";
 
 export interface AuthSuccessData {
   name: string;
@@ -721,6 +723,22 @@ export function AuthCard({
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
+  // Delegate credentials, OAuth, verification, sessions and recovery to Clerk.
+  // The former account picker and localStorage flags were only UI simulations.
+  if (!isClerkConfigured()) {
+    return (
+      <div role="alert" style={{ padding: 24, color: isDark ? "#fff" : "#0F172A" }}>
+        Authentication is not configured. Set the Clerk publishable key to enable sign-in.
+      </div>
+    );
+  }
+
+  if (initialMode === "signup") {
+    return <SignUp routing="hash" signInUrl="/login" afterSignUpUrl="/dashboard" />;
+  }
+
+  return <SignIn routing="hash" signUpUrl="/signup" afterSignInUrl="/dashboard" />;
+  
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [activeTab, setActiveTab] = useState<"social" | "email">("email");
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
