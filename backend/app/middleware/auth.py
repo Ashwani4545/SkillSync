@@ -16,6 +16,7 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.core.config import settings
 from app.db.models import PlanEnum, User
@@ -177,12 +178,15 @@ async def get_current_user(
     try:
         db.commit()
         db.refresh(user)
-    except Exception:
+    except IntegrityError:
         db.rollback()
         # Concurrent first-login requests may have created this identity.
         user = db.query(User).filter(User.clerk_id == clerk_id).first()
-        if user is None:
-            raise
+        if user is None or user.email != email:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This verified email is already associated with another account.",
+            )
     return user
 
 
