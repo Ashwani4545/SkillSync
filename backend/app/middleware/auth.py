@@ -66,6 +66,25 @@ async def _get_clerk_public_key(kid: str) -> Any | None:
     return None
 
 
+async def _get_verified_primary_email(clerk_user_id: str) -> str:
+    """Fetch the verified primary email from Clerk's server-side Users API."""
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        response = await client.get(
+            f"https://api.clerk.com/v1/users/{clerk_user_id}",
+            headers={"Authorization": f"Bearer {settings.CLERK_SECRET_KEY}"},
+        )
+        response.raise_for_status()
+        profile = response.json()
+
+    primary_id = profile.get("primary_email_address_id")
+    for address in profile.get("email_addresses", []):
+        if address.get("id") == primary_id and address.get("verification", {}).get("status") == "verified":
+            email = address.get("email_address")
+            if isinstance(email, str) and "@" in email:
+                return email
+    raise HTTPException(status_code=403, detail="A verified primary email is required")
+
+
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
     db: Session = Depends(get_db),
@@ -123,14 +142,6 @@ async def get_current_user(
         if not isinstance(clerk_id, str) or not clerk_id:
             raise _unauthorized()
 
-        # Do not trust an unverified or arbitrary email claim for account creation.
-        # Clerk's verified email should be supplied via a trusted claim/template.
-        email = payload.get("email")
-        if not isinstance(email, str) or "@" not in email:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="A verified email claim is required",
-            )
     except HTTPException:
         raise
     except (jwt.PyJWTError, httpx.HTTPError, ValueError, KeyError):
@@ -138,7 +149,12 @@ async def get_current_user(
 
     user = db.query(User).filter(User.clerk_id == clerk_id).first()
     if user is None:
-        # Avoid silently attaching an identity to an existing account by email.
+        # Obtain the email from Clerk's authenticated server API, not JWT custom claims.
+        try:
+            email = await _get_verified_primary_email(clerk_id)
+        except (httpx.HTTPError, ValueError, KeyError):
+            raise _unauthorized()
+        # Never auto-link a different Clerk identity solely because email matches.
         user = User(clerk_id=clerk_id, email=email, plan=PlanEnum.free)
         db.add(user)
         try:
