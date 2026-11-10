@@ -25,6 +25,8 @@ _bearer = HTTPBearer(auto_error=False)
 _jwks_cache: dict[str, tuple[Any, float]] = {}
 _jwks_lock = Lock()
 _JWKS_TTL_SECONDS = 3600
+_profile_cache: dict[str, tuple[str, float]] = {}
+_PROFILE_TTL_SECONDS = 300
 
 
 def is_dev_environment() -> bool:
@@ -67,7 +69,12 @@ async def _get_clerk_public_key(kid: str) -> Any | None:
 
 
 async def _get_verified_primary_email(clerk_user_id: str) -> str:
-    """Fetch the verified primary email from Clerk's server-side Users API."""
+    """Fetch and briefly cache the verified primary email from Clerk's Users API."""
+    now = time.monotonic()
+    cached = _profile_cache.get(clerk_user_id)
+    if cached and cached[1] > now:
+        return cached[0]
+
     async with httpx.AsyncClient(timeout=5.0) as client:
         response = await client.get(
             f"https://api.clerk.com/v1/users/{clerk_user_id}",
@@ -81,6 +88,7 @@ async def _get_verified_primary_email(clerk_user_id: str) -> str:
         if address.get("id") == primary_id and address.get("verification", {}).get("status") == "verified":
             email = address.get("email_address")
             if isinstance(email, str) and "@" in email:
+                _profile_cache[clerk_user_id] = (email, now + _PROFILE_TTL_SECONDS)
                 return email
     raise HTTPException(status_code=403, detail="A verified primary email is required")
 
@@ -131,7 +139,7 @@ async def get_current_user(
             issuer=settings.CLERK_ISSUER,
             audience=settings.CLERK_AUDIENCE or None,
             options={
-                "require": ["exp", "iat", "sub", "iss"],
+                "require": ["exp", "iat", "sub", "iss", "sid"],
                 "verify_exp": True,
                 "verify_iat": True,
                 "verify_iss": True,
@@ -148,25 +156,30 @@ async def get_current_user(
         raise _unauthorized()
 
     user = db.query(User).filter(User.clerk_id == clerk_id).first()
+
+    # Sync the verified primary email periodically. A matching email never links
+    # two distinct Clerk identities; the unique constraint remains authoritative.
+    try:
+        email = await _get_verified_primary_email(clerk_id)
+    except (httpx.HTTPError, ValueError, KeyError):
+        raise _unauthorized()
+
     if user is None:
-        # Obtain the email from Clerk's authenticated server API, not JWT custom claims.
-        try:
-            email = await _get_verified_primary_email(clerk_id)
-        except (httpx.HTTPError, ValueError, KeyError):
-            raise _unauthorized()
-        # Never auto-link a different Clerk identity solely because email matches.
         user = User(clerk_id=clerk_id, email=email, plan=PlanEnum.free)
         db.add(user)
-        try:
-            db.commit()
-            db.refresh(user)
-        except Exception:
-            db.rollback()
-            # Concurrent first-login requests may have created the same identity.
-            user = db.query(User).filter(User.clerk_id == clerk_id).first()
-            if user is None:
-                raise
-    return user
+    elif user.email != email:
+        user.email = email
+
+    try:
+        db.commit()
+        db.refresh(user)
+    except Exception:
+        db.rollback()
+        # Concurrent first-login requests may have created this identity.
+        user = db.query(User).filter(User.clerk_id == clerk_id).first()
+        if user is None:
+            raise
+    return userr
 
 
 def require_plan(*plans: PlanEnum):
