@@ -152,6 +152,8 @@ async def get_current_user(
 
     except HTTPException:
         raise
+    except RuntimeError:
+        raise HTTPException(status_code=503, detail="Authentication service is not configured")
     except (jwt.PyJWTError, httpx.HTTPError, ValueError, KeyError):
         raise _unauthorized()
 
@@ -161,6 +163,8 @@ async def get_current_user(
     # two distinct Clerk identities; the unique constraint remains authoritative.
     try:
         email = await _get_verified_primary_email(clerk_id)
+    except HTTPException:
+        raise
     except (httpx.HTTPError, ValueError, KeyError):
         raise _unauthorized()
 
@@ -179,7 +183,7 @@ async def get_current_user(
         user = db.query(User).filter(User.clerk_id == clerk_id).first()
         if user is None:
             raise
-    return userr
+    return user
 
 
 def require_plan(*plans: PlanEnum):
