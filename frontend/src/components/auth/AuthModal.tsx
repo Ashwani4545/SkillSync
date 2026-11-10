@@ -723,22 +723,6 @@ export function AuthCard({
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  // Delegate credentials, OAuth, verification, sessions and recovery to Clerk.
-  // The former account picker and localStorage flags were only UI simulations.
-  if (!isClerkConfigured()) {
-    return (
-      <div role="alert" style={{ padding: 24, color: isDark ? "#fff" : "#0F172A" }}>
-        Authentication is not configured. Set the Clerk publishable key to enable sign-in.
-      </div>
-    );
-  }
-
-  if (initialMode === "signup") {
-    return <SignUp routing="hash" signInUrl="/login" afterSignUpUrl="/dashboard" />;
-  }
-
-  return <SignIn routing="hash" signUpUrl="/signup" afterSignInUrl="/dashboard" />;
-  
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [activeTab, setActiveTab] = useState<"social" | "email">("email");
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
@@ -803,6 +787,21 @@ export function AuthCard({
 
     executeLogin(targetName, targetEmail, "email");
   };
+
+  // Delegate all real authentication to Clerk. Never authenticate by setting
+  // client-controlled localStorage values or by selecting a sample account.
+  if (!isClerkConfigured()) {
+    return (
+      <div role="alert" style={{ padding: 24, color: isDark ? "#fff" : "#0F172A" }}>
+        Authentication is not configured. Set the Clerk publishable key to enable sign-in.
+      </div>
+    );
+  }
+  return initialMode === "signup" ? (
+    <SignUp routing="hash" signInUrl="/login" afterSignUpUrl="/dashboard" />
+  ) : (
+    <SignIn routing="hash" signUpUrl="/signup" afterSignInUrl="/dashboard" />
+  );
 
   return (
     <>
