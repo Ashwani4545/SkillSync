@@ -2,7 +2,6 @@ import asyncio
 
 import pytest
 from fastapi import HTTPException
-from fastapi.security import HTTPAuthorizationCredentials
 
 from app.core.config import settings
 from app.middleware.auth import get_current_user
