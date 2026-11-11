@@ -154,12 +154,9 @@ export default function AnalyzePage() {
       setUploadError(
         typeof detailMsg === "string"
           ? detailMsg
-          : "Backend connection issue. Switched to interactive sample mode."
+          : "Could not connect to the analysis backend. Start the backend and try again."
       );
       setIsUploading(false);
-      // Fallback to sample
-      setIsSampleDemo(true);
-      setStep("results");
     }
   };
 

@@ -18,6 +18,10 @@ CLERK_JWKS_URL = "https://api.clerk.dev/v1/jwks"
 _jwks_cache: dict = {}
 
 
+def is_dev_environment() -> bool:
+    return settings.ENVIRONMENT == "development"
+
+
 async def _get_clerk_public_key(kid: str) -> str | None:
     """Fetch Clerk's JWKS and find the key matching kid."""
     global _jwks_cache
